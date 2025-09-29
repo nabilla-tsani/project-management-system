@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ProyekKwintansi extends Model
+class ProyekKwitansi extends Model
 {
     use HasFactory;
 
-    protected $table = 'proyek_invoice';
+    protected $table = 'proyek_kwitansi';
 
     protected $fillable = [
         'nomor_kwitansi',
@@ -32,8 +32,11 @@ class ProyekKwintansi extends Model
         return $this->belongsTo(Proyek::class, 'proyek_id');
     }
 
-    // FK kolom nomor_invoice
-    // FK kolom nomor_kwitansi
+    public function invoice()
+    {
+        return $this->belongsTo(ProyeInvoicek::class, 'proyek_id');
+    }
+
 
 }
 

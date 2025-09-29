@@ -14,7 +14,7 @@ class ProyekFile extends Model
     protected $fillable = [
         'proyek_id',
         'keterangan',
-        'nama-file',
+        'nama_file',
         'path',
         'user_id',
     ];

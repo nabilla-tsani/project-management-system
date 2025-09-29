@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Services\GeminiService;
 use App\Livewire\DetailProyek;
+use App\Livewire\AllProyekInvoice;
+use App\Livewire\AllProyekKwitansi;
 
 Route::view('/', 'welcome');
 
@@ -31,3 +33,12 @@ Route::get('/test-gemini', function (GeminiService $gemini) {
 });
 
 Route::get('/proyek/{id}', DetailProyek::class)->name('proyek.detail');
+
+Route::get('/proyek-invoice/print/{id}', [AllProyekInvoice::class, 'printInvoice'])
+     ->name('proyek-invoice.print');
+
+Route::get('/proyek-kwitansi/print/{id}', [AllProyekKwitansi::class, 'printKwitansi'])
+    ->name('proyek-kwitansi.print');
+
+Route::get('/proyek/{id}/proposal-pdf', [DetailProyek::class, 'generateProposal'])
+    ->name('proposal-proyek.pdf');

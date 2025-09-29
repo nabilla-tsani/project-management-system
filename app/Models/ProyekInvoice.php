@@ -32,11 +32,5 @@ class ProyekInvoice extends Model
         return $this->belongsTo(Proyek::class, 'proyek_id');
     }
 
-    // FK kolom nomor_invoice
-    // public function nomor_invoice()
-    // {
-    //     return $this->belongsTo(ProyekInvoice::class);
-    // }
-
 }
 

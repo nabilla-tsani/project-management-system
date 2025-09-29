@@ -10,6 +10,8 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    </head>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -20,7 +22,7 @@
     <x-sidebar />
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto p-4">
+    <main class="flex-1 overflow-y-auto py-1 px-8">
         {{ $slot }}  <!-- atau @yield('content') -->
     </main>
 </div>

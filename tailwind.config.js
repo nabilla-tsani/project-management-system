@@ -1,5 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import daisyui from 'daisyui';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -17,5 +18,15 @@ export default {
         },
     },
 
-    plugins: [forms],
+    plugins: [
+        forms,
+        daisyui, // tambahkan daisyUI sebagai plugin
+    ],
+
+    daisyui: {
+        themes: ['light'], // bisa ganti 'light' dengan tema lain, misal 'dark' atau 'cupcake'
+        styled: true,       // aktifkan styling bawaan daisyUI
+        base: true,         // aktifkan base styles
+        utils: true,        // aktifkan utility classes (bg-primary, text-base-100, dsb)
+    },
 };
