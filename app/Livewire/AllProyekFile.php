@@ -81,7 +81,6 @@ class AllProyekFile extends Component
     $this->modalOpen = false;
     $this->loadFiles();
 
-    session()->flash('message', $this->fileId ? 'File diperbarui' : 'File ditambahkan');
 }
 
 
@@ -93,7 +92,6 @@ class AllProyekFile extends Component
         }
         $file->delete();
         $this->loadFiles();
-        session()->flash('message', 'File dihapus');
     }
 
     public function render()

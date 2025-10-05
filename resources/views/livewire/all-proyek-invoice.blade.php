@@ -1,153 +1,219 @@
-<div x-data="{ openModal: false }"
-     x-init="
-        window.addEventListener('close-modal', () => {
-            openModal = false;
-        })
-     ">
+<div class="p-6 bg-gray-50 min-h-screen">
 
-
-    {{-- Notifikasi sukses --}}
-    @if (session()->has('message'))
-        <div class="p-3 mb-4 text-green-800 bg-green-200 rounded">
-            {{ session('message') }}
-        </div>
-    @endif
-
-    {{-- Informasi Proyek --}}
-    <div class="mb-6">
-        <h2 class="text-xl font-bold mb-2">Detail Proyek</h2>
-        <p><strong>Nama Proyek:</strong> {{ $proyek->nama_proyek }}</p>
-        <p><strong>Total Harga Proyek:</strong> Rp {{ number_format($proyek->anggaran, 0, ',', '.') }}</p>
-        <p><strong>Total Invoice:</strong> Rp {{ number_format($totalInvoice, 0, ',', '.') }}</p>
-        <p><strong>Sisa Belum di-Invoice-kan:</strong> Rp {{ number_format($sisaInvoice, 0, ',', '.') }}</p>
+    {{-- HEADER --}}
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice text-blue-600"></i> Daftar Invoice
+        </h3>
+        <button wire:click="$set('openModal', true)"
+                class="px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 hover:shadow-md 
+                       transition-all duration-200 flex items-center gap-2 text-sm font-medium">
+            <i class="fa-solid fa-plus"></i> Tambah Invoice
+        </button>
     </div>
 
-    {{-- Daftar Invoice --}}
-    <h3 class="text-lg font-semibold mb-3">Daftar Invoice</h3>
-    @if(count($invoices) > 0)
-        <table class="w-full border-collapse border border-gray-300 mb-6">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="border border-gray-300 px-2 py-1">No</th>
-                    <th class="border border-gray-300 px-2 py-1">Nomor Invoice</th>
-                    <th class="border border-gray-300 px-2 py-1">Judul</th>
-                    <th class="border border-gray-300 px-2 py-1">Tanggal</th>
-                    <th class="border border-gray-300 px-2 py-1">Jumlah</th>
-                    <th class="border border-gray-300 px-2 py-1">Keterangan</th>
-                    <th class="border border-gray-300 px-2 py-1">Status</th>
-                    <th class="border border-gray-300 px-2 py-1 text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($invoices as $index => $invoice)
-    <tr>
-        <td class="border border-gray-300 px-2 py-1 text-center">{{ $index + 1 }}</td>
-        <td class="border border-gray-300 px-2 py-1">{{ $invoice->nomor_invoice }}</td>
-        <td class="border border-gray-300 px-2 py-1">{{ $invoice->judul_invoice }}</td>
-        <td class="border border-gray-300 px-2 py-1">{{ \Carbon\Carbon::parse($invoice->tanggal_invoice)->format('d/m/Y') }}</td>
-        <td class="border border-gray-300 px-2 py-1 text-right">Rp {{ number_format($invoice->jumlah, 0, ',', '.') }}</td>
-        <td class="border border-gray-300 px-2 py-1">{{ $invoice->keterangan }}</td>
-        
-        {{-- Dropdown Status --}}
-        <td class="border border-gray-300 px-2 py-1 text-center">
-            <select 
-                wire:model.lazy="statuses.{{ $invoice->id }}" 
-                wire:change="updateStatus({{ $invoice->id }}, $event.target.value)"
-                class="w-full min-w-[100px] rounded px-2 pr-6 py-1 text-xs font-medium focus:outline-none
-                    @if($invoice->status === 'belum_dibayar') border-red-400 text-red-700 bg-red-50
-                    @elseif($invoice->status === 'diproses') border-yellow-400 text-yellow-700 bg-yellow-50
-                    @elseif($invoice->status === 'dibayar') border-green-400 text-green-700 bg-green-50
-                    @endif">
-                <option value="belum_dibayar">Belum Dibayar</option>
-                <option value="diproses">Diproses</option>
-                <option value="dibayar">Dibayar</option>
-            </select>
-        </td>
 
-        {{-- Tombol Buat Kwitansi --}}
-        <td class="border px-3 py-2 text-center">
-            @if($invoice->status === 'dibayar')
-                <button wire:click="buatKwitansi({{ $invoice->id }})"
-                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                    Buat Kwitansi
-                </button>
-            @else
-                <span class="text-gray-400 italic">-</span>
+{{-- INFORMASI ANGGARAN PROYEK --}}
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 text-center">
+
+    {{-- Total Anggaran --}}
+    <div class="space-y-1">
+        <i class="fas fa-coins text-blue-500 text-base"></i>
+        <p class="text-[11px] text-gray-500 uppercase tracking-wide">Total Anggaran</p>
+        <p class="text-sm font-semibold text-gray-800">
+            Rp {{ number_format($proyek->anggaran, 0, ',', '.') }}
+        </p>
+    </div>
+
+    {{-- Total Diinvoice --}}
+    <div class="space-y-1">
+        <i class="fas fa-file-invoice text-blue-500 text-base"></i>
+        <p class="text-[11px] text-gray-500 uppercase tracking-wide">Total Diinvoice</p>
+        <p class="text-sm font-semibold text-blue-700">
+            Rp {{ number_format($totalInvoice, 0, ',', '.') }}
+        </p>
+    </div>
+
+    {{-- Sisa Belum Diinvoice --}}
+    <div class="space-y-1">
+        <i class="fas fa-wallet text-green-500 text-base"></i>
+        <p class="text-[11px] text-gray-500 uppercase tracking-wide">Belum Diinvoice</p>
+        <p class="text-sm font-semibold text-green-700">
+            Rp {{ number_format($sisaInvoice, 0, ',', '.') }}
+        </p>
+    </div>
+
+</div>
+
+
+
+{{-- LIST INVOICE --}}
+<div class="divide-y divide-gray-200 border border-gray-200 rounded-lg bg-white shadow-sm">
+    @forelse($invoices as $invoice)
+        <div class="p-4 hover:bg-gray-50 transition">
+
+            {{-- Baris 1: Judul + Aksi --}}
+            <div class="flex justify-between items-center">
+                <div>
+                    <h4 class="font-semibold text-gray-800 text-base">{{ $invoice->judul_invoice }}</h4>
+                    <p class="text-sm text-gray-500">#{{ $invoice->nomor_invoice }}</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button wire:click="printInvoice({{ $invoice->id }})" 
+                            class="text-blue-600 hover:text-blue-800 text-sm">
+                        <i class="fa-solid fa-print"></i>
+                    </button>
+                    <button wire:click="deleteInvoice({{ $invoice->id }})" 
+                            class="text-red-600 hover:text-red-800 text-sm">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Baris 2: Tanggal + Jumlah + Tombol + Status --}}
+            <div class="flex flex-wrap justify-between items-center mt-2 text-gray-700">
+                {{-- Info Tanggal & Jumlah --}}
+                <div class="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                    <p class="flex items-center gap-1.5 text-xs ">
+                        <i class="fa-regular fa-calendar text-gray-500"></i>
+                        {{ \Carbon\Carbon::parse($invoice->tanggal_invoice)->translatedFormat('j F Y') }}
+                    </p>
+                    <p class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-money-bill-wave text-blue-500"></i>
+                        <span class="text-blue-600 font-semibold text-sm">
+                            Rp {{ number_format($invoice->jumlah, 0, ',', '.') }}
+                        </span>
+                    </p>
+                </div>
+
+                {{-- Tombol Kwitansi & Status --}}
+                <div class="flex items-center gap-2 mt-2 sm:mt-0">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 mt-2 sm:mt-0">
+                    @if($invoice->status == 'dibayar')
+                        <div>
+                            <button 
+                                wire:click="konfirmasiKwitansi({{ $invoice->id }})"
+                                class="bg-green-600 text-white text-xs px-3 py-1 rounded-lg hover:bg-green-700 transition flex items-center gap-1">
+                                <i class="fa-solid fa-file-invoice"></i> Kwitansi
+                            </button>
+
+                            {{-- Tampilkan error khusus untuk invoice ini --}}
+                            @if($errorMessage && $selectedInvoiceId == $invoice->id)
+                                <div class="mt-1 bg-red-100 border border-red-300 text-red-700 text-xs p-2 rounded w-max">
+                                    {{ $errorMessage }}
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                
+
+                    <select wire:change="updateStatus({{ $invoice->id }}, $event.target.value)"
+                    wire:key="status-{{ $invoice->id }}-{{ now()->timestamp }}"
+                    class="text-xs font-semibold rounded-full pl-3 pr-6 py-1.5 border-0 focus:ring-2 focus:ring-blue-400 cursor-pointer
+                        appearance-none transition-all duration-200
+                        {{ $invoice->status === 'belum_dibayar' ? 'bg-red-100 text-red-700' : '' }}
+                        {{ $invoice->status === 'diproses' ? 'bg-yellow-100 text-yellow-700' : '' }}
+                        {{ $invoice->status === 'dibayar' ? 'bg-green-100 text-green-700' : '' }}">
+                        <option value="belum_dibayar" {{ $invoice->status=='belum_dibayar'?'selected':'' }}>Belum Dibayar</option>
+                        <option value="diproses" {{ $invoice->status=='diproses'?'selected':'' }}>Diproses</option>
+                        <option value="dibayar" {{ $invoice->status=='dibayar'?'selected':'' }}>Dibayar</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- Baris 3: Keterangan --}}
+            @if($invoice->keterangan)
+                <p class="mt-2 text-xs text-gray-500 flex items-start gap-1.5">
+                    <i class="fa-regular fa-note-sticky text-gray-400 mt-0.5"></i>
+                    {{ $invoice->keterangan }}
+                </p>
             @endif
-        </td>
+
+        </div>
+    @empty
+        <div class="text-center text-gray-500 bg-gray-50 rounded-lg p-4 text-sm">
+            Belum ada invoice
+        </div>
+    @endforelse
+</div>
 
 
+    {{-- MODAL TAMBAH INVOICE --}}
+    @if($openModal)
+        <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+            <div class="bg-white shadow-2xl p-6 w-full max-w-2xl border border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-5 text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-invoice text-blue-600 text-xl"></i>
+                    Buat Invoice
+                </h3>
 
-        {{-- Tombol Aksi --}}
-        <td class="border border-gray-300 px-2 py-1 text-center flex justify-center space-x-2">
-        {{-- Icon Print --}}
-        <a href="{{ route('proyek-invoice.print', $invoice->id) }}" target="_blank"
-        class="text-blue-600 hover:text-blue-800 cursor-pointer mr-2">
-            <i class="fa-solid fa-print"></i>
-        </a>
+                <form wire:submit.prevent="store" class="space-y-4">
+                    <input type="text" wire:model.defer="judul_invoice" placeholder="Judul Invoice"
+                        class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400">
+                    @error('judul_invoice') 
+                        <div class="text-red-600 text-xs">{{ $message }}</div> 
+                    @enderror
 
-        {{-- Icon Hapus --}}
-        <span x-data
-        @click.prevent="if(confirm('Yakin ingin menghapus invoice ini?')) { $wire.deleteInvoice({{ $invoice->id }}) }"
-        class="text-red-600 hover:text-red-800 cursor-pointer">
-        <i class="fa-solid fa-trash"></i>
-        </span>
-    </td>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <input type="number" wire:model.defer="jumlah" placeholder="Jumlah"
+                                class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400">
+                            @error('jumlah') 
+                                <div class="text-red-600 text-xs">{{ $message }}</div> 
+                            @enderror
+                        </div>
+                        <div>
+                            <input type="date" wire:model.defer="tanggal_invoice"
+                                class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400">
+                            @error('tanggal_invoice') 
+                                <div class="text-red-600 text-xs">{{ $message }}</div> 
+                            @enderror
+                        </div>
+                    </div>
 
-    </tr>
-@endforeach
+                    <textarea wire:model.defer="keterangan" rows="5" placeholder="Keterangan"
+                            class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400"></textarea>
+                    @error('keterangan') 
+                        <div class="text-red-600 text-xs">{{ $message }}</div> 
+                    @enderror
 
-            </tbody>
-        </table>
-    @else
-        <p class="text-gray-600 mb-6">Belum ada invoice untuk proyek ini.</p>
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button wire:click="$set('openModal', false)" type="button"
+                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 hover:scale-105 transition text-sm">
+                            Batal
+                        </button>
+                        <button type="submit"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition text-sm">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     @endif
 
-    {{-- Tombol buka modal --}}
-    <button @click="openModal = true" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        + Tambah Invoice
-    </button>
+    {{-- Modal Input Keterangan Kwitansi --}}
+    @if($showKwitansiModal)
+    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <div class="bg-white shadow-lg w-1/3 p-5"> {{-- w-96 = lebih lebar dari w-80 --}}
+            <h3 class="text-sm font-semibold text-gray-800 mb-3 text-center">Buat Kwitansi</h3>
 
-    {{-- Modal --}}
-    <div x-show="openModal" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div @click.away="openModal = false" class="bg-white rounded shadow-lg w-full max-w-lg p-6">
-            <h3 class="text-lg font-semibold mb-4">Tambah Invoice</h3>
+            <label class="block text-xs text-gray-500 mb-1">Keterangan</label>
+            <textarea wire:model="keteranganKwitansi" rows="4"
+                class="w-full border-gray-300 rounded-md text-sm focus:ring focus:ring-blue-200"></textarea>
 
-            <form wire:submit.prevent="store" class="space-y-4">
-                <div>
-                    <label class="block mb-1 font-medium">Judul Invoice</label>
-                    <input type="text" wire:model.defer="judul_invoice" class="w-full border rounded px-3 py-2">
-                    @error('judul_invoice') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
-
-                <div>
-                    <label class="block mb-1 font-medium">Jumlah</label>
-                    <input type="number" wire:model.defer="jumlah" class="w-full border rounded px-3 py-2">
-                    @error('jumlah') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
-
-                <div>
-                    <label class="block mb-1 font-medium">Tanggal Invoice</label>
-                    <input type="date" wire:model.defer="tanggal_invoice" class="w-full border rounded px-3 py-2">
-                    @error('tanggal_invoice') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
-
-                <div>
-                    <label class="block mb-1 font-medium">Keterangan</label>
-                    <textarea wire:model.defer="keterangan" class="w-full border rounded px-3 py-2"></textarea>
-                    @error('keterangan') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
-                </div>
-
-                <div class="flex justify-end space-x-2">
-                    <button type="button" @click="openModal = false" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
-                        Batal
-                    </button>
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        Simpan
-                    </button>
-                </div>
-            </form>
+            <div class="mt-4 flex justify-end gap-2">
+                <button wire:click="$set('showKwitansiModal', false)"
+                    class="px-3 py-1 text-xs border rounded-md text-gray-600 hover:bg-gray-100">Batal</button>
+                <button wire:click="simpanKwitansi"
+                    class="px-3 py-1 text-xs bg-blue-500 text-white rounded-md hover:bg-green-700">Simpan</button>
+            </div>
         </div>
     </div>
+    @endif
+
 
 </div>

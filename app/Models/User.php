@@ -45,4 +45,11 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function proyeks()
+    {
+        return $this->belongsToMany(Proyek::class, 'proyek_user', 'user_id', 'proyek_id')
+                    ->withPivot('sebagai', 'keterangan');
+    }
+
 }

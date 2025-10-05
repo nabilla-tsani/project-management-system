@@ -11,7 +11,6 @@ class ProyekUser extends Model
 
     protected $table = 'proyek_user';
 
-    // Pastikan semua kolom yang akan diisi ada di $fillable
     protected $fillable = [
         'proyek_id',
         'user_id',
@@ -27,5 +26,13 @@ class ProyekUser extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    //  Relasi ke ProyekFitur melalui pivot proyek_fitur_user
+    public function fitur()
+    {
+        return $this->belongsToMany(ProyekFitur::class, 'proyek_fitur_user', 'user_id', 'proyek_fitur_id', 'user_id', 'id')
+            ->withPivot('keterangan')
+            ->withTimestamps();
     }
 }

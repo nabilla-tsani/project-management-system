@@ -5,6 +5,7 @@ use App\Services\GeminiService;
 use App\Livewire\DetailProyek;
 use App\Livewire\AllProyekInvoice;
 use App\Livewire\AllProyekKwitansi;
+use App\Livewire\UiTab;
 
 Route::view('/', 'welcome');
 
@@ -32,7 +33,9 @@ Route::get('/test-gemini', function (GeminiService $gemini) {
     return $gemini->chat('Halo Gemini, apakah kamu terbaca?');
 });
 
-Route::get('/proyek/{id}', DetailProyek::class)->name('proyek.detail');
+Route::get('/proyek/{proyekId}', UiTab::class)->name('proyek.detail');
+// Route::get('/proyek/{id}', DetailProyek::class)->name('proyek.detail');
+
 
 Route::get('/proyek-invoice/print/{id}', [AllProyekInvoice::class, 'printInvoice'])
      ->name('proyek-invoice.print');

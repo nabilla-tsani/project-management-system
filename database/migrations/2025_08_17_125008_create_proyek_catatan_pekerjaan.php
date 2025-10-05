@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('proyek_catatan_pekerjaan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proyek_fitur_id')->constrained('proyek_fitur');
+
+            $table->unsignedBigInteger('proyek_fitur_id');
+            $table->foreign('proyek_fitur_id')
+                    ->references('id')
+                    ->on('proyek_fitur')
+                    ->onDelete('cascade');
+                    
             $table->foreignId('user_id')->constrained('users');
             $table->enum('jenis', ['pekerjaan', 'bug']);
             $table->text('catatan');

@@ -64,14 +64,12 @@ class CatatanPekerjaan extends Component
 
         $this->modalOpen = false;
         $this->loadCatatan();
-        session()->flash('message', $this->catatanId ? 'Catatan diperbarui' : 'Catatan ditambahkan');
     }
 
     public function delete($id)
     {
         ProyekCatatanPekerjaan::findOrFail($id)->delete();
         $this->loadCatatan();
-        session()->flash('message', 'Catatan dihapus');
     }
 
     public function render()

@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\ProyekFitur;
+use App\Models\ProyekUser;
+use Illuminate\Support\Facades\Auth;
 
 class AllProyekFitur extends Component
 {
@@ -27,21 +29,32 @@ class AllProyekFitur extends Component
 
     public $showCatatan = []; // array untuk menyimpan state tiap fitur
 
+    // Role flag
+    public $isManajerProyek = false;
 
     public function mount($proyekId)
     {
         $this->proyekId = $proyekId;
+
+        // Cek apakah user saat ini adalah manajer proyek
+        $pivot = ProyekUser::where('proyek_id', $proyekId)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if ($pivot && strtolower($pivot->sebagai) === 'manajer proyek') {
+            $this->isManajerProyek = true;
+        }
+
         $this->loadFitur();
     }
 
     public function loadFitur()
     {
-        $this->fiturs = ProyekFitur::with(['anggota.user']) // <--- ambil user anggota
+        $this->fiturs = ProyekFitur::with(['anggota.user'])
             ->where('proyek_id', $this->proyekId)
             ->orderBy('id', 'desc')
             ->get();
     }
-
 
     public function openModal($id = null)
     {
@@ -79,6 +92,7 @@ class AllProyekFitur extends Component
 
         $this->closeModal();
         $this->loadFitur();
+        
     }
 
     public function delete($id)
@@ -105,18 +119,19 @@ class AllProyekFitur extends Component
         $this->reset(['userModalOpen', 'selectedFiturId', 'selectedFitur']);
     }
 
+    public function toggleCatatan($fiturId)
+    {
+        if (isset($this->showCatatan[$fiturId])) {
+            $this->showCatatan[$fiturId] = !$this->showCatatan[$fiturId];
+        } else {
+            $this->showCatatan[$fiturId] = true;
+        }
+    }
+
     public function render()
     {
-        return view('livewire.all-proyek-fitur');
+        return view('livewire.all-proyek-fitur', [
+            'isManajerProyek' => $this->isManajerProyek,
+        ]);
     }
-
-    public function toggleCatatan($fiturId)
-{
-    if (isset($this->showCatatan[$fiturId])) {
-        $this->showCatatan[$fiturId] = !$this->showCatatan[$fiturId];
-    } else {
-        $this->showCatatan[$fiturId] = true;
-    }
-}
-
 }

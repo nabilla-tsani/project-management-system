@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('proyek_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proyek_id')->constrained('proyek');
+
+            $table->foreignId('proyek_id')->constrained('proyek')->onDelete('cascade');
+
             $table->foreignId('user_id')->constrained('users');
             $table->enum('sebagai', ['manajer proyek', 'programmer', 'tester']);
             $table->text('keterangan')->nullable();

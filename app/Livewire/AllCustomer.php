@@ -14,6 +14,8 @@ class AllCustomer extends Component
     public $nama, $alamat, $nomor_telepon, $email, $catatan, $status;
     public $isEdit = false;
     public $search = '';
+    public $statusFilter = '';
+    public $showModal = false;
 
     protected $rules = [
         'nama' => 'required|string|max:255',
@@ -26,9 +28,19 @@ class AllCustomer extends Component
 
     public function render()
     {
-        $customers = Customer::where('nama', 'like', '%'.$this->search.'%')
-            ->orderBy('id', 'desc')
-            ->paginate(5);
+        $query = Customer::query();
+
+        // Search
+        if ($this->search) {
+            $query->where('nama', 'like', '%'.$this->search.'%');
+        }
+
+        // Filter status
+        if ($this->statusFilter) {
+            $query->where('status', $this->statusFilter);
+        }
+
+        $customers = $query->orderBy('id', 'desc')->paginate(10); // sesuaikan jumlah grid
 
         return view('livewire.all-customer', ['customers' => $customers]);
     }
@@ -43,6 +55,7 @@ class AllCustomer extends Component
         $this->catatan = '';
         $this->status = '';
         $this->isEdit = false;
+        $this->showModal = false;
     }
 
     public function store()
@@ -73,6 +86,7 @@ class AllCustomer extends Component
         $this->catatan = $customer->catatan;
         $this->status = $customer->status;
         $this->isEdit = true;
+        $this->showModal = true;
     }
 
     public function update()
@@ -91,6 +105,13 @@ class AllCustomer extends Component
         session()->flash('message', 'Customer berhasil diperbarui.');
         $this->resetForm();
     }
+
+    public function closeModal()
+{
+    $this->showModal = false;
+    $this->resetForm();
+}
+
 
     public function delete($id)
     {

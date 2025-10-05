@@ -23,16 +23,31 @@ class AllProyekUser extends Component
     public function mount($proyekId)
     {
         $this->proyekId = $proyekId;
-        $this->users = \App\Models\User::all(); // untuk dropdown
+        $this->users = User::all(); // untuk dropdown
         $this->loadProyekUsers();
     }
 
     public function loadProyekUsers()
     {
-        $this->proyekUsers = ProyekUser::with('user')
+        $this->proyekUsers = ProyekUser::with([
+            'user',
+            'fitur' => function ($q) {
+                $q->select('proyek_fitur.id', 'proyek_fitur.nama_fitur', 'proyek_fitur.proyek_id')
+                ->where('proyek_fitur.proyek_id', $this->proyekId); // 🔹 filter sesuai proyek
+            }
+        ])
             ->where('proyek_id', $this->proyekId)
+            ->orderByRaw("
+                CASE 
+                    WHEN sebagai = 'manajer proyek' THEN 1
+                    WHEN sebagai = 'programmer' THEN 2
+                    WHEN sebagai = 'tester' THEN 3
+                    ELSE 4
+                END
+            ")
             ->get();
     }
+
 
     public function openModal($id = null)
     {
@@ -63,16 +78,15 @@ class AllProyekUser extends Component
 
         $this->showModal = false;
         $this->loadProyekUsers();
-        session()->flash('message', $this->editId ? 'Data diperbarui.' : 'Data ditambahkan.');
         $this->resetForm();
     }
 
     public function delete($id)
-    {
-        ProyekUser::findOrFail($id)->delete();
-        $this->loadProyekUsers();
-        session()->flash('message', 'Data dihapus.');
-    }
+{
+    ProyekUser::findOrFail($id)->delete();
+    $this->loadProyekUsers();
+}
+
 
     public function resetForm()
     {

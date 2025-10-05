@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Proyek;
 use App\Models\Customer;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Auth;
 
 class AllProyek extends Component
 {
@@ -17,6 +18,16 @@ class AllProyek extends Component
     public $nama_proyek, $customer_id, $deskripsi, $lokasi, $tanggal_mulai, $tanggal_selesai, $anggaran, $status;
     public $search = '';
     public $statusFilter = '';
+    public $proyeks;
+
+    public function mount()
+    {
+        // Ambil user yang login
+        $user = Auth::user();
+
+        // Ambil semua proyek yang terkait dengan user ini
+        $this->proyeks = $user->proyeks()->with('customer')->get();
+    }
 
 
     protected $rules = [
@@ -32,9 +43,12 @@ class AllProyek extends Component
 
     public function render()
     {
-        $query = Proyek::with('customer')
+        $user = Auth::user();
+
+        // Ambil proyek yang hanya terkait user login
+        $query = $user->proyeks()->with('customer')
             ->where('nama_proyek', 'like', '%'.$this->search.'%')
-            ->orderBy('id','desc');
+            ->orderBy('proyek.id', 'desc'); // hati-hati pakai nama tabel pivot
 
         // Filter status kalau ada
         if ($this->statusFilter) {
@@ -46,6 +60,7 @@ class AllProyek extends Component
         $customers = Customer::orderBy('nama')->get();
 
         return view('livewire.all-proyek', compact('proyek','customers'));
+        
     }
 
 
@@ -74,7 +89,8 @@ class AllProyek extends Component
     {
         $this->validate();
 
-        Proyek::create([
+        // Buat proyek baru
+        $proyek = Proyek::create([
             'nama_proyek' => $this->nama_proyek,
             'customer_id' => $this->customer_id,
             'deskripsi' => $this->deskripsi,
@@ -85,9 +101,19 @@ class AllProyek extends Component
             'status' => $this->status,
         ]);
 
+        // Ambil user yang sedang login
+        $user = Auth::user();
+
+        // Tambahkan ke pivot table proyek_user sebagai "manajer proyek"
+        $proyek->users()->attach($user->id, [
+            'sebagai' => 'manajer proyek',
+            'keterangan' => 'Pembuat proyek',
+        ]);
+
         session()->flash('message', 'Proyek berhasil ditambahkan.');
         $this->closeModal();
     }
+
 
     public function edit($id)
     {
@@ -127,9 +153,36 @@ class AllProyek extends Component
         $this->closeModal();
     }
 
-    public function delete($id)
-    {
-        Proyek::findOrFail($id)->delete();
-        session()->flash('message','Proyek berhasil dihapus.');
+public function deleteProyek($id)
+{
+    $proyek = Proyek::findOrFail($id);
+
+    try {
+        $proyek->delete();
+        session()->flash('message', [
+            'text' => 'Proyek berhasil dihapus.',
+            'type' => 'success',  // success, error, warning
+            'duration' => 1000    // durasi dalam milidetik
+        ]);
+    } catch (\Illuminate\Database\QueryException $e) {
+        if ($e->getCode() === '23503') { 
+            session()->flash('message', [
+                'text' => 'Proyek sedang digunakan dan tidak bisa dihapus.',
+                'type' => 'error',
+                'duration' => 4000
+            ]);
+        } else {
+            session()->flash('message', [
+                'text' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'type' => 'error',
+                'duration' => 5000
+            ]);
+        }
     }
+
+    // Refresh data Livewire
+    $this->proyeks = Auth::user()->proyeks()->with('customer')->get();
+}
+
+
 }

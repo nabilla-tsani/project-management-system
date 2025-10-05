@@ -4,24 +4,22 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\ProyekFiturUser;
-use App\Models\User;
 use App\Models\ProyekFitur;
+use App\Models\ProyekUser;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class AllFiturUser extends Component
 {
-    // id fitur yang sedang dilihat
     public $proyekFiturId;
-
-    // data
     public $fiturUsers = [];
     public $userList = [];
-
-    // modal + form
     public $modalOpen = false;
-    public $fiturUserId = null; // id dari tabel proyek_fitur_user (edit)
+    public $fiturUserId = null;
     public $user_id = null;
     public $keterangan = null;
     public $isEdit = false;
+    public $isManager = false; // <-- Tambahkan flag
 
     protected $rules = [
         'user_id' => 'required|exists:users,id',
@@ -31,60 +29,35 @@ class AllFiturUser extends Component
     public function mount($proyekFiturId)
     {
         $this->proyekFiturId = $proyekFiturId;
+        $this->checkIfManager();
         $this->loadData();
     }
 
-    // load daftar user yang terkait dan daftar user untuk dropdown
-    // public function loadData()
-    // {
-    //     $this->fiturUsers = ProyekFiturUser::with('user')
-    //         ->where('proyek_fitur_id', $this->proyekFiturId)
-    //         ->orderBy('id', 'desc')
-    //         ->get();
+    protected function checkIfManager()
+    {
+        $fitur = ProyekFitur::findOrFail($this->proyekFiturId);
 
-    //     $this->userList = User::select('id', 'name')
-    //         ->orderBy('name')
-    //         ->get();
-    // }
+        $this->isManager = ProyekUser::where('proyek_id', $fitur->proyek_id)
+            ->where('user_id', Auth::id())
+            ->where('sebagai', 'manajer proyek')
+            ->exists();
+    }
 
     public function loadData()
-{
-    // Ambil semua user yang sudah diassign ke fitur ini
-    $this->fiturUsers = ProyekFiturUser::with('user')
-        ->where('proyek_fitur_id', $this->proyekFiturId)
-        ->orderBy('id', 'desc')
-        ->get();
-
-    // Ambil fitur + proyek untuk tahu proyek_id
-    $fitur = ProyekFitur::with('proyek')->find($this->proyekFiturId);
-
-    if ($fitur && $fitur->proyek) {
-        // Ambil user yang terdaftar di proyek ini via tabel proyek_user
-        $this->userList = $fitur->proyek->users()
-            ->whereNotIn('users.id', ProyekFiturUser::where('proyek_fitur_id', $this->proyekFiturId)
-                ->pluck('user_id'))
-            ->select('users.id', 'users.name')
-            ->orderBy('users.name')
-            ->get();
-    } else {
-        $this->userList = collect();
-    }
-}
-
-
-    // reset input form
-    public function resetForm()
     {
-        $this->fiturUserId = null;
-        $this->user_id = null;
-        $this->keterangan = null;
-        $this->isEdit = false;
-        $this->resetValidation();
+        $this->fiturUsers = ProyekFiturUser::with('user')
+            ->where('proyek_fitur_id', $this->proyekFiturId)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $this->userList = User::select('id', 'name')
+            ->orderBy('name')
+            ->get();
     }
 
-    // buka modal (tambah). Kalau param id diberikan, langsung panggil edit()
     public function openModal($id = null)
     {
+        if (!$this->isManager) return; // Hanya manajer
         $this->resetForm();
 
         if ($id) {
@@ -95,9 +68,10 @@ class AllFiturUser extends Component
         $this->modalOpen = true;
     }
 
-    // edit (isi form lalu buka modal)
     public function edit($id)
     {
+        if (!$this->isManager) return; // Hanya manajer
+
         $data = ProyekFiturUser::findOrFail($id);
         $this->fiturUserId = $data->id;
         $this->user_id = $data->user_id;
@@ -106,10 +80,27 @@ class AllFiturUser extends Component
         $this->modalOpen = true;
     }
 
-    // simpan (create atau update)
     public function save()
     {
+        if (!$this->isManager) return; // Hanya manajer
+
         $this->validate();
+
+        $fitur = ProyekFitur::findOrFail($this->proyekFiturId);
+        $proyekId = $fitur->proyek_id;
+
+        $cekProyekUser = ProyekUser::where('proyek_id', $proyekId)
+            ->where('user_id', $this->user_id)
+            ->first();
+
+        if (!$cekProyekUser) {
+            ProyekUser::create([
+                'proyek_id' => $proyekId,
+                'user_id' => $this->user_id,
+                'sebagai' => 'programmer',
+                'keterangan' => null,
+            ]);
+        }
 
         ProyekFiturUser::updateOrCreate(
             ['id' => $this->fiturUserId],
@@ -120,21 +111,27 @@ class AllFiturUser extends Component
             ]
         );
 
-        session()->flash('message', $this->fiturUserId ? 'User fitur diperbarui.' : 'User fitur ditambahkan.');
-
         $this->closeModal();
         $this->loadData();
+        $this->dispatch('refresh-fitur-users');
+    }
 
-        // beri tahu parent kalau diperlukan (opsional)
-        $this->dispatch('refresh-fitur-users');    }
-
-    // hapus
     public function delete($id)
     {
+        if (!$this->isManager) return; // Hanya manajer
         ProyekFiturUser::findOrFail($id)->delete();
-        session()->flash('message', 'User fitur dihapus.');
         $this->loadData();
-        $this->dispatch('refresh-fitur-users');    }
+        $this->dispatch('refresh-fitur-users');
+    }
+
+    public function resetForm()
+    {
+        $this->fiturUserId = null;
+        $this->user_id = null;
+        $this->keterangan = null;
+        $this->isEdit = false;
+        $this->resetValidation();
+    }
 
     public function closeModal()
     {

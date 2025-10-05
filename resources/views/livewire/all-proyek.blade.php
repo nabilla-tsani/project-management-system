@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-4xl font-extrabold text-gray-800 flex items-center gap-3">
                 <i class="fas fa-project-diagram text-blue-500"></i>
-                <span class="tracking-wide">Manajemen Proyek</span>
+                <span>Manajemen Proyek</span>
             </h2>
 
             <!-- Tombol Tambah Proyek Minimalis -->
@@ -14,16 +14,6 @@
             </button>
         </div>
 
-        @if (session()->has('message'))
-            <div 
-                x-data="{ show: true }" 
-                x-show="show" 
-                x-init="setTimeout(() => show = false, 1000)" 
-                class="bg-green-100 text-green-800 p-3 rounded-lg mb-5 shadow transition"
-            >
-                {{ session('message') }}
-            </div>
-        @endif
 
        <!-- Search + Icon -->
         <div class="relative w-full mb-6">
@@ -61,67 +51,68 @@
     </button>
 </div>
 
-        <!-- Grid Card -->
-         @if ($proyek->isEmpty())
-            <div class="text-center py-10 text-gray-500 italic">
-                Tidak ada Proyek dengan nama tersebut.
-            </div>
-        @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-            @foreach($proyek as $p)
-                <div class="bg-white rounded-xl p-4 flex flex-col justify-between shadow hover:shadow-lg transition transform hover:scale-105 duration-300">
-                    <div>
-                        <h3 class="text-lg font-bold mb-1 truncate">{{ $p->nama_proyek }}</h3>
-                        <p class="text-sm text-gray-500 mb-1 truncate">{{ $p->customer?->nama }}</p>
-                        <p class="text-sm mb-1 font-medium">
-                            <span class="
-                                @if ($p->status === 'belum_dimulai') text-blue-500
-                                @elseif ($p->status === 'sedang_berjalan') text-yellow-500
-                                @elseif ($p->status === 'selesai') text-green-500
-                                @else text-gray-500
-                                @endif
-                            ">
-                                @if ($p->status === 'belum_dimulai')
-                                    Belum Dimulai
-                                @elseif ($p->status === 'sedang_berjalan')
-                                    Sedang Berjalan
-                                @elseif ($p->status === 'selesai')
-                                    Selesai
-                                @else
-                                    {{ $p->status }}
-                                @endif
-                            </span>
-                        </p>
 
-                    </div>
+    <!-- Grid Card -->
+    @if ($proyek->isEmpty())
+        <div class="text-center py-10 text-gray-500 italic">
+            Tidak ada Proyek.
+        </div>
+    @else
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3">
+        @foreach($proyek as $p)
+            <div class="relative bg-white rounded-xl p-4 flex flex-col justify-between shadow hover:shadow-lg transition transform hover:scale-105 duration-300 cursor-pointer"
+                onclick="window.location='{{ route('proyek.detail', $p->id) }}'">
 
-                    <div class="mt-3 flex justify-end gap-3">
-                        {{-- Edit --}}
-                        <button wire:click="edit({{ $p->id }})" class="text-gray-500 hover:text-gray-700 transition" title="Edit">
+                <div>
+                    <h3 class="text-base font-bold mb-1 truncate" title="{{ $p->nama_proyek }}">
+                        {{ $p->nama_proyek }}
+                    </h3>
+                    <p class="text-sm text-gray-500 mb-1 truncate" title="{{ $p->customer?->nama }}">
+                        {{ $p->customer?->nama }}
+                    </p>
+                </div>
+
+                <div class="flex justify-between items-center text-sm mb-1 font-medium">
+                    <!-- Status kiri -->
+                    <span class="
+                        @if ($p->status === 'belum_dimulai') text-blue-500
+                        @elseif ($p->status === 'sedang_berjalan') text-yellow-500
+                        @elseif ($p->status === 'selesai') text-green-500
+                        @else text-gray-500
+                        @endif
+                    ">
+                        @if ($p->status === 'belum_dimulai')
+                            Belum Dimulai
+                        @elseif ($p->status === 'sedang_berjalan')
+                            Sedang Berjalan
+                        @elseif ($p->status === 'selesai')
+                            Selesai
+                        @else
+                            {{ $p->status }}
+                        @endif
+                    </span>
+
+                    <!-- Tombol aksi kanan -->
+                    <div class="flex gap-2">
+                        <button wire:click.stop="edit({{ $p->id }})" class="text-gray-500 hover:text-gray-700 transition text-[12px]" title="Edit">
                             <i class="fas fa-edit"></i>
                         </button>
-                        {{-- Hapus --}}
-                        <button 
-                            x-data
-                            x-on:click="if (confirm('Yakin hapus proyek ini?')) { $wire.delete({{ $p->id }}); }"
-                            class="text-gray-500 hover:text-gray-700 transition" title="Hapus">
+                        <button wire:click.stop="deleteProyek({{ $p->id }})" class="text-gray-500 hover:text-gray-700 transition text-[12px]" title="Hapus">
                             <i class="fas fa-trash"></i>
                         </button>
-                        {{-- Detail --}}
-                        <a href="{{ route('proyek.detail', $p->id) }}" class="text-gray-500 hover:text-gray-700 transition" title="Detail">
-                            <i class="fas fa-info-circle"></i>
-                        </a>
                     </div>
-                    
-                    <div class="mt-4 h-1 rounded-b-xl 
-                        {{ $p->status == 'belum_dimulai' ? 'bg-gradient-to-r from-blue-400 to-blue-600' : 
-                        ($p->status == 'sedang_berjalan' ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : 
-                        'bg-gradient-to-r from-green-400 to-teal-500') }}">
-                    </div>
-                    
                 </div>
-            @endforeach
-        </div>
+
+                <!-- Status Bar -->
+                <div class="mt-4 h-1 rounded-b-xl 
+                    {{ $p->status == 'belum_dimulai' ? 'bg-gradient-to-r from-blue-400 to-blue-600' : 
+                    ($p->status == 'sedang_berjalan' ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : 
+                    'bg-gradient-to-r from-green-400 to-teal-500') }}">
+                </div>
+            </div>
+        @endforeach
+    </div>
+
 
         <!-- Pagination -->
         <div class="mt-6 flex justify-center">
@@ -131,9 +122,9 @@
     </div>
 
 {{-- Modal --}}
-{{-- Modal --}}
 @if($showModal)
-    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50
+    bg-black/40 backdrop-blur-sm"> {{-- Tambahkan backdrop-blur-sm --}}
         <div class="bg-white w-2/3 max-w-2xl shadow-2xl transform transition-transform duration-300 ease-out animate-fadeIn
                     flex flex-col">
             
@@ -248,7 +239,5 @@
         }
     </style>
 @endif
-
-
 
 </div>

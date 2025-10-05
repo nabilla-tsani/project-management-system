@@ -1,104 +1,139 @@
-<div class="mt-4">
-    @if(session()->has('message'))
-        <div class="bg-green-100 text-green-700 p-2 rounded mb-4">
-            {{ session('message') }}
-        </div>
-    @endif
+<div class="relative bg-gray-50 shadow-lg border border-gray-100 p-4">
 
-
+    {{-- HEADER --}}
     <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-semibold">File Proyek</h3>
-        <button wire:click="openModal" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-            + Upload File
+        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-blue-600"></i> File Proyek
+        </h3>
+        <button wire:click="openModal"
+            class="px-4 py-1.5 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 
+                   hover:shadow-md transition-all duration-200 text-sm flex items-center gap-1">
+            <i class="fa-solid fa-upload"></i> Upload File
         </button>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        @forelse($files as $f)
-            @php
-                $ext = strtolower(pathinfo($f->path, PATHINFO_EXTENSION));
-            @endphp
-            <div class="border rounded p-4 shadow-sm hover:shadow-md flex flex-col items-center text-center">
-                {{-- Ikon sesuai jenis file --}}
+{{-- GRID FILE --}}
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    @forelse($files as $f)
+        @php
+            $ext = strtolower(pathinfo($f->path, PATHINFO_EXTENSION));
+        @endphp
+
+        <div class="bg-white border border-gray-200 rounded-xl shadow-md p-4 hover:shadow-lg transition 
+                    flex flex-col justify-between text-center">
+            
+            {{-- Bagian atas: konten file --}}
+            <div class="flex flex-col items-center flex-grow">
+                {{-- Ikon utama --}}
                 @if(in_array($ext, ['jpg','jpeg','png','gif']))
-                    <i class="fa-solid fa-file-image text-purple-600 text-5xl mb-2"></i>
+                    <i class="fa-solid fa-file-image text-purple-600 text-6xl mb-3"></i>
                 @elseif($ext === 'pdf')
-                    <i class="fa-solid fa-file-pdf text-red-600 text-5xl mb-2"></i>
+                    <i class="fa-solid fa-file-pdf text-red-600 text-6xl mb-3"></i>
                 @elseif(in_array($ext, ['doc','docx']))
-                    <i class="fa-solid fa-file-word text-blue-600 text-5xl mb-2"></i>
+                    <i class="fa-solid fa-file-word text-blue-600 text-6xl mb-3"></i>
                 @elseif(in_array($ext, ['xls','xlsx']))
-                    <i class="fa-solid fa-file-excel text-green-600 text-5xl mb-2"></i>
+                    <i class="fa-solid fa-file-excel text-green-600 text-6xl mb-3"></i>
                 @elseif(in_array($ext, ['ppt','pptx']))
-                    <i class="fa-solid fa-file-powerpoint text-orange-600 text-5xl mb-2"></i>
+                    <i class="fa-solid fa-file-powerpoint text-orange-600 text-6xl mb-3"></i>
                 @elseif(in_array($ext, ['zip','rar']))
-                    <i class="fa-solid fa-file-zipper text-yellow-600 text-5xl mb-2"></i>
+                    <i class="fa-solid fa-file-zipper text-yellow-600 text-6xl mb-3"></i>
                 @else
-                    <i class="fa-solid fa-file-lines text-gray-600 text-5xl mb-2"></i>
+                    <i class="fa-solid fa-file-lines text-gray-600 text-6xl mb-3"></i>
                 @endif
 
-                <div class="font-semibold break-words">{{ $f->{'nama_file'} }}</div>
-                <div class="text-sm text-gray-500 mb-2 break-words">{{ $f->keterangan }}</div>
-                <div class="text-xs text-gray-400 mb-2">Diunggah oleh: {{ $f->user?->name ?? '-' }}</div>
-
-                <div class="flex space-x-3">
-                    {{-- Lihat --}}
-                    <a href="{{ asset('storage/'.$f->path) }}" target="_blank" 
-                    class="text-gray-600 hover:text-gray-800">
-                        <i class="fa-solid fa-eye"></i>
-                    </a>
-
-                    {{-- Download --}}
-                    <a href="{{ asset('storage/'.$f->path) }}" 
-                    download="{{ $f->nama_file }}"
-                    class="text-blue-600 hover:text-blue-800">
-                        <i class="fa-solid fa-download"></i>
-                    </a>
+                {{-- Nama file dengan tooltip --}}
+            <div class="font-bold text-[13px] text-gray-900 break-words mb-1 line-clamp-2 leading-tight"
+                title="{{ $f->{'nama_file'} }}">
+                {{ $f->{'nama_file'} }}
+            </div>
 
 
-                    {{-- Edit --}}
-                    <button wire:click="openModal({{ $f->id }})" 
-                            class="text-green-600 hover:text-green-800">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
+                {{-- Keterangan dengan tooltip --}}
+                <div class="text-[11px] text-gray-500 mb-1 break-words line-clamp-2 p-1" 
+                     title="{{ $f->keterangan }}">
+                    {{ $f->keterangan }}
+                </div>
 
-                    {{-- Hapus --}}
-                    <button x-data 
-                            @click="if(confirm('Yakin hapus file ini?')) { $wire.delete({{ $f->id }}) }"
-                            class="text-red-600 hover:text-red-800">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                {{-- User --}}
+                <div class="text-[10px] text-gray-400 mb-2">
+                    <i class="fa-solid fa-user mr-1"></i> {{ $f->user?->name ?? '-' }}
                 </div>
             </div>
-        @empty
-            <div class="col-span-full text-center text-gray-500">Belum ada file</div>
-        @endforelse
-    </div>
 
-    {{-- Modal --}}
-    @if($modalOpen)
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded shadow w-full max-w-md">
-                <h3 class="text-lg font-semibold mb-4">{{ $fileId ? 'Edit File' : 'Upload File' }}</h3>
+            {{-- Bagian bawah: tombol aksi --}}
+            <div class="flex justify-center gap-3 text-xs mt-3">
+                <a href="{{ asset('storage/'.$f->path) }}" target="_blank"
+                    class="text-green-600 hover:text-green-800 transition">
+                    <i class="fa-solid fa-eye"></i>
+                </a>
 
-                <input type="text" wire:model="namaFile" placeholder="Nama File" class="border rounded p-2 w-full mb-3">
-                @error('namaFile') <div class="text-red-600 text-sm mb-2">{{ $message }}</div> @enderror
+                <a href="{{ asset('storage/'.$f->path) }}" download="{{ $f->nama_file }}"
+                    class="text-gray-600 hover:text-gray-800 transition">
+                    <i class="fa-solid fa-download"></i>
+                </a>
 
-                <textarea wire:model="keterangan" placeholder="Keterangan" class="border rounded p-2 w-full mb-3"></textarea>
-                @error('keterangan') <div class="text-red-600 text-sm mb-2">{{ $message }}</div> @enderror
+                <button wire:click="openModal({{ $f->id }})"
+                    class="text-blue-600 hover:text-blue-800 transition">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
 
-                {{-- Hanya tampilkan input file saat create --}}
-                @if(!$fileId)
-                    <input type="file" wire:model="file" class="border rounded p-2 w-full mb-3">
-                    @error('file') <div class="text-red-600 text-sm mb-2">{{ $message }}</div> @enderror
-                @endif
-
-                <div class="flex justify-end">
-                    <button wire:click="$set('modalOpen', false)" class="px-3 py-2 bg-gray-300 rounded mr-2">Batal</button>
-                    <button wire:click="save" class="px-3 py-2 bg-blue-600 text-white rounded">Simpan</button>
-                </div>
+                <button x-data 
+                    @click="if(confirm('Yakin hapus file ini?')) { $wire.delete({{ $f->id }}) }"
+                    class="text-red-600 hover:text-red-800 transition">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             </div>
         </div>
-    @endif
+    @empty
+        <div class="col-span-full text-center text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-200 text-xs">
+            Belum ada file
+        </div>
+    @endforelse
 </div>
 
 
+    {{-- MODAL --}}
+@if($modalOpen)
+    <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+        <div class="bg-white shadow-2xl p-6 w-[600px] border border-gray-200">
+            <h3 class="text-xl font-bold text-gray-800 mb-5 text-center">
+                {{ $fileId ? 'Edit File' : 'Upload File' }}
+            </h3>
+
+            <input type="text" wire:model.defer="namaFile" placeholder="Nama File"
+                class="border border-gray-300 rounded-lg p-2.5 w-full mb-4 focus:ring-2 focus:ring-blue-400 text-sm">
+            @error('namaFile') 
+                <div class="text-red-600 text-xs mb-2">{{ $message }}</div> 
+            @enderror
+
+            <textarea wire:model.defer="keterangan" placeholder="Keterangan"
+                rows="5"
+                class="border border-gray-300 rounded-lg p-2.5 w-full mb-4 focus:ring-2 focus:ring-blue-400 text-sm"></textarea>
+            @error('keterangan') 
+                <div class="text-red-600 text-xs mb-2">{{ $message }}</div> 
+            @enderror
+
+
+            @if(!$fileId)
+                <input type="file" wire:model="file"
+                    class="border border-gray-300 rounded-lg p-2.5 w-full mb-4 focus:ring-2 focus:ring-blue-400 text-sm">
+                @error('file') 
+                    <div class="text-red-600 text-xs mb-2">{{ $message }}</div> 
+                @enderror
+            @endif
+
+            <div class="flex justify-end gap-3 mt-4">
+                <button wire:click="$set('modalOpen', false)"
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 hover:scale-105 transition text-sm">
+                    Batal
+                </button>
+                <button wire:click="save"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition text-sm">
+                    Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
+
+</div>
