@@ -60,6 +60,10 @@
                 </div>
 
                 <div class="flex items-center gap-3">
+                     <button wire:click="editInvoice({{ $invoice->id }})" 
+                            class="text-yellow-600 hover:text-blue-800 text-sm">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
                     <button wire:click="printInvoice({{ $invoice->id }})" 
                             class="text-blue-600 hover:text-blue-800 text-sm">
                         <i class="fa-solid fa-print"></i>
@@ -108,7 +112,6 @@
                     @endif
                 </div>
 
-                
 
                     <select wire:change="updateStatus({{ $invoice->id }}, $event.target.value)"
                     wire:key="status-{{ $invoice->id }}-{{ now()->timestamp }}"
@@ -141,59 +144,59 @@
 </div>
 
 
-    {{-- MODAL TAMBAH INVOICE --}}
-    @if($openModal)
-        <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-            <div class="bg-white shadow-2xl p-6 w-full max-w-2xl border border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800 mb-5 text-center flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-file-invoice text-blue-600 text-xl"></i>
-                    Buat Invoice
-                </h3>
+<!-- Modal Tambah / Edit -->
+@if($openModal)
+    <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+        <div class="bg-white shadow-2xl p-6 w-full max-w-2xl border border-gray-200">
+            <h3 class="text-lg font-bold text-gray-800 mb-5 text-center flex items-center justify-center gap-2">
+                <i class="fa-solid fa-file-invoice text-blue-600 text-xl"></i>
+                {{ $isEdit ? 'Edit Invoice' : 'Buat Invoice' }}
+            </h3>
 
-                <form wire:submit.prevent="store" class="space-y-4">
-                    <input type="text" wire:model.defer="judul_invoice" placeholder="Judul Invoice"
-                        class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400">
-                    @error('judul_invoice') 
-                        <div class="text-red-600 text-xs">{{ $message }}</div> 
-                    @enderror
+            <form wire:submit.prevent="{{ $isEdit ? 'updateInvoice' : 'store' }}" class="space-y-4">
+                <input type="text" wire:model.defer="judul_invoice" placeholder="Judul Invoice"
+                    class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400">
+                @error('judul_invoice') 
+                    <div class="text-red-600 text-xs">{{ $message }}</div> 
+                @enderror
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <input type="number" wire:model.defer="jumlah" placeholder="Jumlah"
-                                class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400">
-                            @error('jumlah') 
-                                <div class="text-red-600 text-xs">{{ $message }}</div> 
-                            @enderror
-                        </div>
-                        <div>
-                            <input type="date" wire:model.defer="tanggal_invoice"
-                                class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400">
-                            @error('tanggal_invoice') 
-                                <div class="text-red-600 text-xs">{{ $message }}</div> 
-                            @enderror
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <input type="number" wire:model.defer="jumlah" placeholder="Jumlah"
+                            class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400">
+                        @error('jumlah') 
+                            <div class="text-red-600 text-xs">{{ $message }}</div> 
+                        @enderror
                     </div>
-
-                    <textarea wire:model.defer="keterangan" rows="5" placeholder="Keterangan"
-                            class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400"></textarea>
-                    @error('keterangan') 
-                        <div class="text-red-600 text-xs">{{ $message }}</div> 
-                    @enderror
-
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button wire:click="$set('openModal', false)" type="button"
-                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 hover:scale-105 transition text-sm">
-                            Batal
-                        </button>
-                        <button type="submit"
-                                class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition text-sm">
-                            Simpan
-                        </button>
+                    <div>
+                        <input type="date" wire:model.defer="tanggal_invoice"
+                            class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400">
+                        @error('tanggal_invoice') 
+                            <div class="text-red-600 text-xs">{{ $message }}</div> 
+                        @enderror
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <textarea wire:model.defer="keterangan" rows="4" placeholder="Keterangan"
+                        class="border border-gray-300 rounded-lg p-2.5 w-full text-sm focus:ring-2 focus:ring-blue-400"></textarea>
+                @error('keterangan') 
+                    <div class="text-red-600 text-xs">{{ $message }}</div> 
+                @enderror
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <button wire:click="$set('openModal', false)" type="button"
+                            class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 hover:scale-105 transition text-sm">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition text-sm">
+                        {{ $isEdit ? 'Update' : 'Simpan' }}
+                    </button>
+                </div>
+            </form>
         </div>
-    @endif
+    </div>
+@endif
 
     {{-- Modal Input Keterangan Kwitansi --}}
     @if($showKwitansiModal)

@@ -29,7 +29,6 @@ class AllProyek extends Component
         $this->proyeks = $user->proyeks()->with('customer')->get();
     }
 
-
     protected $rules = [
         'nama_proyek' => 'required|string|max:255',
         'customer_id' => 'required|exists:customer,id',
@@ -59,8 +58,7 @@ class AllProyek extends Component
 
         $customers = Customer::orderBy('nama')->get();
 
-        return view('livewire.all-proyek', compact('proyek','customers'));
-        
+        return view('livewire.all-proyek', compact('proyek','customers')); 
     }
 
 
@@ -153,8 +151,8 @@ class AllProyek extends Component
         $this->closeModal();
     }
 
-public function deleteProyek($id)
-{
+    public function deleteProyek($id)
+    {
     $proyek = Proyek::findOrFail($id);
 
     try {

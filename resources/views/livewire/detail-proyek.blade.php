@@ -1,9 +1,36 @@
 <div>
     {{-- Card Utama --}}
     <div class="bg-white shadow-lg rounded-2xl p-6 transition-transform transform">
+        <div class="flex items-center justify-between mb-5">
         <h2 class="text-xl font-bold text-gray-800 mb-5 flex items-center gap-2">
             Informasi Proyek
         </h2>
+        <div class="flex justify-end">
+            <a href="{{ route('proposal-proyek.pdf', $proyek->id) }}" target="_blank"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl shadow hover:bg-blue-700 transition">
+                <i class="fa-solid fa-file-export"></i> Generate Proposal
+            </a>
+
+             <button 
+    wire:click="generateProposalWithAI"
+    wire:loading.attr="disabled"
+    class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-400 to-purple-600 text-white text-sm font-medium rounded-xl shadow hover:bg-green-700 transition cursor-pointer ml-3 disabled:opacity-70">
+
+    {{-- Normal state (tidak loading) --}}
+    <span wire:loading.remove wire:target="generateProposalWithAI" class="inline-flex items-center gap-2">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        Generate Proposal with AI
+    </span>
+
+    {{-- Loading state --}}
+    <span wire:loading.flex wire:target="generateProposalWithAI" class="items-center gap-2">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Proposal sedang diproses...
+    </span>
+</button>
+
+        </div>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-gray-800 mx-6">
 

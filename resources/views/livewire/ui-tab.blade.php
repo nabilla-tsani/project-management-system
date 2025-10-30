@@ -3,13 +3,6 @@
     {{-- Header Judul + Tombol PDF --}}
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <h1 class="pl-2 text-3xl font-bold text-gray-800">{{ $proyek->nama_proyek }}</h1>
-        
-        @if($tab === 'informasi')
-            <a href="{{ route('proposal-proyek.pdf', $proyek->id) }}" target="_blank"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl shadow hover:bg-blue-700 transition">
-                <i class="fa-solid fa-file-export"></i> Generate Proposal
-            </a>
-        @endif
     </div>
 
     {{-- Tabs Navigation --}}

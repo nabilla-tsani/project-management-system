@@ -16,24 +16,18 @@ class GeminiService
         $this->key = config('services.gemini.key');
     }
 
-    /**
-     * Chat tanpa riwayat (single-turn)
-     */
     public function chat(string $prompt, string $model = 'gemini-2.0-flash')
     {
         $intent = $this->detectIntent($prompt);
         Log::info('[Gemini] Intent Detected', $intent);
 
         if ($intent['type'] === 'database') {
-            return $this->handleDatabaseIntent($intent);
+            return $this->handleDatabaseIntent($intent, $prompt, $model);
         }
 
         return $this->callGemini([$this->formatMessage('user', $prompt)], $model);
     }
 
-    /**
-     * Chat dengan riwayat (multi-turn)
-     */
     public function chatWithHistory(array $messages, string $model = 'gemini-2.0-flash')
     {
         $lastMessage = end($messages)['message'] ?? '';
@@ -41,7 +35,7 @@ class GeminiService
         Log::info('[Gemini] Intent Detected (History)', $intent);
 
         if ($intent['type'] === 'database') {
-            return $this->handleDatabaseIntent($intent);
+            return $this->handleDatabaseIntent($intent, $lastMessage, $model);
         }
 
         $contents = array_map(function ($msg) {
@@ -59,9 +53,6 @@ class GeminiService
         return $this->chat($prompt);
     }
 
-    /**
-     * Panggil Gemini API
-     */
     protected function callGemini(array $contents, string $model)
     {
         $url = "{$this->base}/{$model}:generateContent?key={$this->key}";
@@ -86,7 +77,7 @@ class GeminiService
     }
 
     /**
-     * Intent Detection → sekarang mendukung filter per kolom
+     * Intent Detection (gunakan Gemini untuk klasifikasi)
      */
     protected function detectIntent(string $prompt): array
     {
@@ -116,7 +107,7 @@ Format JSON wajib:
 Aturan:
 - Jika user hanya tanya jumlah proyek → action = "count_projects".
 - Jika minta semua daftar proyek → action = "list_projects".
-- Jika minta proyek berdasarkan filter (misal "yang sedang berjalan" atau "di Purwokerto") → action = "filter_projects" dan isi filters sesuai.
+- Jika minta proyek berdasarkan filter → action = "filter_projects".
 - Jika bukan pertanyaan database, kembalikan {"type":"general","action":null}.
 PROMPT;
 
@@ -143,31 +134,57 @@ PROMPT;
     }
 
     /**
-     * Handler query database → sekarang mendukung filter dinamis
+     * 🔹 Hasil DB dikirim ke Gemini sebagai konteks
      */
-    protected function handleDatabaseIntent(array $intent): string
+    protected function handleDatabaseIntent(array $intent, string $userPrompt, string $model): string
     {
+        $resultText = '';
+
         switch ($intent['action']) {
             case 'count_projects':
                 $count = Proyek::count();
-                return "📊 Saat ini ada **{$count} proyek** yang terdaftar.";
+                $resultText = "Jumlah proyek dalam database saat ini adalah {$count}.";
+                break;
 
             case 'list_projects':
-                $projects = Proyek::pluck('nama_proyek')->toArray();
-                return empty($projects)
-                    ? "Belum ada proyek yang terdaftar."
-                    : "📋 Daftar proyek: " . implode(", ", $projects);
+                $projects = Proyek::select('nama_proyek', 'status', 'lokasi')->get();
+                if ($projects->isEmpty()) {
+                    return "Belum ada proyek yang terdaftar.";
+                }
+
+                $resultText = "Berikut daftar proyek:\n";
+                foreach ($projects as $p) {
+                    $resultText .= "- {$p->nama_proyek} ({$p->status}, {$p->lokasi})\n";
+                }
+                break;
 
             case 'filter_projects':
-                return $this->filterProjects($intent['filters'] ?? []);
+                $filtered = $this->filterProjects($intent['filters'] ?? []);
+                $resultText = $filtered ?: "Tidak ada proyek yang sesuai filter.";
+                break;
 
             default:
-                return "Saya mendeteksi ini pertanyaan database, tetapi belum ada action yang sesuai.";
+                return "Saya mendeteksi ini pertanyaan database, tapi belum ada aksi yang cocok.";
         }
+
+        // ✅ Tahap Augmentation — hasil query dijadikan konteks untuk Gemini
+        $contextPrompt = <<<PROMPT
+Anda adalah asisten proyek. Gunakan data berikut untuk menjawab pertanyaan user dengan konteks yang akurat dan bahasa natural.
+
+Data dari database:
+{$resultText}
+
+Pertanyaan user:
+"{$userPrompt}"
+
+Jawablah berdasarkan data di atas tanpa menebak, dan tulis dengan bahasa profesional.
+PROMPT;
+
+        return $this->callGemini([$this->formatMessage('user', $contextPrompt)], $model);
     }
 
     /**
-     * Query dinamis berdasarkan filter
+     * Dynamic filter untuk data proyek
      */
     protected function filterProjects(array $filters): string
     {
@@ -176,39 +193,37 @@ PROMPT;
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
-
         if (!empty($filters['lokasi'])) {
             $query->where('lokasi', 'like', '%' . $filters['lokasi'] . '%');
         }
-
         if (!empty($filters['customer'])) {
             $query->whereHas('customer', function ($q) use ($filters) {
                 $q->where('nama', 'like', '%' . $filters['customer'] . '%');
             });
         }
-
         if (!empty($filters['tanggal_mulai_after'])) {
             $query->whereDate('tanggal_mulai', '>=', $filters['tanggal_mulai_after']);
         }
-
         if (!empty($filters['tanggal_selesai_before'])) {
             $query->whereDate('tanggal_selesai', '<=', $filters['tanggal_selesai_before']);
         }
-
         if (!empty($filters['anggaran_min'])) {
             $query->where('anggaran', '>=', $filters['anggaran_min']);
         }
-
         if (!empty($filters['anggaran_max'])) {
             $query->where('anggaran', '<=', $filters['anggaran_max']);
         }
 
-        $projects = $query->pluck('nama_proyek')->toArray();
+        $projects = $query->select('nama_proyek', 'status', 'lokasi', 'anggaran')->get();
 
-        if (empty($projects)) {
-            return "Tidak ada proyek yang sesuai dengan filter.";
+        if ($projects->isEmpty()) {
+            return '';
         }
 
-        return "🔍 Proyek yang sesuai filter: " . implode(", ", $projects);
+        $text = "Data proyek hasil filter:\n";
+        foreach ($projects as $p) {
+            $text .= "- {$p->nama_proyek} ({$p->status}, {$p->lokasi}) anggaran Rp" . number_format($p->anggaran, 0, ',', '.') . "\n";
+        }
+        return $text;
     }
 }

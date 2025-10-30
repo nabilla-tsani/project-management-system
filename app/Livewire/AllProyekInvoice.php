@@ -24,10 +24,15 @@ class AllProyekInvoice extends Component
     public $statuses = [];
     public $openModal = false;
 
+    // Untuk edit
+    public $isEdit = false;
+    public $editingId = null;
+
     // Properti untuk modal kwitansi
     public $showKwitansiModal = false;
     public $selectedInvoiceId;
     public $keteranganKwitansi = '';
+    public $errorMessage = '';
 
     public function mount($proyekId)
     {
@@ -47,60 +52,30 @@ class AllProyekInvoice extends Component
         $this->sisaInvoice = $this->proyek->anggaran - $this->totalInvoice;
     }
 
-    /** 
-     * Tampilkan modal input keterangan
-     */
-   public function konfirmasiKwitansi($invoiceId)
+    // buka modal tambah
+    public function openCreateModal()
     {
-        $this->resetErrorBag();
-        $this->errorMessage = '';
-
-        $invoice = ProyekInvoice::findOrFail($invoiceId);
-
-        // cek apakah kwitansi sudah dibuat sebelumnya
-        $existing = ProyekKwitansi::where('nomor_invoice', $invoice->nomor_invoice)->first();
-        if ($existing) {
-            // tampilkan pesan error tanpa buka modal
-            $this->errorMessage = 'Kwitansi sudah dibuat dengan nomor: ' . $existing->nomor_kwitansi;
-            $this->selectedInvoiceId = $invoiceId;
-            return;
-        }
-
-        // buka modal jika belum ada kwitansi
-        $this->selectedInvoiceId = $invoiceId;
-        $this->keteranganKwitansi = '';
-        $this->showKwitansiModal = true;
+        $this->resetForm();
+        $this->isEdit = false;
+        $this->openModal = true;
     }
 
-    /**
-     * Simpan kwitansi ke database
-     */
-    public $errorMessage = '';
-
-    public function simpanKwitansi()
+    // buka modal edit
+    public function editInvoice($id)
     {
-        $this->errorMessage = '';
+        $invoice = ProyekInvoice::findOrFail($id);
 
-        $invoice = ProyekInvoice::findOrFail($this->selectedInvoiceId);
+        $this->editingId = $id;
+        $this->judul_invoice = $invoice->judul_invoice;
+        $this->jumlah = $invoice->jumlah;
+        $this->tanggal_invoice = $invoice->tanggal_invoice;
+        $this->keterangan = $invoice->keterangan;
 
-        // Buat kwitansi baru
-        ProyekKwitansi::create([
-            'nomor_kwitansi'   => 'KW-' . now()->format('YmdHis'),
-            'nomor_invoice'    => $invoice->nomor_invoice,
-            'proyek_id'        => $invoice->proyek_id,
-            'judul_kwitansi'   => 'Kwitansi - ' . $invoice->judul_invoice,
-            'jumlah'           => $invoice->jumlah,
-            'tanggal_kwitansi' => now(),
-            'keterangan'       => $this->keteranganKwitansi,
-            'user_id'          => auth()->id(),
-        ]);
-
-        session()->flash('success', 'Kwitansi berhasil dibuat.');
-        $this->showKwitansiModal = false;
-        $this->loadInvoices();
+        $this->isEdit = true;
+        $this->openModal = true;
     }
 
-
+    // simpan invoice baru
     public function store()
     {
         $this->validate([
@@ -120,16 +95,40 @@ class AllProyekInvoice extends Component
             'user_id' => auth()->id(),
         ]);
 
-        $this->reset(['judul_invoice', 'jumlah', 'tanggal_invoice', 'keterangan']);
+        session()->flash('success', 'Invoice berhasil ditambahkan.');
+        $this->resetForm();
         $this->loadInvoices();
         $this->openModal = false;
     }
 
-    public function updateStatus($invoiceId, $status)
+    // update invoice yang diedit
+    public function updateInvoice()
     {
-        $invoice = ProyekInvoice::findOrFail($invoiceId);
-        $invoice->update(['status' => $status]);
+        $this->validate([
+            'judul_invoice' => 'required|string|max:255',
+            'jumlah' => 'required|numeric|min:1',
+            'tanggal_invoice' => 'required|date',
+        ]);
+
+        $invoice = ProyekInvoice::findOrFail($this->editingId);
+        $invoice->update([
+            'judul_invoice' => $this->judul_invoice,
+            'jumlah' => $this->jumlah,
+            'tanggal_invoice' => $this->tanggal_invoice,
+            'keterangan' => $this->keterangan,
+        ]);
+
+        session()->flash('success', 'Invoice berhasil diperbarui.');
+        $this->resetForm();
         $this->loadInvoices();
+        $this->openModal = false;
+    }
+
+    // reset form
+    public function resetForm()
+    {
+        $this->reset(['judul_invoice', 'jumlah', 'tanggal_invoice', 'keterangan', 'editingId']);
+        $this->resetErrorBag();
     }
 
     public function deleteInvoice($id)
@@ -139,6 +138,7 @@ class AllProyekInvoice extends Component
         $this->loadInvoices();
     }
 
+    // Cetak invoice (sama seperti sebelumnya)
     public function printInvoice($id)
     {
         $invoice = ProyekInvoice::findOrFail($id);
