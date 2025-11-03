@@ -11,10 +11,12 @@ class GeminiService
     protected $base = 'https://generativelanguage.googleapis.com/v1beta/models';
     protected $key;
 
+
     public function __construct()
     {
         $this->key = config('services.gemini.key');
     }
+
 
     public function chat(string $prompt, string $model = 'gemini-2.0-flash')
     {
@@ -27,6 +29,7 @@ class GeminiService
 
         return $this->callGemini([$this->formatMessage('user', $prompt)], $model);
     }
+
 
     public function chatWithHistory(array $messages, string $model = 'gemini-2.0-flash')
     {
@@ -48,10 +51,12 @@ class GeminiService
         return $this->callGemini($contents, $model);
     }
 
+
     public function ask(string $prompt)
     {
         return $this->chat($prompt);
     }
+
 
     protected function callGemini(array $contents, string $model)
     {
@@ -67,6 +72,7 @@ class GeminiService
         $data = $response->json();
         return $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Tidak ada respons dari AI';
     }
+
 
     protected function formatMessage(string $role, string $text): array
     {
@@ -84,32 +90,32 @@ class GeminiService
         $url = "{$this->base}/gemini-2.0-flash:generateContent?key={$this->key}";
 
         $classifierPrompt = <<<PROMPT
-Anda adalah sistem deteksi intent untuk query database proyek.
-Analisis pesan berikut dan keluarkan JSON VALID tanpa penjelasan tambahan.
+        Anda adalah sistem deteksi intent untuk query database proyek.
+        Analisis pesan berikut dan keluarkan JSON VALID tanpa penjelasan tambahan.
 
-Pesan: "{$prompt}"
+        Pesan: "{$prompt}"
 
-Format JSON wajib:
-{
-  "type": "database" | "general",
-  "action": "count_projects" | "list_projects" | "filter_projects" | null,
-  "filters": {
-    "status": "belum_dimulai|sedang_berjalan|selesai" | null,
-    "lokasi": "string atau null",
-    "customer": "string atau null",
-    "tanggal_mulai_after": "YYYY-MM-DD atau null",
-    "tanggal_selesai_before": "YYYY-MM-DD atau null",
-    "anggaran_min": number atau null,
-    "anggaran_max": number atau null
-  }
-}
+        Format JSON wajib:
+        {
+        "type": "database" | "general",
+        "action": "count_projects" | "list_projects" | "filter_projects" | null,
+        "filters": {
+            "status": "belum_dimulai|sedang_berjalan|selesai" | null,
+            "lokasi": "string atau null",
+            "customer": "string atau null",
+            "tanggal_mulai_after": "YYYY-MM-DD atau null",
+            "tanggal_selesai_before": "YYYY-MM-DD atau null",
+            "anggaran_min": number atau null,
+            "anggaran_max": number atau null
+        }
+        }
 
-Aturan:
-- Jika user hanya tanya jumlah proyek → action = "count_projects".
-- Jika minta semua daftar proyek → action = "list_projects".
-- Jika minta proyek berdasarkan filter → action = "filter_projects".
-- Jika bukan pertanyaan database, kembalikan {"type":"general","action":null}.
-PROMPT;
+        Aturan:
+        - Jika user hanya tanya jumlah proyek → action = "count_projects".
+        - Jika minta semua daftar proyek → action = "list_projects".
+        - Jika minta proyek berdasarkan filter → action = "filter_projects".
+        - Jika bukan pertanyaan database, kembalikan {"type":"general","action":null}.
+        PROMPT;
 
         $payload = ["contents" => [$this->formatMessage("user", $classifierPrompt)]];
         $response = Http::post($url, $payload);
@@ -169,16 +175,16 @@ PROMPT;
 
         // ✅ Tahap Augmentation — hasil query dijadikan konteks untuk Gemini
         $contextPrompt = <<<PROMPT
-Anda adalah asisten proyek. Gunakan data berikut untuk menjawab pertanyaan user dengan konteks yang akurat dan bahasa natural.
+        Anda adalah asisten proyek. Gunakan data berikut untuk menjawab pertanyaan user dengan konteks yang akurat dan bahasa natural.
 
-Data dari database:
-{$resultText}
+        Data dari database:
+        {$resultText}
 
-Pertanyaan user:
-"{$userPrompt}"
+        Pertanyaan user:
+        "{$userPrompt}"
 
-Jawablah berdasarkan data di atas tanpa menebak, dan tulis dengan bahasa profesional.
-PROMPT;
+        Jawablah berdasarkan data di atas tanpa menebak, dan tulis dengan bahasa profesional.
+        PROMPT;
 
         return $this->callGemini([$this->formatMessage('user', $contextPrompt)], $model);
     }

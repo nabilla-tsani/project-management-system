@@ -1,4 +1,4 @@
-<div class="p-6 bg-gray-50 min-h-screen">
+<div class="relative bg-gray-50 rounded-2xl shadow-lg border border-gray-100 p-4">
 
     {{-- Judul Halaman --}}
     <div class="flex justify-between items-center mb-6">

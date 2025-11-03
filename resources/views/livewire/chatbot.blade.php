@@ -2,7 +2,7 @@
     {{-- Tombol Chat - hanya tampil jika chat belum terbuka --}}
     @if(!$isOpen)
         <button wire:click="toggleChat"
-    class="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-extrabold tracking-widest text-lg w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-2xl transition transform">
+    class="bg-gradient-to-r from-cyan-400 to-purple-600 text-white font-extrabold tracking-widest text-lg w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-2xl transition transform">
     AI
 </button>
 

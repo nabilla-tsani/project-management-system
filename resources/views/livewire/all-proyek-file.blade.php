@@ -1,4 +1,4 @@
-<div class="relative bg-gray-50 shadow-lg border border-gray-100 p-4">
+<div class="relative bg-gray-50 rounded-2xl shadow-lg border border-gray-100 p-4">
 
     {{-- HEADER --}}
     <div class="flex justify-between items-center mb-4">

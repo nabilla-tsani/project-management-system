@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gray-100 text-gray-900 p-8 font-sans">
+<div class="min-h-screen bg-white text-gray-900 p-8 font-sans">
     <div class="max-w-7xl mx-auto">
         <!-- Title Halaman -->
         <div class="flex items-center justify-between mb-6">

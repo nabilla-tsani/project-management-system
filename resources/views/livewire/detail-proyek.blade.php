@@ -12,22 +12,22 @@
             </a>
 
              <button 
-    wire:click="generateProposalWithAI"
-    wire:loading.attr="disabled"
-    class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-400 to-purple-600 text-white text-sm font-medium rounded-xl shadow hover:bg-green-700 transition cursor-pointer ml-3 disabled:opacity-70">
+                wire:click="generateProposalWithAI"
+                wire:loading.attr="disabled"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-400 to-purple-600 text-white text-sm font-medium rounded-xl shadow hover:bg-green-700 transition cursor-pointer ml-3 disabled:opacity-70">
 
-    {{-- Normal state (tidak loading) --}}
-    <span wire:loading.remove wire:target="generateProposalWithAI" class="inline-flex items-center gap-2">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        Generate Proposal with AI
-    </span>
+                {{-- Normal state (tidak loading) --}}
+                <span wire:loading.remove wire:target="generateProposalWithAI" class="inline-flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    Generate Proposal with AI
+                </span>
 
-    {{-- Loading state --}}
-    <span wire:loading.flex wire:target="generateProposalWithAI" class="items-center gap-2">
-        <i class="fa-solid fa-spinner fa-spin"></i>
-        Proposal sedang diproses...
-    </span>
-</button>
+                {{-- Loading state --}}
+                <span wire:loading.flex wire:target="generateProposalWithAI" class="items-center gap-2">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Proposal sedang diproses...
+                </span>
+            </button>
 
         </div>
         </div>

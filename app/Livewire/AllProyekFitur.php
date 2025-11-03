@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\ProyekFitur;
 use App\Models\ProyekUser;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class AllProyekFitur extends Component
 {
@@ -32,6 +33,17 @@ class AllProyekFitur extends Component
     // Role flag
     public $isManajerProyek = false;
 
+    // --- AI modal state ---
+    public $aiModalOpen = false;
+    public $jumlah_fitur_ai = 3;
+    public $deskripsi_ai = '';
+    public $aiFiturList = [];
+    public $showAiReview = false;
+    public $loadingAi = false;
+    public $revisi_deskripsi_ai = '';
+    public $jumlah_fitur_revisi = null;
+
+
     public function mount($proyekId)
     {
         $this->proyekId = $proyekId;
@@ -56,6 +68,7 @@ class AllProyekFitur extends Component
             ->get();
     }
 
+    // --- Modal tambah/edit ---
     public function openModal($id = null)
     {
         $this->resetValidation();
@@ -92,7 +105,6 @@ class AllProyekFitur extends Component
 
         $this->closeModal();
         $this->loadFitur();
-        
     }
 
     public function delete($id)
@@ -107,6 +119,7 @@ class AllProyekFitur extends Component
         $this->resetValidation();
     }
 
+    // --- Modal user ---
     public function openUserModal($fiturId)
     {
         $this->selectedFiturId = $fiturId;
@@ -127,6 +140,155 @@ class AllProyekFitur extends Component
             $this->showCatatan[$fiturId] = true;
         }
     }
+
+    // --- Modal AI ---
+    public function openAiModal()
+    {
+        $this->reset(['jumlah_fitur_ai', 'deskripsi_ai', 'aiFiturList', 'showAiReview', 'loadingAi']);
+        $this->jumlah_fitur_ai = 3;
+        $this->aiModalOpen = true;
+    }
+
+    public function closeAiModal()
+    {
+        $this->reset(['aiModalOpen', 'jumlah_fitur_ai', 'deskripsi_ai']);
+        $this->resetValidation();
+    }
+
+    public function generateFiturAI()
+    {
+        $this->validate([
+            'jumlah_fitur_ai' => 'required|integer|min:1|max:10',
+            'deskripsi_ai' => 'required|string|min:10',
+        ]);
+
+        $this->loadingAi = true;
+
+        $this->aiFiturList = $this->callGeminiApi($this->deskripsi_ai, $this->jumlah_fitur_ai);
+
+        $this->loadingAi = false;
+
+        if (empty($this->aiFiturList)) {
+            session()->flash('message', 'AI gagal menghasilkan fitur. Silakan coba lagi.');
+            return;
+        }
+        $this->aiModalOpen = false;
+        $this->showAiReview = true;
+    }
+
+    public function approveAiFitur()
+    {
+        foreach ($this->aiFiturList as $namaFitur) {
+            ProyekFitur::create([
+                'proyek_id' => $this->proyekId,
+                'nama_fitur' => $namaFitur,
+                'status_fitur' => 'Pending',
+            ]);
+        }
+
+        $this->showAiReview = false;
+        $this->aiFiturList = [];
+        $this->loadFitur();
+        $this->closeAiModal();
+        session()->flash('message', 'Fitur AI berhasil ditambahkan ke proyek!');
+    }
+
+    public function regenerateAiFitur()
+    {
+        $this->validate([
+            'revisi_deskripsi_ai' => 'required|string|min:5',
+        ], [
+            'revisi_deskripsi_ai.required' => 'Mohon isi deskripsi revisi untuk AI.',
+        ]);
+
+        $this->loadingAi = true;
+
+        // Tentukan jumlah fitur yang akan digunakan
+        $jumlahBaru = $this->jumlah_fitur_revisi ?: $this->jumlah_fitur_ai;
+
+        // Gabungkan deskripsi lama dan revisi
+        $deskripsiGabungan = trim($this->deskripsi_ai . ' ' . $this->revisi_deskripsi_ai);
+
+        // Panggil ulang AI dengan jumlah baru
+        $this->aiFiturList = $this->callGeminiApi($deskripsiGabungan, $jumlahBaru);
+
+        $this->loadingAi = false;
+
+        if (empty($this->aiFiturList)) {
+            session()->flash('message', 'AI gagal menghasilkan fitur baru. Silakan coba lagi.');
+            return;
+        }
+
+        // Kosongkan kolom revisi agar siap dipakai lagi
+        $this->revisi_deskripsi_ai = '';
+        $this->jumlah_fitur_revisi = null;
+
+        $this->resetValidation();
+        $this->reset(['revisi_deskripsi_ai']);
+    }
+    
+
+    public function reviseAiFitur()
+    {
+        $this->showAiReview = false;
+        $this->aiFiturList = [];
+    }
+
+    private function callGeminiApi($deskripsi, $jumlahFitur)
+    {
+        try {
+            // Gunakan service AI yang sama seperti fitur "Generate Proposal"
+            $aiService = app(\App\Services\GeminiService::class);
+
+            // Ambil data proyek dan fitur yang sudah ada
+            $proyek = \App\Models\Proyek::with('customer')->find($this->proyekId);
+            $fiturEksisting = \App\Models\ProyekFitur::where('proyek_id', $this->proyekId)
+                ->pluck('nama_fitur')
+                ->toArray();
+
+            // Format daftar fitur yang sudah ada (untuk dikirim ke prompt)
+            $daftarFitur = $fiturEksisting
+                ? "- " . implode("\n- ", $fiturEksisting)
+                : "(belum ada fitur yang terdaftar)";
+
+            // Susun prompt yang lebih kaya konteks
+            $prompt = <<<EOT
+    Kamu adalah asisten pengembang perangkat lunak.
+    Berikut informasi proyek yang sedang dikerjakan:
+
+    Nama proyek: {$proyek->nama_proyek}
+    Deskripsi proyek: {$proyek->deskripsi}
+
+    Daftar fitur yang sudah ada:
+    {$daftarFitur}
+
+    Deskripsi tambahan mengenai fitur yang diminta: {$deskripsi}
+    Tugasmu: buatkan daftar {$jumlahFitur} fitur baru yang relevan untuk proyek ini,
+    tanpa mengulang fitur yang sudah ada di atas.
+    Format jawaban hanya berupa daftar nama fitur (satu fitur per baris),
+    tanpa penjelasan atau nomor urut.
+    EOT;
+
+            // Minta hasil dari Gemini
+            $aiResponse = $aiService->ask($prompt);
+
+            // Log untuk debugging (opsional)
+            \Log::info("AI response (fitur): " . $aiResponse);
+
+            // Pecah hasil menjadi array per baris
+            $fiturs = array_filter(array_map('trim', preg_split("/\r\n|\n|\r/", $aiResponse)));
+
+            // Hilangkan nomor urut jika ada (misal "1. Login" -> "Login")
+            $fiturs = array_map(fn($f) => preg_replace('/^\d+\.\s*/', '', $f), $fiturs);
+
+            return $fiturs;
+        } catch (\Exception $e) {
+            \Log::error("Gemini API error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+
 
     public function render()
     {
