@@ -5,11 +5,6 @@
         <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
             <i class="fa-solid fa-receipt text-blue-600"></i> Daftar Kwitansi
         </h3>
-        <button wire:click="$set('openModal', true)"
-                class="px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 hover:shadow-md 
-                       transition-all duration-200 flex items-center gap-2 text-sm font-medium">
-            <i class="fa-solid fa-plus"></i> Tambah Kwitansi
-        </button>
     </div>
 
     {{-- Daftar Kwitansi --}}
@@ -56,6 +51,10 @@
                     <div class="text-xs text-gray-500">
                         Dibuat oleh: <span class="font-medium">{{ $kwitansi->user?->name ?? 'User' }}</span>
                     </div>
+
+                    <div class="text-xs text-gray-500">
+                        Pada: <span class="font-medium">{{ $kwitansi->user?->name ?? 'User' }}</span>
+                    </div>
                 </div>
 
                 {{-- Footer Nota --}}
@@ -65,10 +64,15 @@
                            class="text-blue-600 hover:text-blue-800 flex items-center gap-1" title="Lihat Kwitansi">
                             <i class="fa-solid fa-file-pdf"></i> <span>PDF</span>
                         </a>
+                        <button wire:click="openEditKwitansi({{ $kwitansi->id }})"
+                                class="text-yellow-600 hover:text-yellow-800 flex items-center gap-1"
+                                title="Edit Kwitansi">
+                            <i class="fa-solid fa-pen-to-square"></i> <span>Edit</span>
+                        </button>
 
-                        <button 
-                            x-data 
-                            @click="if(confirm('Yakin ingin menghapus kwitansi ini?')) { $wire.deleteKwitansi({{ $kwitansi->id }}) }"
+                        <button
+                            wire:click="deleteKwitansi({{ $kwitansi->id }})"
+                            wire:loading.attr="disabled"
                             class="text-red-600 hover:text-red-800 flex items-center gap-1"
                             title="Hapus Kwitansi">
                             <i class="fa-solid fa-trash"></i> <span>Hapus</span>
@@ -90,4 +94,30 @@
             </div>
         @endforelse
     </div>
+
+    {{-- Modal Edit Kwitansi --}}
+    @if($showEditModal)
+    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <div class="bg-white shadow-lg w-full max-w-md p-5 rounded-lg">
+            <h3 class="text-lg font-semibold mb-3">Edit Kwitansi</h3>
+
+            <label class="block text-xs text-gray-600">Judul Kwitansi</label>
+            <input type="text" wire:model="edit_judul_kwitansi" class="w-full border rounded-md p-2 mb-3" />
+            @error('edit_judul_kwitansi') <div class="text-red-600 text-xs">{{ $message }}</div> @enderror
+
+            <label class="block text-xs text-gray-600">Tanggal Kwitansi</label>
+            <input type="date" wire:model="edit_tanggal_kwitansi" class="w-full border rounded-md p-2 mb-3" />
+            @error('edit_tanggal_kwitansi') <div class="text-red-600 text-xs">{{ $message }}</div> @enderror
+
+            <label class="block text-xs text-gray-600">Keterangan</label>
+            <textarea wire:model="edit_keterangan" rows="4" class="w-full border rounded-md p-2 mb-3"></textarea>
+            @error('edit_keterangan') <div class="text-red-600 text-xs">{{ $message }}</div> @enderror
+
+            <div class="flex justify-end gap-2">
+                <button wire:click="$set('showEditModal', false)" type="button" class="px-3 py-1 border rounded text-sm">Batal</button>
+                <button wire:click="updateKwitansi" type="button" class="px-3 py-1 bg-blue-600 text-white rounded text-sm">Simpan</button>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>

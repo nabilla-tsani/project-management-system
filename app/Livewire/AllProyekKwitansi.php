@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\ProyekKwitansi;
 use App\Models\ProyekInvoice;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class AllProyekKwitansi extends Component
 {
@@ -15,6 +16,12 @@ class AllProyekKwitansi extends Component
     public $invoiceId;
     public $keterangan = '';
     public $openModalKwitansi = false;
+    // Edit kwitansi
+    public $editingKwitansiId = null;
+    public $edit_judul_kwitansi = null;
+    public $edit_tanggal_kwitansi = null;
+    public $edit_keterangan = '';
+    public $showEditModal = false;
 
 
     public function mount($proyekId = null)
@@ -35,6 +42,52 @@ class AllProyekKwitansi extends Component
     {
         $kwitansi = ProyekKwitansi::findOrFail($id);
         $kwitansi->delete();
+        $this->loadData();
+    }
+
+    public function openEditKwitansi($id)
+    {
+        $kwitansi = ProyekKwitansi::find($id);
+        if (! $kwitansi) {
+            session()->flash('error', 'Kwitansi tidak ditemukan.');
+            return;
+        }
+
+    $this->editingKwitansiId = $kwitansi->id;
+    $this->edit_judul_kwitansi = $kwitansi->_kwitansi;
+    $this->edit_tanggal_kwitansi = $kwitansi->tanggal_kwitansi ? Carbon::parse($kwitansi->tanggal_kwitansi)->toDateString() : Carbon::now()->toDateString();
+    $this->edit_keterangan = $kwitansi->keterangan;
+    $this->showEditModal = true;
+    }
+
+    public function updateKwitansi()
+    {
+        $this->validate([
+            'edit_judul_kwitansi' => 'required|string',
+            'edit_tanggal_kwitansi' => 'required|date',
+            'edit_keterangan' => 'nullable|string|max:1000',
+        ]);
+
+        $kwitansi = ProyekKwitansi::find($this->editingKwitansiId);
+        if (! $kwitansi) {
+            session()->flash('error', 'Kwitansi tidak ditemukan.');
+            $this->showEditModal = false;
+            return;
+        }
+
+        $kwitansi->judul_kwitansi = $this->edit_judul_kwitansi;
+        $kwitansi->tanggal_kwitansi = $this->edit_tanggal_kwitansi;
+        $kwitansi->keterangan = $this->edit_keterangan;
+        $kwitansi->save();
+
+        session()->flash('success', 'Kwitansi berhasil diperbarui.');
+
+        $this->showEditModal = false;
+        $this->editingKwitansiId = null;
+        $this->edit_judul_kwitansi = null;
+        $this->edit_tanggal_kwitansi = null;
+        $this->edit_keterangan = '';
+
         $this->loadData();
     }
 

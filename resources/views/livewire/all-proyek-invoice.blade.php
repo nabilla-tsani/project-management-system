@@ -97,7 +97,7 @@
                     @if($invoice->status == 'dibayar')
                         <div>
                             <button 
-                                wire:click="konfirmasiKwitansi({{ $invoice->id }})"
+                                wire:click="createKwitansi({{ $invoice->id }})"
                                 class="bg-green-600 text-white text-xs px-3 py-1 rounded-lg hover:bg-green-700 transition flex items-center gap-1">
                                 <i class="fa-solid fa-file-invoice"></i> Kwitansi
                             </button>

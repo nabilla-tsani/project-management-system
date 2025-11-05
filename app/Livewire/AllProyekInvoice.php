@@ -101,7 +101,6 @@ class AllProyekInvoice extends Component
         $this->openModal = false;
     }
 
-    // update invoice yang diedit
     public function updateInvoice()
     {
         $this->validate([
@@ -124,7 +123,6 @@ class AllProyekInvoice extends Component
         $this->openModal = false;
     }
 
-    // reset form
     public function resetForm()
     {
         $this->reset(['judul_invoice', 'jumlah', 'tanggal_invoice', 'keterangan', 'editingId']);
@@ -138,7 +136,100 @@ class AllProyekInvoice extends Component
         $this->loadInvoices();
     }
 
-    // Cetak invoice (sama seperti sebelumnya)
+    public function updateStatus($id, $status)
+    {
+        $invoice = ProyekInvoice::find($id);
+        $invoice->status = $status;
+        $invoice->save();
+
+        // Refresh local lists and clear any previous error for this invoice
+        $this->loadInvoices();
+        if ($this->selectedInvoiceId == $id) {
+            $this->errorMessage = '';
+            $this->selectedInvoiceId = null;
+        }
+    }
+
+    public function createKwitansi($id)
+    {
+        $invoice = ProyekInvoice::find($id);
+        if (! $invoice) {
+            $this->errorMessage = 'Invoice tidak ditemukan.';
+            $this->selectedInvoiceId = $id;
+            return;
+        }
+
+        // only allow creating kwitansi when invoice is marked as paid
+        if ($invoice->status !== 'dibayar') {
+            $this->errorMessage = 'Kwitansi hanya dapat dibuat untuk invoice yang sudah dibayar.';
+            $this->selectedInvoiceId = $id;
+            return;
+        }
+
+        $this->selectedInvoiceId = $id;
+        $this->keteranganKwitansi = $invoice->keterangan ?? '';
+        $this->errorMessage = '';
+        $this->showKwitansiModal = true;
+    }
+
+    public function simpanKwitansi()
+    {
+        $this->validate([
+            'keteranganKwitansi' => 'nullable|string|max:1000',
+        ]);
+
+        if (! $this->selectedInvoiceId) {
+            $this->errorMessage = 'Tidak ada invoice yang dipilih.';
+            return;
+        }
+
+        $invoice = ProyekInvoice::find($this->selectedInvoiceId);
+        if (! $invoice) {
+            $this->errorMessage = 'Invoice tidak ditemukan.';
+            return;
+        }
+
+        // Cek apakah sudah ada kwitansi dengan nomor_invoice yang sama
+        $existing = ProyekKwitansi::where('nomor_invoice', $invoice->nomor_invoice)->first();
+
+        if ($existing) {
+            // Update kwitansi yang sudah ada dengan data baru
+            $existing->update([
+                'proyek_id' => $invoice->proyek_id,
+                'judul_kwitansi' => 'Kwitansi ' . $invoice->judul_invoice,
+                'jumlah' => $invoice->jumlah,
+                'tanggal_kwitansi' => now()->toDateString(),
+                'keterangan' => $this->keteranganKwitansi,
+                'user_id' => auth()->id(),
+            ]);
+
+            session()->flash('success', 'Kwitansi berhasil diperbarui.');
+        } else {
+            // Buat kwitansi baru
+            $nomorKwitansi = 'KW-' . time();
+            ProyekKwitansi::create([
+                'nomor_kwitansi' => $nomorKwitansi,
+                'nomor_invoice' => $invoice->nomor_invoice,
+                'proyek_id' => $invoice->proyek_id,
+                'judul_kwitansi' => 'Kwitansi ' . $invoice->judul_invoice,
+                'jumlah' => $invoice->jumlah,
+                'tanggal_kwitansi' => now()->toDateString(),
+                'keterangan' => $this->keteranganKwitansi,
+                'user_id' => auth()->id(),
+            ]);
+
+            session()->flash('success', 'Kwitansi berhasil dibuat.');
+        }
+
+        // close modal and reset related props
+        $this->showKwitansiModal = false;
+        $this->keteranganKwitansi = '';
+        $this->selectedInvoiceId = null;
+
+        // reload invoices in case any derived values change
+        $this->loadInvoices();
+    }
+
     public function printInvoice($id)
     {
         $invoice = ProyekInvoice::findOrFail($id);
