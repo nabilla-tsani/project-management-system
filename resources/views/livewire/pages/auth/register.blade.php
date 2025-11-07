@@ -15,9 +15,6 @@ new #[Layout('layouts.guest')] class extends Component
     public string $password = '';
     public string $password_confirmation = '';
 
-    /**
-     * Handle an incoming registration request.
-     */
     public function register(): void
     {
         $validated = $this->validate([
@@ -31,75 +28,194 @@ new #[Layout('layouts.guest')] class extends Component
         event(new Registered($user = User::create($validated)));
 
         Auth::login($user);
-        
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        redirect()->route('dashboard');
     }
-}; ?>
+}; 
+?>
 
-    <div class="w-full max-w-md space-y-8">
-        <!-- Title -->
-        <div class="text-center">
-            <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-                {{ __('Create an Account') }}
-            </h2>
-            <p class="mt-2 text-sm text-gray-600">
-                {{ __('Please fill in the form to register') }}
-            </p>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Register - Project Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #5ca9ff 0%, #edeaff 40%, #9c62ff 100%);
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+        }
+        body::before {
+            content: "";
+            position: absolute;
+            bottom: -100px;
+            right: -150px;
+            width: 600px;
+            height: 500px;
+            background: radial-gradient(circle, #9c62ff 100%);
+            filter: blur(120px);
+            opacity: 0.7;
+            z-index: 0;
+        }
+        body::after {
+            content: "";
+            position: absolute;
+            top: -100px;
+            left: -150px;
+            width: 600px;
+            height: 500px;
+            background: radial-gradient(circle, #5ca9ff 100%);
+            filter: blur(120px);
+            opacity: 0.7;
+            z-index: 0;
+        }
+
+        .text-purple {
+            font-size: 13px;
+            font-weight: 500;
+            color: #9c62ff;
+        }
+
+        .column-input {
+            margin-top: 5px;
+            display: block;
+            width: 100%;
+            border-radius: 25px;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            font-size: 12px;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .column-input:focus {
+            border-color: #9c62ff;
+            outline: none;
+            box-shadow: 0 0 0 1px #9c62ff;
+        }
+
+        .btn-submit {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            background-color: #77b6ffff;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-submit:hover {
+            background-color: #469cffff;
+        }
+
+        .btn-submit:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #6366F1;
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 24rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* gap lebih kecil */
+            background-color: rgba(255, 255, 255, 0.3);
+            padding: 1.5rem; /* kurang dari 2rem */
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            position: relative;
+            z-index: 10;
+        }
+
+        .card-container h2 {
+            margin-top: 0; /* hilangkan mt-2 */
+        }
+
+
+        p, label, span, a {
+            font-size: 12px;
+        }
+
+
+        p {
+            color: #4B5563; /* text-gray-600 */
+        }
+
+    </style>
+</head>
+<body class="flex items-center justify-center py-12">
+
+<div class="card-container">
+    <div class="text-center">
+        <h2 class="text-3xl text-gray-900">
+            Create an Account
+        </h2>
+        <p class="mt-2 text-sm text-gray-600">
+            Please fill in the form to register
+        </p>
+    </div>
+
+    <!-- Form -->
+    <form wire:submit="register" class="mt-2 space-y-4">
+        <!-- Name -->
+        <div>
+            <x-input-label for="name" :value="__('Name')" class="block text-gray-700" />
+            <x-text-input wire:model="name" id="name"
+                class="column-input"
+                type="text" name="name" required autofocus autocomplete="name" />
+            <x-input-error :messages="$errors->get('name')" class="text-red-500" />
         </div>
 
-        <!-- Form -->
-        <form wire:submit="register" class="mt-8 space-y-6 bg-white p-8 shadow-lg rounded-2xl">
-            <!-- Name -->
-            <div>
-                <x-input-label for="name" :value="__('Name')" class="block text-sm font-medium text-gray-700" />
-                <x-text-input wire:model="name" id="name"
-                    class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    type="text" name="name" required autofocus autocomplete="name" />
-                <x-input-error :messages="$errors->get('name')" class="mt-2 text-red-500 text-sm" />
-            </div>
+        <!-- Email -->
+        <div>
+            <x-input-label for="email" :value="__('Email')" class="block text-gray-700" />
+            <x-text-input wire:model="email" id="email"
+                class="column-input"
+                type="email" name="email" required autocomplete="username" />
+            <x-input-error :messages="$errors->get('email')" class="text-red-500" />
+        </div>
 
-            <!-- Email -->
-            <div>
-                <x-input-label for="email" :value="__('Email')" class="block text-sm font-medium text-gray-700" />
-                <x-text-input wire:model="email" id="email"
-                    class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    type="email" name="email" required autocomplete="username" />
-                <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500 text-sm" />
-            </div>
+        <!-- Password -->
+        <div>
+            <x-input-label for="password" :value="__('Password')" class="block text-gray-700" />
+            <x-text-input wire:model="password" id="password"
+                class="column-input"
+                type="password" name="password" required autocomplete="new-password" />
+            <x-input-error :messages="$errors->get('password')" class="text-red-500" />
+        </div>
 
-            <!-- Password -->
-            <div>
-                <x-input-label for="password" :value="__('Password')" class="block text-sm font-medium text-gray-700" />
-                <x-text-input wire:model="password" id="password"
-                    class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    type="password" name="password" required autocomplete="new-password" />
-                <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 text-sm" />
-            </div>
+        <!-- Confirm Password -->
+        <div>
+            <x-input-label for="password_confirmation" :value="__('Confirm Password')" class="block text-gray-700" />
+            <x-text-input wire:model="password_confirmation" id="password_confirmation"
+                class="column-input"
+                type="password" name="password_confirmation" required autocomplete="new-password" />
+            <x-input-error :messages="$errors->get('password_confirmation')" class="text-red-500" />
+        </div>
 
-            <!-- Confirm Password -->
-            <div>
-                <x-input-label for="password_confirmation" :value="__('Confirm Password')" class="block text-sm font-medium text-gray-700" />
-                <x-text-input wire:model="password_confirmation" id="password_confirmation"
-                    class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    type="password" name="password_confirmation" required autocomplete="new-password" />
-                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2 text-red-500 text-sm" />
-            </div>
+        <!-- Submit -->
+        <div>
+            <x-primary-button class="btn-submit">
+                {{ __('Register') }}
+            </x-primary-button>
+        </div>
 
-            <!-- Submit -->
-            <div>
-                <x-primary-button
-                    class="w-full flex justify-center py-2 px-4 rounded-xl bg-indigo-600 text-white font-semibold shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    {{ __('Register') }}
-                </x-primary-button>
-            </div>
+        <!-- Login Redirect -->
+        <div class="text-center mt-2 text-gray-600">
+            {{ __('Already registered?') }}
+            <a href="{{ route('login') }}" wire:navigate class="text-purple">
+                {{ __('Sign in') }}
+            </a>
+        </div>
+    </form>
+</div>
 
-            <!-- Login Redirect -->
-            <div class="text-center mt-4 text-sm text-gray-600">
-                {{ __('Already registered?') }}
-                <a href="{{ route('login') }}" wire:navigate
-                    class="font-medium text-indigo-600 hover:text-indigo-500">
-                    {{ __('Sign in') }}
-                </a>
-            </div>
-        </form>
-    </div>
+</body>
+</html>

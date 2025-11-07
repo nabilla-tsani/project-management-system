@@ -202,17 +202,17 @@
     @if($showKwitansiModal)
     <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
         <div class="bg-white shadow-lg w-1/3 p-5"> {{-- w-96 = lebih lebar dari w-80 --}}
-            <h3 class="text-sm font-semibold text-gray-800 mb-3 text-center">Buat Kwitansi</h3>
+            <h3 class="text-sm font-semibold text-gray-800 mb-3 text-center">{{ $isEditingKwitansi ? 'Edit Kwitansi' : 'Buat Kwitansi' }}</h3>
 
             <label class="block text-xs text-gray-500 mb-1">Keterangan</label>
             <textarea wire:model="keteranganKwitansi" rows="4"
                 class="w-full border-gray-300 rounded-md text-sm focus:ring focus:ring-blue-200"></textarea>
 
             <div class="mt-4 flex justify-end gap-2">
-                <button wire:click="$set('showKwitansiModal', false)"
+                <button wire:click="closeKwitansiModal"
                     class="px-3 py-1 text-xs border rounded-md text-gray-600 hover:bg-gray-100">Batal</button>
                 <button wire:click="simpanKwitansi"
-                    class="px-3 py-1 text-xs bg-blue-500 text-white rounded-md hover:bg-green-700">Simpan</button>
+                    class="px-3 py-1 text-xs bg-blue-500 text-white rounded-md hover:bg-green-700">{{ $isEditingKwitansi ? 'Update' : 'Simpan' }}</button>
             </div>
         </div>
     </div>

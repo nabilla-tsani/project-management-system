@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     request()->session()->invalidate();
     request()->session()->regenerateToken();
 
-    return redirect('/login');
+    // Redirect user to the welcome page after logout
+    return redirect('/');
     })->name('logout');
 });

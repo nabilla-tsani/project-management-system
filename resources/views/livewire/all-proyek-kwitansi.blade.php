@@ -53,7 +53,7 @@
                     </div>
 
                     <div class="text-xs text-gray-500">
-                        Pada: <span class="font-medium">{{ $kwitansi->user?->name ?? 'User' }}</span>
+                        Pada: <span class="font-medium">{{ $kwitansi->created_at}}</span>
                     </div>
                 </div>
 

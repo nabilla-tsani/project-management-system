@@ -54,7 +54,7 @@ class AllProyekKwitansi extends Component
         }
 
     $this->editingKwitansiId = $kwitansi->id;
-    $this->edit_judul_kwitansi = $kwitansi->_kwitansi;
+    $this->edit_judul_kwitansi = $kwitansi->judul_kwitansi;
     $this->edit_tanggal_kwitansi = $kwitansi->tanggal_kwitansi ? Carbon::parse($kwitansi->tanggal_kwitansi)->toDateString() : Carbon::now()->toDateString();
     $this->edit_keterangan = $kwitansi->keterangan;
     $this->showEditModal = true;

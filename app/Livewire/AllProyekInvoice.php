@@ -33,6 +33,9 @@ class AllProyekInvoice extends Component
     public $selectedInvoiceId;
     public $keteranganKwitansi = '';
     public $errorMessage = '';
+    // Track whether the kwitansi modal is in edit mode
+    public $isEditingKwitansi = false;
+    public $editingKwitansiId = null;
 
     public function mount($proyekId)
     {
@@ -167,8 +170,20 @@ class AllProyekInvoice extends Component
         }
 
         $this->selectedInvoiceId = $id;
-        $this->keteranganKwitansi = $invoice->keterangan ?? '';
         $this->errorMessage = '';
+
+        // If a kwitansi already exists for this invoice number, open modal in edit mode
+        $existing = ProyekKwitansi::where('nomor_invoice', $invoice->nomor_invoice)->first();
+        if ($existing) {
+            $this->isEditingKwitansi = true;
+            $this->editingKwitansiId = $existing->id;
+            $this->keteranganKwitansi = $existing->keterangan ?? $invoice->keterangan ?? '';
+        } else {
+            $this->isEditingKwitansi = false;
+            $this->editingKwitansiId = null;
+            $this->keteranganKwitansi = $invoice->keterangan ?? '';
+        }
+
         $this->showKwitansiModal = true;
     }
 
@@ -221,13 +236,28 @@ class AllProyekInvoice extends Component
             session()->flash('success', 'Kwitansi berhasil dibuat.');
         }
 
-        // close modal and reset related props
-        $this->showKwitansiModal = false;
-        $this->keteranganKwitansi = '';
-        $this->selectedInvoiceId = null;
+    // close modal and reset related props
+    $this->showKwitansiModal = false;
+    $this->keteranganKwitansi = '';
+    $this->selectedInvoiceId = null;
+    $this->isEditingKwitansi = false;
+    $this->editingKwitansiId = null;
 
         // reload invoices in case any derived values change
         $this->loadInvoices();
+    }
+
+    /**
+     * Close the kwitansi modal and reset related state.
+     */
+    public function closeKwitansiModal()
+    {
+        $this->showKwitansiModal = false;
+        $this->keteranganKwitansi = '';
+        $this->selectedInvoiceId = null;
+        $this->isEditingKwitansi = false;
+        $this->editingKwitansiId = null;
+        $this->errorMessage = '';
     }
 
     public function printInvoice($id)
