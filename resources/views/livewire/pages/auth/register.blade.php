@@ -42,7 +42,7 @@ new #[Layout('layouts.guest')] class extends Component
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #5ca9ff 0%, #edeaff 40%, #9c62ff 100%);
+            background: linear-gradient(135deg, #77b6ffff 0%, #edeaff 40%, ##ac7bffff 100%);
             position: relative;
             overflow: hidden;
             min-height: 100vh;
@@ -57,7 +57,7 @@ new #[Layout('layouts.guest')] class extends Component
             right: -150px;
             width: 600px;
             height: 500px;
-            background: radial-gradient(circle, #9c62ff 100%);
+            background: radial-gradient(circle, #ac7bffff 100%);
             filter: blur(120px);
             opacity: 0.7;
             z-index: 0;
@@ -69,7 +69,7 @@ new #[Layout('layouts.guest')] class extends Component
             left: -150px;
             width: 600px;
             height: 500px;
-            background: radial-gradient(circle, #5ca9ff 100%);
+            background: radial-gradient(circle, #77b6ffff 100%);
             filter: blur(120px);
             opacity: 0.7;
             z-index: 0;
@@ -78,7 +78,7 @@ new #[Layout('layouts.guest')] class extends Component
         .text-purple {
             font-size: 13px;
             font-weight: 500;
-            color: #9c62ff;
+            color: #ac7bffff;
         }
 
         .column-input {
@@ -93,9 +93,9 @@ new #[Layout('layouts.guest')] class extends Component
         }
 
         .column-input:focus {
-            border-color: #9c62ff;
+            border-color: #ac7bffff;
             outline: none;
-            box-shadow: 0 0 0 1px #9c62ff;
+            box-shadow: 0 0 0 1px #ac7bffff;
         }
 
         .btn-submit {

@@ -44,10 +44,10 @@ class AllProyek extends Component
     {
         $user = Auth::user();
 
-        // Ambil proyek yang hanya terkait user login
         $query = $user->proyeks()->with('customer')
-            ->where('nama_proyek', 'like', '%'.$this->search.'%')
-            ->orderBy('proyek.id', 'desc'); // hati-hati pakai nama tabel pivot
+        ->whereRaw('LOWER(nama_proyek) LIKE ?', ['%' . strtolower($this->search) . '%'])
+        ->orderBy('proyek.id', 'desc');
+
 
         // Filter status kalau ada
         if ($this->statusFilter) {

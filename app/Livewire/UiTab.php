@@ -10,18 +10,18 @@ use Illuminate\Support\Facades\Auth;
 class UiTab extends Component
 {
     protected $listeners = [
-        // allow child components to ask UiTab to switch active tab
         'switchTab' => 'setTab',
     ];
+
     public $proyek;
-    public $tab = 'informasi'; // default tab
-    public $isManajerProyek = false; // penanda role user
+    public $tab = 'informasi';
+    public $isManajerProyek = false;
 
     public function mount($proyekId)
     {
         $this->proyek = Proyek::with('customer')->findOrFail($proyekId);
 
-        // Cek apakah user login memiliki role "manajer proyek"
+        // Cek role user pada proyek
         $pivot = ProyekUser::where('proyek_id', $proyekId)
             ->where('user_id', Auth::id())
             ->first();
@@ -29,13 +29,13 @@ class UiTab extends Component
         if ($pivot && strtolower($pivot->sebagai) === 'manajer proyek') {
             $this->isManajerProyek = true;
         }
-        
-        // Restore tab from session (per-project) when available and allowed.
+
+        // Ambil tab terakhir dari session
         $sessionKey = "proyek_tab_{$proyekId}";
         $stored = session()->get($sessionKey);
 
-        // Build allowed tabs list depending on role
-        $allowedTabs = ['informasi', 'team', 'fitur', 'file'];
+        // ✅ Tambahkan 'timeline' ke daftar tab
+        $allowedTabs = ['informasi', 'dashboard', 'team', 'fitur', 'tasks', 'file', 'timeline'];
         if ($this->isManajerProyek) {
             $allowedTabs = array_merge($allowedTabs, ['invoice', 'kwitansi']);
         }
@@ -47,19 +47,19 @@ class UiTab extends Component
 
     public function setTab($tab)
     {
-        // Validate requested tab against allowed tabs to avoid storing invalid/privileged tabs
-        $allowedTabs = ['informasi', 'team', 'fitur', 'file'];
+        // Validasi tab
+        $allowedTabs = ['informasi', 'dashboard', 'team', 'fitur', 'tasks', 'file', 'timeline'];
         if ($this->isManajerProyek) {
             $allowedTabs = array_merge($allowedTabs, ['invoice', 'kwitansi']);
         }
 
         if (! in_array($tab, $allowedTabs)) {
-            return; // ignore invalid tab requests
+            return;
         }
 
         $this->tab = $tab;
 
-        // Persist to session per-project so refresh keeps the active tab
+        // Simpan ke session agar tidak hilang saat refresh
         if ($this->proyek && isset($this->proyek->id)) {
             session()->put("proyek_tab_{$this->proyek->id}", $tab);
         }

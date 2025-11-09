@@ -35,7 +35,7 @@ new #[Layout('layouts.guest')] class extends Component
     <style>
         body {
         /* Warna dasar gradasi */
-        background: linear-gradient(135deg, #9c62ff 0%, #edeaff 40%, #5ca9ff 100%);
+        background: linear-gradient(135deg, #ac7bffff 0%, #edeaff 40%, #77b6ffff 100%);
         
         /* Tambahan efek glow blur dengan warna ungu dan cyan */
         position: relative;
@@ -51,7 +51,7 @@ new #[Layout('layouts.guest')] class extends Component
         left: -150px;
         width: 600px;
         height: 500px;
-        background: radial-gradient(circle, #9c62ff 100%);
+        background: radial-gradient(circle, #ac7bffff 100%);
         filter: blur(120px);
         opacity: 0.7;
         z-index: 0;
@@ -64,7 +64,7 @@ new #[Layout('layouts.guest')] class extends Component
         right: -150px;
         width: 600px;
         height: 500px;
-        background: radial-gradient(circle, #5ca9ff 100%);
+        background: radial-gradient(circle, #77b6ffff 100%);
         filter: blur(120px);
         opacity: 0.7;
         z-index: 0;
@@ -73,7 +73,7 @@ new #[Layout('layouts.guest')] class extends Component
         .text-purple {
         font-size: 13px; 
         font-weight: 500;   
-        color: #9c62ff;      
+        color: #ac7bffff;      
         }
         .column-input {
         margin-top: 5px;        
@@ -86,9 +86,9 @@ new #[Layout('layouts.guest')] class extends Component
         padding: 0.5rem 0.75rem;    
         }
         .column-input:focus {
-        border-color: #9c62ff;
+        border-color: #ac7bffff;
         outline: none;
-        box-shadow: 0 0 0 1px #9c62ff;
+        box-shadow: 0 0 0 1px #ac7bffff;
         }
 
         .btn-submit {

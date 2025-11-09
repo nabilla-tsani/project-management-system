@@ -2,24 +2,25 @@
 
 namespace App\View\Components;
 
-use Closure;
-use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
+use Illuminate\Support\Facades\Auth;
 
 class Sidebar extends Component
 {
-    /**
-     * Create a new component instance.
-     */
+    public $proyeks;
+
     public function __construct()
     {
-        //
+        $this->proyeks = Auth::check()
+            ? Auth::user()
+            ->proyeks()
+            ->select('proyek.*')
+            ->orderBy('proyek.nama_proyek', 'asc')
+            ->get()
+            : collect();
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     */
-    public function render(): View|Closure|string
+    public function render()
     {
         return view('components.sidebar');
     }

@@ -241,7 +241,7 @@
     display: flex;
     gap: 14px;
     align-items: center;
-    margin-bottom: auto;
+    margin-bottom: 12px;
   }
   .customer-item img {
     width: 34px;
@@ -623,7 +623,7 @@
 
       <!-- Card 5: Role -->
       <article class="card" aria-labelledby="card5-title">
-        <div class="role-badge" aria-label="User main role">Manajer</div>
+        <div class="role-badge" aria-label="User main role">Manager</div>
         <div class="role-list" aria-label="Additional user roles">
           <span>Programmer</span>
           <span>Tester</span>
@@ -640,11 +640,11 @@
             <div class="dashboard-info-summary">
               <div class="dashboard-info-card" aria-label="Total Projects">
                 <strong>12</strong>
-                <span>Proyek</span>
+                <span>Project</span>
               </div>
               <div class="dashboard-info-card" aria-label="Pending Tasks">
                 <strong>28</strong>
-                <span>Tugas</span>
+                <span>Tasks</span>
               </div>
               <div class="dashboard-info-card" aria-label="Team Members">
                 <strong>15</strong>
