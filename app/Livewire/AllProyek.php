@@ -3,9 +3,9 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Proyek;
 use App\Models\Customer;
-use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
 
 class AllProyek extends Component
@@ -15,19 +15,20 @@ class AllProyek extends Component
     public $showModal = false;
     public $isEdit = false;
     public $proyek_id;
-    public $nama_proyek, $customer_id, $deskripsi, $lokasi, $tanggal_mulai, $tanggal_selesai, $anggaran, $status;
+    public $nama_proyek;
+    public $customer_id;
+    public $deskripsi;
+    public $lokasi;
+    public $tanggal_mulai;
+    public $tanggal_selesai;
+    public $anggaran;
+    public $status;
+
     public $search = '';
     public $statusFilter = '';
     public $proyeks;
 
-    public function mount()
-    {
-        // Ambil user yang login
-        $user = Auth::user();
-
-        // Ambil semua proyek yang terkait dengan user ini
-        $this->proyeks = $user->proyeks()->with('customer')->get();
-    }
+    public $alert = null; //  menampung pesan sukses/gagal
 
     protected $rules = [
         'nama_proyek' => 'required|string|max:255',
@@ -40,32 +41,41 @@ class AllProyek extends Component
         'status' => 'required|string|max:50',
     ];
 
+    public function mount()
+    {
+        $user = Auth::user();
+        $this->proyeks = $user->proyeks()->with('customer')->get();
+    }
+
     public function render()
     {
         $user = Auth::user();
 
         $query = $user->proyeks()->with('customer')
-        ->whereRaw('LOWER(nama_proyek) LIKE ?', ['%' . strtolower($this->search) . '%'])
-        ->orderBy('proyek.id', 'desc');
-
-
-        // Filter status kalau ada
-        if ($this->statusFilter) {
-            $query->where('status', $this->statusFilter);
-        }
+            ->when($this->search, fn($q) => 
+                $q->whereRaw('LOWER(nama_proyek) LIKE ?', ['%' . strtolower(trim($this->search)) . '%'])
+            )
+            ->when($this->statusFilter, fn($q) =>
+                $q->where('status', $this->statusFilter)
+            )
+            ->orderBy('id', 'desc');
 
         $proyek = $query->paginate(20);
-
         $customers = Customer::orderBy('nama')->get();
 
-        return view('livewire.all-proyek', compact('proyek','customers')); 
+        return view('livewire.all-proyek', compact('proyek', 'customers'));
     }
 
+    private function showAlert($message, $type = 'success')
+    {
+        $this->alert = ['message' => $message, 'type' => $type];
+        $this->dispatch('reset-alert')->self();
+    }
 
     public function openModal($id = null)
     {
         $this->resetForm();
-        if($id) {
+        if ($id) {
             $this->edit($id);
         } else {
             $this->showModal = true;
@@ -80,53 +90,64 @@ class AllProyek extends Component
 
     private function resetForm()
     {
-        $this->reset(['proyek_id','nama_proyek','customer_id','deskripsi','lokasi','tanggal_mulai','tanggal_selesai','anggaran','status','isEdit']);
+        $this->reset(['proyek_id', 'nama_proyek', 'customer_id', 'deskripsi', 'lokasi', 'tanggal_mulai', 'tanggal_selesai', 'anggaran', 'status', 'isEdit']);
+        $this->resetErrorBag();
+        $this->resetValidation();
     }
 
     public function store()
     {
-        $this->validate();
+        try {
+            $this->validate();
 
-        // Buat proyek baru
-        $proyek = Proyek::create([
-            'nama_proyek' => $this->nama_proyek,
-            'customer_id' => $this->customer_id,
-            'deskripsi' => $this->deskripsi,
-            'lokasi' => $this->lokasi,
-            'tanggal_mulai' => $this->tanggal_mulai,
-            'tanggal_selesai' => $this->tanggal_selesai,
-            'anggaran' => $this->anggaran,
-            'status' => $this->status,
-        ]);
+            $proyek = Proyek::create([
+                'nama_proyek' => $this->nama_proyek,
+                'customer_id' => $this->customer_id,
+                'deskripsi' => $this->deskripsi,
+                'lokasi' => $this->lokasi,
+                'tanggal_mulai' => $this->tanggal_mulai,
+                'tanggal_selesai' => $this->tanggal_selesai,
+                'anggaran' => $this->anggaran,
+                'status' => $this->status,
+            ]);
 
-        // Ambil user yang sedang login
-        $user = Auth::user();
+            $user = Auth::user();
+            $proyek->users()->attach($user->id, [
+                'sebagai' => 'manajer proyek',
+                'keterangan' => 'Pembuat proyek',
+            ]);
 
-        // Tambahkan ke pivot table proyek_user sebagai "manajer proyek"
-        $proyek->users()->attach($user->id, [
-            'sebagai' => 'manajer proyek',
-            'keterangan' => 'Pembuat proyek',
-        ]);
+            $this->closeModal();
+            $this->alert = [
+                'type' => 'success',
+                'message' => 'Project added successfully!',
+            ];
 
-        session()->flash('message', 'Proyek berhasil ditambahkan.');
-        $this->closeModal();
+            // kirim event ke browser
+            $this->dispatch('reset-alert');
+
+        } catch (\Exception $e) {
+            $this->alert = [
+                'type' => 'error',
+                'message' => 'Failed to add project: ' . $e->getMessage(),
+            ];
+        }
     }
-
 
     public function edit($id)
     {
         $this->resetValidation();
         $proyek = Proyek::findOrFail($id);
 
-        $this->proyek_id       = $proyek->id;
-        $this->nama_proyek     = $proyek->nama_proyek;
-        $this->customer_id     = $proyek->customer_id;
-        $this->deskripsi       = $proyek->deskripsi;
-        $this->lokasi          = $proyek->lokasi;
-        $this->tanggal_mulai   = $proyek->tanggal_mulai;
+        $this->proyek_id = $proyek->id;
+        $this->nama_proyek = $proyek->nama_proyek;
+        $this->customer_id = $proyek->customer_id;
+        $this->deskripsi = $proyek->deskripsi;
+        $this->lokasi = $proyek->lokasi;
+        $this->tanggal_mulai = $proyek->tanggal_mulai;
         $this->tanggal_selesai = $proyek->tanggal_selesai;
-        $this->anggaran        = $proyek->anggaran;
-        $this->status          = $proyek->status;
+        $this->anggaran = $proyek->anggaran;
+        $this->status = $proyek->status;
 
         $this->isEdit = true;
         $this->showModal = true;
@@ -134,53 +155,76 @@ class AllProyek extends Component
 
     public function update()
     {
-        $this->validate();
+        try {
+            $this->validate();
 
-        Proyek::findOrFail($this->proyek_id)->update([
-            'nama_proyek' => $this->nama_proyek,
-            'customer_id' => $this->customer_id,
-            'deskripsi' => $this->deskripsi,
-            'lokasi' => $this->lokasi,
-            'tanggal_mulai' => $this->tanggal_mulai,
-            'tanggal_selesai' => $this->tanggal_selesai,
-            'anggaran' => $this->anggaran,
-            'status' => $this->status,
-        ]);
+            Proyek::findOrFail($this->proyek_id)->update([
+                'nama_proyek' => $this->nama_proyek,
+                'customer_id' => $this->customer_id,
+                'deskripsi' => $this->deskripsi,
+                'lokasi' => $this->lokasi,
+                'tanggal_mulai' => $this->tanggal_mulai,
+                'tanggal_selesai' => $this->tanggal_selesai,
+                'anggaran' => $this->anggaran,
+                'status' => $this->status,
+            ]);
 
-        session()->flash('message', 'Proyek berhasil diperbarui.');
-        $this->closeModal();
+            $this->closeModal();
+            $this->alert = [
+                'type' => 'success',
+                'message' => 'Project update successfully!',
+            ];
+
+            // kirim event ke browser
+            $this->dispatch('reset-alert');
+
+            } catch (\Exception $e) {
+                $this->alert = [
+                    'type' => 'error',
+                    'message' => 'Failed to update project: ' . $e->getMessage(),
+                ];
+            }
     }
 
     public function deleteProyek($id)
     {
-    $proyek = Proyek::findOrFail($id);
+        try {
+            $proyek = Proyek::findOrFail($id);
+            $proyek->delete();
 
-    try {
-        $proyek->delete();
-        session()->flash('message', [
-            'text' => 'Proyek berhasil dihapus.',
-            'type' => 'success',  // success, error, warning
-            'duration' => 1000    // durasi dalam milidetik
-        ]);
-    } catch (\Illuminate\Database\QueryException $e) {
-        if ($e->getCode() === '23503') { 
-            session()->flash('message', [
-                'text' => 'Proyek sedang digunakan dan tidak bisa dihapus.',
+            $this->alert = [
+                'type' => 'success',
+                'message' => 'Project deleted!',
+            ];
+
+            // kirim event ke browser
+            $this->dispatch('reset-alert');
+
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === '23503') {
+            // kasus: project sedang digunakan (foreign key constraint)
+            $this->alert = [
                 'type' => 'error',
-                'duration' => 4000
-            ]);
+                'message' => 'Cannot delete this project — it’s being used.',
+            ];
         } else {
-            session()->flash('message', [
-                'text' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            // kasus error umum
+            $this->alert = [
                 'type' => 'error',
-                'duration' => 5000
-            ]);
+                'message' => 'Failed to delete: ' . $e->getMessage(),
+            ];
+        }
+
+        $this->dispatch('reset-alert');
         }
     }
 
-    // Refresh data Livewire
-    $this->proyeks = Auth::user()->proyeks()->with('customer')->get();
-}
+    public function clearAlert()
+    {
+        $this->alert = null;
+    }
 
-
+    public function updatedSearch() { $this->resetPage(); }
+    public function updatedStatusFilter() { $this->resetPage(); }
 }

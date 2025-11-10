@@ -1,5 +1,41 @@
+<div class="min-h-screen w-full bg-white text-gray-900 pt-1 p-8 relative overflow-hidden">
+    <!-- Efek glow ungu  -->
+    <div
+        style="
+        position: fixed;
+        bottom: -350px;
+        left: -230px;
+        width: 500px;
+        height: 400px;
+        background: radial-gradient(circle, #ac7bff 100%);
+        filter: blur(120px);
+        opacity: 0.7;
+        z-index: 0;
+        pointer-events: none;
+        "
+    ></div>
 
-<div class="min-h-screen bg-white text-gray-900 pt-1 p-8">
+    <!-- Alert Notifikasi -->
+    @if ($alert)
+    <div
+        class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-3xl shadow-lg text-sm font-medium transition-opacity duration-500
+            {{ $alert['type'] === 'error' 
+                ? 'bg-red-100 text-red-600' 
+                : 'bg-green-100 text-green-600' }}">
+        {{ $alert['message'] }}
+    </div>
+    @endif
+
+    <script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('reset-alert', () => {
+            setTimeout(() => {
+                @this.call('clearAlert');
+            }, 1500);
+        });
+    });
+    </script>
+
     <div class="max-w-7xl mx-auto">
         <!-- Title Halaman -->
         <div class="flex items-center justify-between mb-4">
@@ -142,124 +178,165 @@
 
 {{-- Modal --}}
 @if($showModal)
-    <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-        <div class="bg-white w-2/3 max-w-2xl shadow-2xl transform transition-transform duration-300 ease-out animate-fadeIn
-                    flex flex-col"> 
-            
-            {{-- Header --}}
-            <div class="p-5 border-b border-gray-200">
-                <h3 class="text-xl font-semibold text-center" style="color: #9c62ff;">
-                    {{ $isEdit ? 'Update Project' : 'Add New Project' }}
-                </h3>
-            </div>
+<div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+    <div class="bg-white w-2/3 max-w-2xl shadow-2xl transform transition-transform duration-300 ease-out animate-fadeIn flex flex-col">
 
-            {{-- Body --}}
-            <div class="p-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {{-- Nama Proyek --}}
-                    <div class="flex flex-col">
-                        <label class="text-sm font-medium text-gray-700">Project Name</label>
-                        <input type="text" wire:model="nama_proyek"
-                            class="border border-gray-300 rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm">
-                    </div>
+    {{-- Tombol Close (icon X di kanan atas) --}}
+        <button wire:click="closeModal"
+            class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
 
+        {{-- Header --}}
+        <div class="p-5 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-center" style="color: #9c62ff;">
+                {{ $isEdit ? 'Update Project' : 'Add New Project' }}
+            </h3>
+        </div>
 
-                    {{-- Customer --}}
-                    <div class="flex flex-col">
-                        <label class="text-sm font-medium text-gray-700">Customer</label>
-                        <select wire:model="customer_id"
-                            class="border border-gray-300 rounded-3xl px-3 py-2 text-gray-400 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm">
-                            <option value="">-- Select Customer --</option>
-                            @foreach($customers as $c)
-                                <option value="{{ $c->id }}">{{ $c->nama }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+        {{-- Body --}}
+        <div class="p-5">
+            {{-- Pesan sukses --}}
+            @if (session()->has('message'))
+                <div class="mb-4 text-sm text-green-600 bg-green-50 border border-green-300 rounded-lg px-4 py-2">
+                    {{ session('message') }}
+                </div>
+            @endif
 
-                    {{-- Deskripsi --}}
-                    <div class="flex flex-col md:col-span-2">
-                        <label class="text-sm font-medium text-gray-700">Description</label>
-                        <textarea wire:model="deskripsi"
-                            class="border border-gray-300 rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm">
-                            rows="2"></textarea>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {{-- Nama Proyek --}}
+                <div class="flex flex-col">
+                    <label class="text-sm font-medium text-gray-700">Project Name</label>
+                    <input type="text" wire:model="nama_proyek"
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm 
+                        @error('nama_proyek') border-red-400 @enderror">
+                    @error('nama_proyek')
+                        <span class="text-red-800"></span>
+                    @enderror
+                </div>
 
-                    {{-- Lokasi --}}
-                    <div class="flex flex-col md:col-span-2">
-                        <label class="text-sm font-medium text-gray-700">Location</label>
-                        <input type="text" wire:model="lokasi"
-                            class="border border-gray-300 rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm">
-                    </div>
+                {{-- Customer --}}
+                <div class="flex flex-col">
+                    <label class="text-sm font-medium text-gray-700">Customer</label>
+                    <select wire:model="customer_id"
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        @error('customer_id') border-red-400 @enderror">
+                        <option value="">-- Select Customer --</option>
+                        @foreach($customers as $c)
+                            <option value="{{ $c->id }}">{{ $c->nama }}</option>
+                        @endforeach
+                    </select>
+                    @error('customer_id')
+                        <span class="text-red-500"></span>
+                    @enderror
+                </div>
 
-                    {{-- Tanggal Mulai --}}
-                    <div class="flex flex-col">
-                        <label class="text-sm font-medium text-gray-700">Start Date</label>
-                        <input type="date" wire:model="tanggal_mulai"
-                            class="border border-gray-300 rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm">
-                    </div>
+                {{-- Deskripsi --}}
+                <div class="flex flex-col md:col-span-2">
+                    <label class="text-sm font-medium text-gray-700">Description</label>
+                    <textarea wire:model="deskripsi" rows="2"
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        @error('deskripsi') border-red-400 @enderror"></textarea>
+                    @error('deskripsi')
+                        <span class="text-red-500"></span>
+                    @enderror
+                </div>
 
-                    {{-- Tanggal Selesai --}}
-                    <div class="flex flex-col">
-                        <label class="text-sm font-medium text-gray-700">End Date</label>
-                        <input type="date" wire:model="tanggal_selesai"
-                            class="border border-gray-300 rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm">
-                    </div>
+                {{-- Lokasi --}}
+                <div class="flex flex-col md:col-span-2">
+                    <label class="text-sm font-medium text-gray-700">Location</label>
+                    <input type="text" wire:model="lokasi"
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        @error('lokasi') border-red-400 @enderror">
+                    @error('lokasi')
+                        <span class="text-red-500"></span>
+                    @enderror
+                </div>
 
-                    {{-- Anggaran --}}
-                    <div class="flex flex-col">
-                        <label class="text-sm font-medium text-gray-700">Budget</label>
-                        <input type="number" wire:model="anggaran"
-                            class="border border-gray-300 rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm">
-                    </div>
+                {{-- Tanggal Mulai --}}
+                <div class="flex flex-col">
+                    <label class="text-sm font-medium text-gray-700">Start Date</label>
+                    <input type="date" wire:model="tanggal_mulai"
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        @error('tanggal_mulai') border-red-400 @enderror">
+                    @error('tanggal_mulai')
+                        <span class="text-red-500"></span>
+                    @enderror
+                </div>
 
-                    {{-- Status --}}
-                    <div class="flex flex-col">
-                        <label class="text-sm font-medium text-gray-700">Status</label>
-                        <select wire:model="status"
-                            class="border border-gray-300 rounded-3xl px-3 py-2 text-gray-400 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm">
-                            <option value="">-- Select Status --</option>
-                            <option value="belum_dimulai">Upcoming</option>
-                            <option value="sedang_berjalan">Ongoing</option>
-                            <option value="selesai">Done</option>
-                        </select>
-                    </div>
+                {{-- Tanggal Selesai --}}
+                <div class="flex flex-col">
+                    <label class="text-sm font-medium text-gray-700">End Date</label>
+                    <input type="date" wire:model="tanggal_selesai"
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        @error('tanggal_selesai') border-red-400 @enderror">
+                    @error('tanggal_selesai')
+                        <span class="text-red-500"></span>
+                    @enderror
+                </div>
 
-                    {{-- Tombol --}}
-                    <div class="mt-5 flex justify-end gap-3 md:col-span-2">
-                        @if($isEdit)
-                            <button wire:click="update"
-                                class="px-4 py-2 rounded-3xl shadow text-white text-sm font-medium transition"
-                                style="background-color: #5ca9ff;">
-                                Update
-                            </button>
-                        @else
-                            <button wire:click="store"
-                                class="px-4 py-2 rounded-3xl shadow text-white text-sm font-medium transition"
-                                style="background-color: #5ca9ff;">
-                                Save
-                            </button>
-                        @endif
-                        <button wire:click="closeModal"
-                            class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-3xl shadow text-gray-800 text-sm font-medium transition">
-                            Cancel
+                {{-- Anggaran --}}
+                <div class="flex flex-col">
+                    <label class="text-sm font-medium text-gray-700">Budget</label>
+                    <input type="number" wire:model="anggaran"
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        @error('anggaran') border-red-400 @enderror">
+                    @error('anggaran')
+                        <span class="text-red-500"></span>
+                    @enderror
+                </div>
+
+                {{-- Status --}}
+                <div class="flex flex-col">
+                    <label class="text-sm font-medium text-gray-700">Status</label>
+                    <select wire:model="status"
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        @error('status') border-red-400 @enderror">
+                        <option value="">-- Select Status --</option>
+                        <option value="belum_dimulai">Upcoming</option>
+                        <option value="sedang_berjalan">Ongoing</option>
+                        <option value="selesai">Done</option>
+                    </select>
+                    @error('status')
+                        <span class="text-red-500"></span>
+                    @enderror
+                </div>
+
+                {{-- Tombol --}}
+                <div class="mt-5 flex justify-end gap-3 md:col-span-2">
+                    @if($isEdit)
+                        <button wire:click="update"
+                            class="px-4 py-2 rounded-3xl shadow text-white text-sm font-medium transition"
+                            style="background-color: #5ca9ff;">
+                            Update
                         </button>
-                    </div>
+                    @else
+                        <button wire:click="store"
+                            class="px-4 py-2 rounded-3xl shadow text-white text-sm font-medium transition"
+                            style="background-color: #5ca9ff;">
+                            Save
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-
-    <style>
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        .animate-fadeIn {
-            animation: fadeIn 0.3s forwards;
-        }
-    </style>
+<style>
+@keyframes fadeIn {
+    0% { opacity: 0; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+}
+.animate-fadeIn {
+    animation: fadeIn 0.3s forwards;
+}
+</style>
 @endif
+
 
 </div>
 </body>
