@@ -28,7 +28,9 @@ class AllProyek extends Component
     public $statusFilter = '';
     public $proyeks;
 
-    public $alert = null; //  menampung pesan sukses/gagal
+    public $alert = null; 
+    public $confirmDelete = false;
+    public $deleteId = null;
 
     protected $rules = [
         'nama_proyek' => 'required|string|max:255',
@@ -39,6 +41,14 @@ class AllProyek extends Component
         'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
         'anggaran' => 'required|numeric',
         'status' => 'required|string|max:50',
+    ];
+
+    protected $messages = [
+    'nama_proyek.max' => 'Maximum Project Name is 255 characters.',
+    'customer_id.exists' => 'Invalid Customer.',
+    'lokasi.max' => 'Maximum Location name is 255 characters.',
+    'tanggal_selesai.after_or_equal' => 'The end date field must be a date after or equal to the start date.',
+    'anggaran.numeric' => 'The budget must be a number.',
     ];
 
     public function mount()
@@ -123,15 +133,13 @@ class AllProyek extends Component
                 'message' => 'Project added successfully!',
             ];
 
-            // kirim event ke browser
-            $this->dispatch('reset-alert');
-
         } catch (\Exception $e) {
             $this->alert = [
                 'type' => 'error',
                 'message' => 'Failed to add project: ' . $e->getMessage(),
             ];
         }
+         $this->dispatch('reset-alert');
     }
 
     public function edit($id)
@@ -174,55 +182,61 @@ class AllProyek extends Component
                 'type' => 'success',
                 'message' => 'Project update successfully!',
             ];
-
-            // kirim event ke browser
-            $this->dispatch('reset-alert');
-
-            } catch (\Exception $e) {
-                $this->alert = [
-                    'type' => 'error',
-                    'message' => 'Failed to update project: ' . $e->getMessage(),
-                ];
-            }
-    }
-
-    public function deleteProyek($id)
-    {
-        try {
-            $proyek = Proyek::findOrFail($id);
-            $proyek->delete();
-
-            $this->alert = [
-                'type' => 'success',
-                'message' => 'Project deleted!',
-            ];
-
-            // kirim event ke browser
-            $this->dispatch('reset-alert');
-
-
-        } catch (\Illuminate\Database\QueryException $e) {
-            if ($e->getCode() === '23503') {
-            // kasus: project sedang digunakan (foreign key constraint)
+        } catch (\Exception $e) {
             $this->alert = [
                 'type' => 'error',
-                'message' => 'Cannot delete this project — it’s being used.',
-            ];
-        } else {
-            // kasus error umum
-            $this->alert = [
-                'type' => 'error',
-                'message' => 'Failed to delete: ' . $e->getMessage(),
+                'message' => 'Failed to update project: ' . $e->getMessage(),
             ];
         }
-
         $this->dispatch('reset-alert');
-        }
     }
+
+
+public function deleteProyek()
+{
+    try {
+        $proyek = Proyek::findOrFail($this->deleteId);
+        $proyek->delete();
+
+        $this->confirmDelete = false;
+        $this->deleteId = null;
+
+        $this->alert = [
+            'type' => 'success',
+            'message' => 'Project deleted!',
+        ];
+        $this->dispatch('reset-alert');
+
+    } catch (\Illuminate\Database\QueryException $e) {
+        $this->alert = [
+            'type' => 'error',
+            'message' => $e->getCode() === '23503'
+                ? 'Cannot delete this project — it’s being used.'
+                : 'Failed to delete: ' . $e->getMessage(),
+        ];
+        $this->dispatch('reset-alert');
+    }
+}
+
 
     public function clearAlert()
     {
         $this->alert = null;
+    }
+
+    public function confirmDeleteProyek($id)
+    {
+        $proyek = Proyek::findOrFail($id);
+
+        $this->deleteId = $id;
+        $this->nama_proyek = $proyek->nama_proyek; // ✅ tampilkan nama proyek di modal
+        $this->confirmDelete = true;
+    }
+
+    public function cancelDelete()
+    {
+        $this->confirmDelete = false;
+        $this->deleteId = null;
     }
 
     public function updatedSearch() { $this->resetPage(); }

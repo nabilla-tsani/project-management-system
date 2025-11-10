@@ -106,7 +106,8 @@
                     </div>
 
                     <!-- Dropdown daftar proyek -->
-                    <ul x-show="openProyek" x-transition class="ml-7 space-y-1 text-sm text-gray-600">
+                    <ul x-show="openProyek" x-transition 
+                        class="ml-7 space-y-1 text-sm text-gray-600 max-h-60 overflow-y-auto">
                         @forelse ($proyeks as $p)
                             <li>
                                 <a href="{{ route('proyek.detail', $p->id) }}"
@@ -122,6 +123,7 @@
                             <li class="italic text-gray-400 text-xs px-2">Tidak ada proyek</li>
                         @endforelse
                     </ul>
+
                 </div>
 
                 <!-- Tasks -->

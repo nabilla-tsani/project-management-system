@@ -18,10 +18,12 @@
     <!-- Alert Notifikasi -->
     @if ($alert)
     <div
-        class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-3xl shadow-lg text-sm font-medium transition-opacity duration-500
+        class="fixed top-5 left-1/2 transform -translate-x-1/2 
+            z-[9999] px-6 py-3 rounded-3xl shadow-lg text-sm font-medium 
+            transition-opacity duration-500
             {{ $alert['type'] === 'error' 
-                ? 'bg-red-100 text-red-600' 
-                : 'bg-green-100 text-green-600' }}">
+                    ? 'bg-red-50 text-red-600' 
+                    : 'bg-green-100 text-green-600' }}">
         {{ $alert['message'] }}
     </div>
     @endif
@@ -29,12 +31,19 @@
     <script>
     document.addEventListener('livewire:init', () => {
         Livewire.on('reset-alert', () => {
+            // Ambil nilai type alert dari komponen Livewire
+            const alertType = @this.get('alert')?.type;
+
+            // Tentukan durasi berdasarkan tipe
+            const delay = alertType === 'error' ? 5000 : 1500;
+
             setTimeout(() => {
                 @this.call('clearAlert');
-            }, 1500);
+            }, delay);
         });
     });
     </script>
+
 
     <div class="max-w-7xl mx-auto">
         <!-- Title Halaman -->
@@ -149,9 +158,13 @@
                         <button wire:click.stop="edit({{ $p->id }})" class="text-gray-500 hover:text-gray-700 transition text-[12px]" title="Edit">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button wire:click.stop="deleteProyek({{ $p->id }})" class="text-gray-500 hover:text-gray-700 transition text-[12px]" title="Hapus">
+                        <button 
+                            wire:click.stop="confirmDeleteProyek({{ $p->id }})"
+                            class="text-gray-500 hover:text-gray-700 transition text-[12px]" 
+                            title="Hapus">
                             <i class="fas fa-trash"></i>
                         </button>
+
                     </div>
                 </div>
 
@@ -218,21 +231,21 @@
                     @enderror
                 </div>
 
-                {{-- Customer --}}
-                <div class="flex flex-col">
-                    <label class="text-sm font-medium text-gray-700">Customer</label>
-                    <select wire:model="customer_id"
-                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
-                        @error('customer_id') border-red-400 @enderror">
-                        <option value="">-- Select Customer --</option>
-                        @foreach($customers as $c)
-                            <option value="{{ $c->id }}">{{ $c->nama }}</option>
-                        @endforeach
-                    </select>
-                    @error('customer_id')
-                        <span class="text-red-500"></span>
-                    @enderror
+                {{-- Customer --}} 
+                <div class="flex flex-col"> 
+                    <label class="text-sm font-medium text-gray-700">Customer</label> 
+                    <select wire:model="customer_id" 
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] 
+                        focus:outline-none text-sm @error('customer_id') border-red-400 @enderror"> 
+                    <option value="">-- Select Customer --</option> 
+                    @foreach($customers as $c) 
+                        <option value="{{ $c->id }}">{{ $c->nama }}</option> 
+                    @endforeach
+                    </select> @error('customer_id') 
+                        <span class="text-red-500"></span> 
+                    @enderror 
                 </div>
+
 
                 {{-- Deskripsi --}}
                 <div class="flex flex-col md:col-span-2">
@@ -282,12 +295,15 @@
                 <div class="flex flex-col">
                     <label class="text-sm font-medium text-gray-700">Budget</label>
                     <input type="number" wire:model="anggaran"
+                        step="1"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                         class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
                         @error('anggaran') border-red-400 @enderror">
                     @error('anggaran')
-                        <span class="text-red-500"></span>
+                        <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                     @enderror
                 </div>
+
 
                 {{-- Status --}}
                 <div class="flex flex-col">
@@ -337,6 +353,30 @@
 </style>
 @endif
 
+
+@if($confirmDelete)
+<div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+    <div class="bg-white shadow-2xl w-96 p-6 text-center animate-fadeIn">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">Confirm Deletion</h2>
+        <p class="text-sm text-gray-600 mb-6">
+            Are you sure you want to delete 
+            <span class="font-semibold text-gray-900">“{{ $nama_proyek }}”</span>? 
+            This action cannot be undone!
+        </p>
+
+        <div class="flex justify-center gap-3">
+            <button wire:click="cancelDelete"
+                class="px-4 py-2 rounded-3xl border border-gray-300 text-gray-700 text-sm hover:bg-gray-100 transition">
+                Cancel
+            </button>
+            <button wire:click="deleteProyek"
+                class="px-4 py-2 rounded-3xl bg-red-500 text-white text-sm hover:bg-red-600 transition">
+                Yes, Delete
+            </button>
+        </div>
+    </div>
+</div>
+@endif
 
 </div>
 </body>

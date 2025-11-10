@@ -17,16 +17,14 @@
     </head>
     <body class="font-sans antialiased">
         <div class="flex h-screen bg-gray-50">
-    <!-- Sidebar -->
-    <x-sidebar />
+            <!-- Sidebar -->
+            <x-sidebar />
 
-    <!-- Main Content -->
-    <main class="bg-white flex-1 overflow-y-auto py-1 px-8">
-        {{ $slot }}  <!-- atau @yield('content') -->
-    </main>
-</div>
-    
+            <!-- Main Content -->
+            <main class="bg-white flex-1 overflow-y-auto py-1 px-8">
+                {{ $slot }}  <!-- atau @yield('content') -->
+            </main>
         </div>
-        
+
     </body>
 </html>
