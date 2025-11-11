@@ -1,4 +1,4 @@
-<div class="min-h-screen w-full bg-white text-gray-900 pt-1 p-8 relative overflow-hidden">
+<div class="min-h-screen w-full bg-white text-gray-900 pt-0 p-8 relative overflow-hidden">
     <!-- Efek glow ungu  -->
     <div
         style="

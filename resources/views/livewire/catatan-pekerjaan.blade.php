@@ -1,14 +1,24 @@
 <div>
 
     {{-- Daftar Catatan --}}
-<div class="divide-y divide-gray-200 border rounded-md bg-gray-100">
-    @forelse($catatan as $c)
-        <div class="px-3 py-2 flex flex-col gap-1 text-sm">
-            {{-- Header --}}
-            <div class="flex justify-between items-center">
-                <span class="text-xs font-semibold text-blue-700 flex items-center gap-1">
-                    <i class="fa-solid fa-tag"></i> {{ $c->jenis }}
-                </span>
+    <div class="divide-y divide-gray-200 border bg-gray-50">
+        @forelse($catatan as $c)
+            <div class="px-3 py-2 flex flex-col gap-1 text-sm">
+                {{-- Header --}}
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-[#9c62ff] flex items-center gap-1">
+        @if($c->jenis === 'pekerjaan')
+            <i class="fa-solid fa-list-check"></i> {{-- ikon untuk Task --}}
+            Task
+        @elseif($c->jenis === 'bug')
+            <i class="fa-solid fa-bug"></i> {{-- ikon untuk Bug --}}
+            Bug
+        @else
+            <i class="fa-solid fa-tag"></i> {{-- ikon default --}}
+            {{ ucfirst($c->jenis) }}
+        @endif
+    </span>
+
                 <span class="text-gray-500 text-[11px] flex items-center gap-1">
                     <i class="fa-solid fa-user"></i> {{ $c->user?->name ?? '-' }}
                 </span>
@@ -33,7 +43,7 @@
         </div>
         
     @empty
-        <div class="px-3 py-2 text-center text-gray-400 italic text-xs">Belum ada catatan</div>
+        <div class="px-3 py-2 text-center text-gray-400 italic text-xs">Nothing to show yet.</div>
         
     @endforelse
 </div>
@@ -42,8 +52,8 @@
     {{-- Tombol Tambah --}}
     <div class="flex justify-end mt-2">
         <button wire:click="openModal"
-            class="px-3 py-1.5 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition text-xs flex items-center gap-1">
-            <i class="fa-solid fa-plus"></i> Catatan
+            class="px-3 py-1.5 bg-[#5ca9ff] text-white rounded-3xl shadow hover:bg-[#449bffff] transition text-xs flex items-center gap-1">
+            <i class="fa-solid fa-plus"></i> Notes or Task
         </button>
     </div>
 
@@ -60,7 +70,7 @@
                 <select wire:model="jenis" class="border rounded-lg p-2 w-full mb-3 focus:ring-2 focus:ring-blue-400">
                     <option value="">-- Pilih Jenis --</option>
                     <option value="bug">Bug</option>
-                    <option value="pekerjaan">Pekerjaan</option>
+                    <option value="pekerjaan">Task</option>
                 </select>
                 @error('jenis') <div class="text-red-600 text-xs mb-2">{{ $message }}</div> @enderror
 

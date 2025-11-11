@@ -183,8 +183,9 @@
 
     <!-- Hamburger toggle -->
     <button @click="open = true" x-show="!open"
-            class="fixed top-4 left-4 z-50 text-2xl text-gray-800" x-cloak>
-        ☰
-    </button>
+    class="fixed left-4 mt-3 z-50 text-2xl text-gray-800" x-cloak>
+    ☰
+</button>
+
 </div>
 </body>

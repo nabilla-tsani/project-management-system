@@ -1,36 +1,50 @@
-<div class="pt-3 p-6 space-y-2">
+<div class="pt-3 p-6 space-y-2 bg-white">
 
-    {{-- Header Judul + Tombol PDF --}}
+    {{-- Header Judul --}}
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <h1 class="pl-2 text-xl font-medium text-gray-800">{{ $proyek->nama_proyek }}</h1>
+        <h1 class="pl-2 text-md font-medium text-gray-800 flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-[#9c62ff] text-[15px]"></i>
+            {{ $proyek->nama_proyek }}
+        </h1>
     </div>
 
     {{-- Tabs Navigation --}}
     <div class="border-b border-gray-200">
-        <nav class="flex space-x-4">
+        <nav class="flex flex-wrap gap-1 md:space-x-3">
             @foreach ([
-                'informasi' => 'Informasi',
-                'dashboard' => 'Dashboard',
-                'team' => 'Team',
-                'fitur' => 'Fitur',
-                'tasks' => 'Tasks',
-                'file' => 'File',
-                'timeline' => 'Timeline' {{-- ✅ Tambahan --}}
-            ] as $key => $label)
+                'dashboard' => ['label' => 'Overview', 'icon' => 'fa-solid fa-chart-line'],
+                'informasi' => ['label' => 'Info', 'icon' => 'fa-solid fa-circle-info'],
+                'team' => ['label' => 'Team', 'icon' => 'fa-solid fa-users'],
+                'fitur' => ['label' => 'Features', 'icon' => 'fa-solid fa-layer-group'],
+                'tasks' => ['label' => 'Tasks', 'icon' => 'fa-solid fa-list-check'],
+                'timeline' => ['label' => 'Timeline', 'icon' => 'fa-solid fa-clock'],
+                'file' => ['label' => 'Files', 'icon' => 'fa-solid fa-folder']
+            ] as $key => $tabData)
                 <button wire:click="setTab('{{ $key }}')"
-                        class="px-3 py-2 text-sm font-medium border-b-2 focus:outline-none
-                            {{ $tab === $key ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                    {{ $label }}
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 text-[13px] font-medium border-b-2 transition-all
+                        {{ $tab === $key 
+                            ? 'border-[#9c62ff] text-[#9c62ff]' 
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                    <i class="{{ $tabData['icon'] }} 
+                        {{ $tab === $key ? 'text-[#9c62ff]' : 'text-gray-400' }} text-[13px]"></i>
+                    {{ $tabData['label'] }}
                 </button>
             @endforeach
 
-            {{-- Hanya tampil jika role = manajer proyek --}}
+            {{-- Tab khusus manajer proyek --}}
             @if($isManajerProyek)
-                @foreach (['invoice' => 'Invoice', 'kwitansi' => 'Kwitansi'] as $key => $label)
+                @foreach ([
+                    'invoice' => ['label' => 'Invoices', 'icon' => 'fa-solid fa-file-invoice-dollar'],
+                    'kwitansi' => ['label' => 'Receipts', 'icon' => 'fa-solid fa-file-invoice']
+                ] as $key => $tabData)
                     <button wire:click="setTab('{{ $key }}')"
-                            class="px-3 py-2 text-sm font-medium border-b-2 focus:outline-none
-                                {{ $tab === $key ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                        {{ $label }}
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 text-[13px] font-medium border-b-2 focus:outline-none transition-all
+                            {{ $tab === $key 
+                                ? 'border-[#9c62ff] text-[#9c62ff]' 
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <i class="{{ $tabData['icon'] }} 
+                            {{ $tab === $key ? 'text-[#9c62ff]' : 'text-gray-400' }} text-[13px]"></i>
+                        {{ $tabData['label'] }}
                     </button>
                 @endforeach
             @endif
@@ -39,20 +53,16 @@
 
     {{-- Tab Content --}}
     <div class="mt-4">
-        @if($tab === 'informasi')
-            @livewire('detail-proyek', ['id' => $proyek->id], key('detail-'.$proyek->id))
-        @endif
-
         @if($tab === 'dashboard')
             @livewire('dashboard-proyek', ['proyekId' => $proyek->id], key('dashboard-'.$proyek->id))
         @endif
 
-        @if($tab === 'team')
-            @livewire('all-proyek-user', ['proyekId' => $proyek->id], key('team-'.$proyek->id))
+        @if($tab === 'informasi')
+            @livewire('detail-proyek', ['id' => $proyek->id], key('detail-'.$proyek->id))
         @endif
 
-         @if($tab === 'timeline')
-            @livewire('timeline-proyek', ['proyekId' => $proyek->id], key('timeline-'.$proyek->id))
+        @if($tab === 'team')
+            @livewire('all-proyek-user', ['proyekId' => $proyek->id], key('team-'.$proyek->id))
         @endif
 
         @if($tab === 'fitur')
@@ -61,6 +71,10 @@
 
         @if($tab === 'tasks')
             @livewire('all-proyek-tasks', ['proyekId' => $proyek->id], key('tasks-'.$proyek->id))
+        @endif
+
+        @if($tab === 'timeline')
+            @livewire('timeline-proyek', ['proyekId' => $proyek->id], key('timeline-'.$proyek->id))
         @endif
 
         @if($tab === 'file')
@@ -83,8 +97,8 @@
     {{-- Footer Tombol Kembali --}}
     <div class="flex justify-start pt-4">
         <a href="{{ route('proyek') }}"
-           class="px-4 py-2 bg-blue-600 text-white text-sm rounded-xl shadow hover:bg-blue-700 transition">
-            ← Kembali
+           class="px-4 py-2 bg-[#5ca9ff] text-white text-[13px] rounded-3xl shadow hover:bg-[#884fd9] transition">
+            Back to Project List
         </a>
     </div>
 </div>

@@ -34,8 +34,6 @@ Route::get('/test-gemini', function (GeminiService $gemini) {
 });
 
 Route::get('/proyek/{proyekId}', UiTab::class)->name('proyek.detail');
-// Route::get('/proyek/{id}', DetailProyek::class)->name('proyek.detail');
-
 
 Route::get('/proyek-invoice/print/{id}', [AllProyekInvoice::class, 'printInvoice'])
      ->name('proyek-invoice.print');

@@ -21,7 +21,7 @@
             <x-sidebar />
 
             <!-- Main Content -->
-            <main class="bg-white flex-1 overflow-y-auto py-1 px-8">
+            <main class="bg-white flex-1 overflow-y-auto py-1 px-3">
                 {{ $slot }}  <!-- atau @yield('content') -->
             </main>
         </div>

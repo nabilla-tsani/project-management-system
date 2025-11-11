@@ -1,5 +1,4 @@
-<div class="relative bg-gray-50 rounded-2xl shadow-lg border border-gray-100 p-4">
-
+<div class="pt-0 p-2 space-y-2">
     {{-- Flash message --}}
     @if (session()->has('message'))
         <div class="mb-3 text-sm text-green-600 bg-green-100 p-2 rounded">
@@ -9,78 +8,50 @@
 
     {{-- HEADER + BUTTON TAMBAH --}}
     <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-            <i class="fa-solid fa-list-check text-blue-600"></i> Daftar Fitur
+        <h2 class="text-lg font-medium flex items-center gap-2" style="color: #5ca9ff;">
+            Feature List
         </h2>
+
 
         <div class="flex items-center gap-3">
             <button wire:click="openAiModal"
-                class="px-3 py-1.5 bg-gradient-to-r from-cyan-400 to-purple-600 text-white rounded-xl shadow hover:bg-indigo-700 
+                class="px-3 py-1.5 bg-gradient-to-r from-cyan-400 to-purple-600 text-white rounded-3xl shadow hover:bg-indigo-700 
                         hover:shadow-md transition-all duration-200 text-sm">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Buat Fitur dengan AI
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Create Features with AI
             </button>
 
             <button wire:click="openModal"
-                class="px-4 py-1.5 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 
-                    hover:shadow-md transition-all duration-200 text-sm">
-                <i class="fa-solid fa-plus mr-1"></i> Tambah Fitur
+                class="px-4 py-1.5 rounded-3xl text-white shadow hover:shadow-md transition-all duration-200 text-sm"
+                style="background-color: #5ca9ff; hover:background-color: #4a94e6;">
+                <i class="fa-solid fa-plus mr-1"></i> Add Feature
             </button>
+
         </div>
     </div>
 
     {{-- List fitur --}}
-    <div class="space-y-3">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @forelse($fiturs as $fitur)
-            <div class="bg-white shadow-md rounded-xl p-4 border border-gray-100 hover:shadow-lg transition">
-                {{-- Nama & status & user --}}
-                <div class="flex flex-wrap items-center gap-3">
-                    <p class="font-medium text-black">{{ $fitur->nama_fitur }}</p>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white shrink-0
-                        @if($fitur->status_fitur === 'Done') bg-gradient-to-r from-green-400 to-green-600
-                        @elseif($fitur->status_fitur === 'In Progress') bg-gradient-to-r from-orange-400 to-orange-600
-                        @elseif($fitur->status_fitur === 'Pending') bg-gradient-to-r from-red-400 to-red-600
-                        @else bg-gradient-to-r from-gray-300 to-gray-500 @endif">
-                        {{ ucfirst($fitur->status_fitur) }}
-                    </span>
-                    {{-- Anggota --}}
-                    @if($fitur->anggota->count())
-                        <span class="text-gray-600 text-xs flex items-center gap-1">
-                            @if($isManajerProyek)
-                                <button wire:click="openUserModal({{ $fitur->id }})"
-                                    class="text-green-500 hover:text-green-800 transition text-xs"
-                                    title="Tambah / Kelola User">
-                                    <i class="fa-solid fa-user-plus text-[14px]"></i>
-                                </button>
+            <div class="bg-white shadow-md p-3 border border-gray-100 hover:shadow-lg transition">
+                {{-- Nama  & user & aksi --}}
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                        <p class="font-medium text-black text-md">{{ $fitur->nama_fitur }}</p>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0
+                            @if($fitur->status_fitur === 'Done')
+                                text-[#5ca9ff] bg-[#dfeeff]
+                            @elseif($fitur->status_fitur === 'In Progress')
+                                text-orange-600 bg-orange-100
+                            @elseif($fitur->status_fitur === 'Pending')
+                                text-red-600 bg-red-100
                             @else
-                                <button wire:click="openUserModal({{ $fitur->id }})"
-                                    class="text-green-500 hover:text-gray-700 transition text-xs cursor-pointer"
-                                    title="Lihat User">
-                                    <i class="fas fa-users text-[14px]"></i>
-                                </button>
-                            @endif
-                            {{ $fitur->anggota->pluck('user.name')->implode(', ') }}
+                                text-gray-600 bg-gray-200
+                            @endif">
+                            {{ ucfirst($fitur->status_fitur) }}
                         </span>
-                    @else
-                        <span class="text-gray-400 text-xs italic flex items-center gap-1">
-                            <i class="fas fa-user-slash text-gray-400 text-[14px]"></i> Belum ada yang mengerjakan fitur ini
-                        </span>
-                    @endif
-                </div>
+                    </div>
 
-                {{-- Keterangan --}}
-                @if($fitur->keterangan)
-                    <p class="mt-1 text-gray-700 text-sm py-2">{{ $fitur->keterangan }}</p>
-                @endif
-
-                {{-- Aksi --}}
-                <div class="flex justify-between mt-3">
-                    <button wire:click="toggleCatatan({{ $fitur->id }})"
-                        class="text-gray-500 hover:text-gray-700 transition text-xs flex items-center gap-1">
-                        <i class="fa-solid fa-note-sticky"></i>
-                        {{ isset($showCatatan[$fitur->id]) && $showCatatan[$fitur->id] ? 'Tutup' : 'Catatan' }}
-                    </button>
-
-                    <div class="flex gap-3">
+                    <div class="flex gap-3 ml-auto">
                         <button wire:click="openModal({{ $fitur->id }})"
                             class="text-blue-600 hover:text-blue-800 transition text-xs flex items-center gap-1">
                             <i class="fas fa-edit text-[14px]"></i>
@@ -93,6 +64,42 @@
                     </div>
                 </div>
 
+
+                    {{-- Anggota --}}
+                    @if($fitur->anggota->count())
+                        <span class="text-gray-600 text-xs flex items-center gap-1 pt-2">
+                                <button wire:click="openUserModal({{ $fitur->id }})"
+                                    class="text-[#5ca9ff] hover:text-[#3b7ed9] transition text-xs"
+                                    title="Tambah / Kelola User">
+                                    <i class="fa-solid fa-user-plus text-[14px]"></i>
+                                </button>
+                            {{ $fitur->anggota->pluck('user.name')->implode(', ') }}
+                        </span>
+                    @else
+                        <span class="text-gray-400 text-xs italic flex items-center gap-1 pt-2">
+                                <button wire:click="openUserModal({{ $fitur->id }})"
+                                    class="text-[#5ca9ff] hover:text-[#3b7ed9] transition text-xs"
+                                    title="Tambah / Kelola User">
+                                     <i class="fa-solid fa-user-plus text-[14px]"></i>
+                                </button>
+                            No one’s on this feature yet.
+                        </span>
+                    @endif
+
+                {{-- Keterangan --}}
+                @if($fitur->keterangan)
+                    <p class="mt-1 text-gray-700 text-sm py-2">{{ $fitur->keterangan }}</p>
+                @endif
+
+                {{-- Expand Collapse Catatan --}}
+                <div class="flex justify-between mt-3">
+                    <button wire:click="toggleCatatan({{ $fitur->id }})"
+                        class="text-gray-500 hover:text-gray-700 transition text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-note-sticky"></i>
+                        {{ isset($showCatatan[$fitur->id]) && $showCatatan[$fitur->id] ? 'Close' : 'Notes and Tasks' }}
+                    </button>
+                </div>
+
                 {{-- Catatan --}}
                 @if(isset($showCatatan[$fitur->id]) && $showCatatan[$fitur->id])
                     <div class="mt-3">
@@ -101,11 +108,11 @@
                 @endif
             </div>
         @empty
-            <div class="text-center text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-200 text-xs">
+            <div class="col-span-2 text-center text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-200 text-xs">
                 Belum ada fitur ditambahkan.
             </div>
         @endforelse
-    </div>
+
 
     {{-- MODAL TAMBAH/EDIT --}}
         @if($modalOpen)
