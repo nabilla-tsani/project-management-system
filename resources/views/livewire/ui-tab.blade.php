@@ -38,7 +38,7 @@
                     'kwitansi' => ['label' => 'Receipts', 'icon' => 'fa-solid fa-file-invoice']
                 ] as $key => $tabData)
                     <button wire:click="setTab('{{ $key }}')"
-                        class="flex items-center gap-1.5 px-2.5 py-1.5 text-[13px] font-medium border-b-2 focus:outline-none transition-all
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 text-[13px] font-medium border-b-2 transition-all
                             {{ $tab === $key 
                                 ? 'border-[#9c62ff] text-[#9c62ff]' 
                                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">

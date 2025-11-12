@@ -43,6 +43,8 @@ class AllProyekFitur extends Component
     public $revisi_deskripsi_ai = '';
     public $jumlah_fitur_revisi = null;
 
+    public $catatanModal = false;
+
 
     public function mount($proyekId)
     {
@@ -288,7 +290,23 @@ class AllProyekFitur extends Component
         }
     }
 
+    // Method untuk mengakses Catatan Pekerjaan
+    public function openCatatan($id)
+    {
+        $this->dispatch('openCatatanModal', id: $id);
+    }
 
+    public function openCatatanModal($id)
+    {
+        $this->selectedFiturId = $id;
+        $this->catatanModal = true;
+    }
+
+    public function closeCatatanModal()
+    {
+        $this->catatanModal = false;
+        $this->selectedFiturId = null;
+    }
 
     public function render()
     {

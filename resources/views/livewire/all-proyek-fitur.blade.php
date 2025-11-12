@@ -30,7 +30,7 @@
     </div>
 
     {{-- List fitur --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         @forelse($fiturs as $fitur)
             <div class="bg-white shadow-md p-3 border border-gray-100 hover:shadow-lg transition">
                 {{-- Nama  & user & aksi --}}
@@ -76,7 +76,7 @@
                             {{ $fitur->anggota->pluck('user.name')->implode(', ') }}
                         </span>
                     @else
-                        <span class="text-gray-400 text-xs italic flex items-center gap-1 pt-2">
+                        <span class="text-gray-400 text-xs italic flex items-center gap-1 pb-2 pt-2">
                                 <button wire:click="openUserModal({{ $fitur->id }})"
                                     class="text-[#5ca9ff] hover:text-[#3b7ed9] transition text-xs"
                                     title="Tambah / Kelola User">
@@ -91,27 +91,19 @@
                     <p class="mt-1 text-gray-700 text-sm py-2">{{ $fitur->keterangan }}</p>
                 @endif
 
-                {{-- Expand Collapse Catatan --}}
-                <div class="flex justify-between mt-3">
-                    <button wire:click="toggleCatatan({{ $fitur->id }})"
-                        class="text-gray-500 hover:text-gray-700 transition text-xs flex items-center gap-1">
-                        <i class="fa-solid fa-note-sticky"></i>
-                        {{ isset($showCatatan[$fitur->id]) && $showCatatan[$fitur->id] ? 'Close' : 'Notes and Tasks' }}
-                    </button>
-                </div>
-
                 {{-- Catatan --}}
-                @if(isset($showCatatan[$fitur->id]) && $showCatatan[$fitur->id])
-                    <div class="mt-3">
-                        @livewire('catatan-pekerjaan', ['proyekFiturId' => $fitur->id], key('catatan-'.$fitur->id))
-                    </div>
-                @endif
+                <button wire:click="openCatatan({{ $fitur->id }})"
+                    class="text-gray-500 hover:text-gray-700 text-xs flex items-center gap-1">
+                    <i class="fa-solid fa-note-sticky"></i>
+                    Notes & Tasks
+                </button>
             </div>
         @empty
             <div class="col-span-2 text-center text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-200 text-xs">
                 Belum ada fitur ditambahkan.
             </div>
         @endforelse
+
 
 
     {{-- MODAL TAMBAH/EDIT --}}
@@ -298,6 +290,8 @@
     </div>
     
 @endif
+
+@livewire('catatan-pekerjaan')
 
 
 </div>
