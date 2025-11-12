@@ -32,7 +32,7 @@
     {{-- List fitur --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         @forelse($fiturs as $fitur)
-            <div class="bg-white shadow-md p-3 border border-gray-100 hover:shadow-lg transition">
+            <div class="bg-white shadow-md p-3 border border-gray-100 hover:shadow-lg transition" wire:click="openCatatan({{ $fitur->id }})">
                 {{-- Nama  & user & aksi --}}
                 <div class="flex items-center justify-between flex-wrap gap-3">
                     <div class="flex items-center gap-3">
@@ -71,7 +71,7 @@
                                 <button wire:click="openUserModal({{ $fitur->id }})"
                                     class="text-[#5ca9ff] hover:text-[#3b7ed9] transition text-xs"
                                     title="Tambah / Kelola User">
-                                    <i class="fa-solid fa-user-plus text-[14px]"></i>
+                                    <i class="fa-solid fa-user-plus text-[14px] pl-1"></i>
                                 </button>
                             {{ $fitur->anggota->pluck('user.name')->implode(', ') }}
                         </span>
@@ -80,7 +80,7 @@
                                 <button wire:click="openUserModal({{ $fitur->id }})"
                                     class="text-[#5ca9ff] hover:text-[#3b7ed9] transition text-xs"
                                     title="Tambah / Kelola User">
-                                     <i class="fa-solid fa-user-plus text-[14px]"></i>
+                                     <i class="fa-solid fa-user-plus text-[14px] pl-1"></i>
                                 </button>
                             No one’s on this feature yet.
                         </span>
@@ -88,13 +88,13 @@
 
                 {{-- Keterangan --}}
                 @if($fitur->keterangan)
-                    <p class="mt-1 text-gray-700 text-sm py-2">{{ $fitur->keterangan }}</p>
+                    <p class="mt-1 text-gray-700 text-sm pl-1 py-2">{{ $fitur->keterangan }}</p>
                 @endif
 
                 {{-- Catatan --}}
                 <button wire:click="openCatatan({{ $fitur->id }})"
                     class="text-gray-500 hover:text-gray-700 text-xs flex items-center gap-1">
-                    <i class="fa-solid fa-note-sticky"></i>
+                    <i class="fa-solid fa-note-sticky pl-1"></i>
                     Notes & Tasks
                 </button>
             </div>

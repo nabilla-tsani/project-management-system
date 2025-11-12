@@ -20,6 +20,8 @@ class CatatanPekerjaan extends Component
     public $user_id = '';
     public $namaFitur;
     public $formKey = 'form_default';
+    public $filterJenis = '';
+
 
     protected $listeners = ['openCatatanModal' => 'showModal'];
 
@@ -37,7 +39,6 @@ class CatatanPekerjaan extends Component
         $fitur = ProyekFitur::find($id);
         $this->namaFitur = $fitur?->nama_fitur ?? 'Fitur Tidak Dikenal';
 
-        // ✅ Ambil hanya user yang terlibat dalam proyek fitur ini
         if ($fitur && $fitur->proyek_id) {
             $proyek = Proyek::with('users')->find($fitur->proyek_id);
             $this->users = $proyek?->users ?? collect();
@@ -52,10 +53,16 @@ class CatatanPekerjaan extends Component
     public function loadCatatan()
     {
         $this->catatan = ProyekCatatanPekerjaan::where('proyek_fitur_id', $this->proyekFiturId)
+            ->when($this->filterJenis, function($query) {
+                // case-insensitive filter to handle stored capitalization differences
+                $query->whereRaw('LOWER(jenis) = ?', [strtolower($this->filterJenis)]);
+            })
             ->with('user')
-            ->orderByDesc('id')
+            // order by most recently updated first so edited notes jump to the top
+            ->orderByDesc('updated_at')
             ->get();
     }
+
 
     public function closeModal()
     {
@@ -76,15 +83,21 @@ class CatatanPekerjaan extends Component
     {
         $this->validate();
 
+        // normalize jenis to lowercase before saving to keep data consistent
+        $normalizedJenis = strtolower(trim($this->jenis));
+
         ProyekCatatanPekerjaan::updateOrCreate(
             ['id' => $this->catatanId],
             [
                 'proyek_fitur_id' => $this->proyekFiturId,
                 'user_id' => $this->user_id,
-                'jenis' => $this->jenis,
+                'jenis' => $normalizedJenis,
                 'catatan' => $this->isiCatatan,
             ]
         );
+
+        // reflect normalized value back to the component property
+        $this->jenis = $normalizedJenis;
 
         $this->resetForm(true);
         $this->loadCatatan();
@@ -95,7 +108,8 @@ class CatatanPekerjaan extends Component
     {
         $data = ProyekCatatanPekerjaan::findOrFail($id);
         $this->catatanId = $data->id;
-        $this->jenis = $data->jenis;
+        // normalize to lowercase for consistency with the form options
+        $this->jenis = strtolower($data->jenis);
         $this->isiCatatan = $data->catatan;
         $this->user_id = $data->user_id;
         $this->formKey = 'form_edit_' . $data->id;
@@ -112,8 +126,28 @@ class CatatanPekerjaan extends Component
         $this->loadCatatan();
     }
 
+    public function updatedFilterJenis($value)
+    {
+        // normalize incoming value and reload
+        $this->filterJenis = $value ? strtolower($value) : '';
+        $this->loadCatatan();
+    }
+
     public function render()
     {
-        return view('livewire.catatan-pekerjaan');
+        $catatan = ProyekCatatanPekerjaan::with('user')
+            ->where('proyek_fitur_id', $this->proyekFiturId) // ✅ batasi berdasarkan fitur aktif
+            ->when($this->filterJenis, function($query) {
+                // case-insensitive filter
+                $query->whereRaw('LOWER(jenis) = ?', [strtolower($this->filterJenis)]);
+            })
+            // order by most recently updated first so new/edited notes appear at top
+            ->orderByDesc('updated_at')
+            ->get();
+
+        return view('livewire.catatan-pekerjaan', [
+            'catatan' => $catatan,
+            'users' => $this->users, // gunakan user dari proyek aktif
+        ]);
     }
 }
