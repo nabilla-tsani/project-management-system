@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Http;
 class AllProyekFitur extends Component
 {
     public $proyekId;
-    public $fiturs;
 
     // Form fields
     public $fiturId;
@@ -44,6 +43,8 @@ class AllProyekFitur extends Component
     public $jumlah_fitur_revisi = null;
 
     public $catatanModal = false;
+    public $search = '';
+
 
 
     public function mount($proyekId)
@@ -58,16 +59,6 @@ class AllProyekFitur extends Component
         if ($pivot && strtolower($pivot->sebagai) === 'manajer proyek') {
             $this->isManajerProyek = true;
         }
-
-        $this->loadFitur();
-    }
-
-    public function loadFitur()
-    {
-        $this->fiturs = ProyekFitur::with(['anggota.user'])
-            ->where('proyek_id', $this->proyekId)
-            ->orderBy('id', 'desc')
-            ->get();
     }
 
     // --- Modal tambah/edit ---
@@ -106,13 +97,15 @@ class AllProyekFitur extends Component
         );
 
         $this->closeModal();
-        $this->loadFitur();
+       $this->dispatch('$refresh');
+
     }
 
     public function delete($id)
     {
         ProyekFitur::findOrFail($id)->delete();
-        $this->loadFitur();
+       $this->dispatch('$refresh');
+
     }
 
     public function closeModal()
@@ -190,7 +183,8 @@ class AllProyekFitur extends Component
 
         $this->showAiReview = false;
         $this->aiFiturList = [];
-        $this->loadFitur();
+       $this->dispatch('$refresh');
+
         $this->closeAiModal();
         session()->flash('message', 'Fitur AI berhasil ditambahkan ke proyek!');
     }
@@ -268,7 +262,7 @@ class AllProyekFitur extends Component
     Tugasmu: buatkan daftar {$jumlahFitur} fitur baru yang relevan untuk proyek ini,
     tanpa mengulang fitur yang sudah ada di atas.
     Format jawaban hanya berupa daftar nama fitur (satu fitur per baris),
-    tanpa penjelasan atau nomor urut.
+    tanpa penjelasan atau nomor urut, dan tanpa tanda -.
     EOT;
 
             // Minta hasil dari Gemini
@@ -308,10 +302,32 @@ class AllProyekFitur extends Component
         $this->selectedFiturId = null;
     }
 
-    public function render()
-    {
-        return view('livewire.all-proyek-fitur', [
-            'isManajerProyek' => $this->isManajerProyek,
-        ]);
-    }
+   public function render()
+{
+    \Log::info('Search term:', [$this->search]);
+
+    $searchTerm = strtolower($this->search); // ubah pencarian jadi lowercase
+
+    $fiturs = ProyekFitur::with(['anggota.user'])
+        ->where('proyek_id', $this->proyekId)
+        ->when($this->search, function ($query) use ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->whereRaw('LOWER(nama_fitur) LIKE ?', ['%' . $searchTerm . '%'])
+                  ->orWhereHas('anggota.user', function ($subQuery) use ($searchTerm) {
+                      $subQuery->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%']);
+                  });
+            });
+        })
+        ->orderBy('id', 'desc')
+        ->get();
+
+    return view('livewire.all-proyek-fitur', [
+        'fiturs' => $fiturs,
+        'isManajerProyek' => $this->isManajerProyek,
+    ]);
+}
+
+
+
+
 }

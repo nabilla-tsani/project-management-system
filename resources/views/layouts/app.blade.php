@@ -25,6 +25,8 @@
                 {{ $slot }}  <!-- atau @yield('content') -->
             </main>
         </div>
+@livewireScripts
+@livewireStyles
 
     </body>
 </html>
