@@ -20,7 +20,6 @@ class AllProyekFitur extends Component
 
     // Modal states
     public $modalOpen = false;
-    public $userModalOpen = false;
 
     // Dropdown & user modal
     public $statusList = ['Pending', 'In Progress', 'Done'];
@@ -43,6 +42,8 @@ class AllProyekFitur extends Component
     public $jumlah_fitur_revisi = null;
 
     public $catatanModal = false;
+    public $userFiturModal = false;
+
     public $search = '';
 
     public $showConfirmDelete = false; 
@@ -127,19 +128,6 @@ class AllProyekFitur extends Component
     {
         $this->reset(['modalOpen', 'fiturId', 'nama_fitur', 'keterangan', 'status_fitur']);
         $this->resetValidation();
-    }
-
-    // --- Modal user ---
-    public function openUserModal($fiturId)
-    {
-        $this->selectedFiturId = $fiturId;
-        $this->selectedFitur   = ProyekFitur::findOrFail($fiturId);
-        $this->userModalOpen   = true;
-    }
-
-    public function closeUserModal()
-    {
-        $this->reset(['userModalOpen', 'selectedFiturId', 'selectedFitur']);
     }
 
     public function toggleCatatan($fiturId)
@@ -300,6 +288,24 @@ class AllProyekFitur extends Component
         }
     }
 
+    public function openUserFitur($id)
+    {
+        $this->dispatch('openUserFiturModal', id: $id);
+    }
+
+    public function openUserFiturModal($id)
+    {
+        $this->selectedFiturId = $id;
+        $this->userFiturModal = true;
+    }
+
+    public function closeUserFiturModal()
+    {
+        $this->userFiturModal = false;
+        $this->selectedFiturId = null;
+    }
+
+
     // Method untuk mengakses Catatan Pekerjaan
     public function openCatatan($id)
     {
@@ -317,6 +323,10 @@ class AllProyekFitur extends Component
         $this->catatanModal = false;
         $this->selectedFiturId = null;
     }
+
+
+
+
 
     public function render()
     {

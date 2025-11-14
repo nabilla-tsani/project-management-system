@@ -7,6 +7,7 @@ use App\Models\ProyekFiturUser;
 use App\Models\ProyekFitur;
 use App\Models\ProyekUser;
 use App\Models\User;
+use App\Models\Proyek;
 use Illuminate\Support\Facades\Auth;
 
 class AllFiturUser extends Component
@@ -19,19 +20,28 @@ class AllFiturUser extends Component
     public $user_id = null;
     public $keterangan = null;
     public $isEdit = false;
-    public $isManager = false; // <-- Tambahkan flag
+    public $isManager = false; 
+    public $namaFitur;
+
+
+    protected $listeners = [
+    'openUserFiturModal' => 'showModal'
+];
+
 
     protected $rules = [
         'user_id' => 'required|exists:users,id',
         'keterangan' => 'nullable|string|max:255',
     ];
 
-    public function mount($proyekFiturId)
+    public function loadFiturUsers()
     {
-        $this->proyekFiturId = $proyekFiturId;
-        $this->checkIfManager();
-        $this->loadData();
+        $this->fiturUsers = ProyekFiturUser::where('proyek_fitur_id', $this->proyekFiturId)
+            ->with('user')
+            ->orderBy('id', 'desc')
+            ->get();
     }
+
 
     protected function checkIfManager()
     {
@@ -55,18 +65,38 @@ class AllFiturUser extends Component
             ->get();
     }
 
-    public function openModal($id = null)
+    public function showModal($id)
     {
-        if (!$this->isManager) return; // Hanya manajer
-        $this->resetForm();
+        $this->resetErrorBag();
+        $this->resetValidation();
 
-        if ($id) {
-            $this->edit($id);
-            return;
+        $this->proyekFiturId = $id;
+
+        // Ambil fitur
+        $fitur = ProyekFitur::find($id);
+
+        // Nama fitur
+        $this->namaFitur = $fitur?->nama_fitur ?? 'Fitur Tidak Dikenal';
+
+        // Ambil user proyek dari model Proyek
+        if ($fitur && $fitur->proyek_id) {
+            $this->userList = Proyek::with('users')
+                ->find($fitur->proyek_id)
+                ?->users ?? collect();
+        } else {
+            $this->userList = collect();
         }
 
+        // Ambil user-user anggota fitur
+        $this->loadFiturUsers();
+
+        // Tentukan apakah user adalah manajer proyek
+        $this->checkIfManager();
+
+        // Buka modal
         $this->modalOpen = true;
     }
+
 
     public function edit($id)
     {
@@ -111,7 +141,6 @@ class AllFiturUser extends Component
             ]
         );
 
-        $this->closeModal();
         $this->loadData();
         $this->dispatch('refresh-fitur-users');
     }

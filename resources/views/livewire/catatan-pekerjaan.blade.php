@@ -17,7 +17,7 @@
                         class="space-y-3 text-[13px]"
                     >
                         {{-- Jenis --}}
-                        <div>
+                        <div class="text-xs">
                             <label class="block text-gray-600 mb-1">Type</label>
                             <select 
                                 wire:model.live="jenis"
@@ -25,7 +25,7 @@
                             >
                                 <option value="">-- Select Type --</option>
                                 <option value="bug">Bug</option>
-                                <option value="pekerjaan">Tasks</option>
+                                <option value="pekerjaan">Task</option>
                             </select>
                             @error('jenis') 
                                 <span class="text-xs text-red-500">{{ $message }}</span> 
@@ -33,7 +33,7 @@
                         </div>
 
                         {{-- User --}}
-                        <div>
+                        <div class="text-xs">
                             <label class="block text-gray-600 mb-1">User</label>
                             <select 
                                 wire:model.live="user_id"
@@ -50,16 +50,16 @@
                         </div>
 
                         {{-- Catatan --}}
-                        <div>
+                        <div class="text-xs">
                             <label class="block text-gray-600 mb-1">Notes or Tasks</label>
                             <textarea 
                                 wire:model.live="isiCatatan" 
-                                rows="4"
+                                rows="10"
                                 class="w-full border rounded-lg px-3 py-1.5 focus:outline-none focus:ring focus:ring-[#5ca9ff]/50"
                                 placeholder="Add notes or tasks here"
                             ></textarea>
                             @error('isiCatatan') 
-                                <span class="text-xs text-red-500">{{ $message }}</span> 
+                                <span class="text-red-500">{{ $message }}</span> 
                             @enderror
                         </div>
 
@@ -87,8 +87,9 @@
                 {{-- Kanan: Daftar --}}
                 <div class="w-2/3">
                 <div class="mb-1 flex items-center justify-between">
-                    <h2 class="text-base font-semibold mb-1 text-center text-gray-800">
-                        Features : {{ $namaFitur ?? 'Nama Fitur' }}
+                    <h2 class="text-base font-semibold mb-1 text-center">
+                        <span class="text-gray-800">Features :</span>
+                        <span class="text-[#5ca9ff]">{{ $namaFitur ?? 'Nama Fitur' }}</span>
                     </h2>
 
                     {{-- Filter --}}
@@ -97,7 +98,7 @@
                         <select 
                             id="filterJenis"
                             wire:model="filterJenis"
-                            class="border rounded-3xl px-7 bg-white focus:outline-none focus:ring focus:ring-[#5ca9ff]/50"
+                            class="text-xs border rounded-3xl px-7 bg-white focus:outline-none focus:ring focus:ring-[#5ca9ff]/50"
                         >
                             <option value="">All</option>
                             <option value="pekerjaan">Task</option>
@@ -105,7 +106,22 @@
                         </select>
                     </div>
                 </div>
-
+                
+                @if($alert)
+                        <div
+                            x-data="{ show: true }"
+                            x-show="show"
+                            x-transition.opacity.duration.300ms
+                            @alert-shown.window="
+                                show = true;
+                                setTimeout(() => show = false, 2000);
+                            "
+                            class="mb-3 text-xs px-3 py-2 rounded-2xl shadow 
+                                {{ $alert['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}"
+                        >
+                            {{ $alert['message'] }}
+                        </div>
+                    @endif
 
                 <div class="h-[400px] overflow-y-auto pr-2">
                     @if($catatan->isEmpty())
@@ -144,22 +160,20 @@
                                         </div>
                                     </div>
 
-                                    <p class="text-gray-700 mt-1 pl-1">{{ $item->catatan }}</p>
+                                    <p class="text-xs text-gray-700 mt-1 pl-1 text-justify">
+                                        {{ $item->catatan }}
+                                    </p>
                                 </li>
                             @endforeach
                         </ul>
                     @endif
-
                 </div>
-
-                    <div class="flex justify-end mt-4">
-                        <button 
-                            wire:click="closeModal"
-                            class="bg-gray-300 hover:bg-gray-400 text-xs px-4 py-2 rounded-lg"
-                        >
-                            Close
-                        </button>
+                    <div class="flex justify-end mt-1"> 
+                        <button wire:click="closeModal" class="text-xs bg-gray-300 hover:bg-gray-400 text-xs px-4 py-2 rounded-3xl"> 
+                            Close 
+                        </button> 
                     </div>
+
                 </div>
             </div>
         </div>

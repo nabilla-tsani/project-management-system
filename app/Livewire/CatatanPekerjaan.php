@@ -22,8 +22,13 @@ class CatatanPekerjaan extends Component
     public $formKey = 'form_default';
     public $filterJenis = '';
 
+    public $alert = null;
 
-    protected $listeners = ['openCatatanModal' => 'showModal'];
+    protected $listeners = [
+        'openCatatanModal' => 'showModal',
+        'hide-alert' => 'hideAlert'
+    ];
+
 
     protected $rules = [
         'jenis' => 'required|string|max:50',
@@ -99,9 +104,14 @@ class CatatanPekerjaan extends Component
         // reflect normalized value back to the component property
         $this->jenis = $normalizedJenis;
 
-        $this->resetForm(true);
-        $this->loadCatatan();
-        $this->dispatch('catatan-saved');
+       $message = $this->catatanId
+        ? 'Updated successfully!'
+        : 'Added successfully!';
+
+    $this->resetForm(true);
+    $this->loadCatatan();
+
+    $this->showAlert($message, 'success');
     }
 
     public function edit($id)
@@ -123,7 +133,11 @@ class CatatanPekerjaan extends Component
     public function delete($id)
     {
         ProyekCatatanPekerjaan::findOrFail($id)->delete();
+
         $this->loadCatatan();
+
+        // tampilkan alert sukses delete
+        $this->showAlert('Deleted successfully!', 'success');
     }
 
     public function updatedFilterJenis($value)
@@ -131,6 +145,23 @@ class CatatanPekerjaan extends Component
         // normalize incoming value and reload
         $this->filterJenis = $value ? strtolower($value) : '';
         $this->loadCatatan();
+    }
+
+    public function showAlert($message, $type = 'success')
+    {
+        $this->alert = [
+            'type' => $type,
+            'message' => $message,
+        ];
+
+        // kirim event browser agar Alpine tahu kapan harus menghilangkan alert
+        $this->dispatch('alert-shown');
+    }
+
+
+    public function hideAlert()
+    {
+        $this->alert = null;
     }
 
     public function render()

@@ -46,16 +46,19 @@
             {{-- List fitur --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
                 @forelse($fiturs as $fitur)
-                    <div class="bg-white border-y border-gray-200 shadow-sm hover:shadow-md hover:bg-[#f2eaffff] transition duration-200 overflow-hidden">
+                    <div 
+                         class="bg-white border-y border-gray-200 shadow-sm hover:shadow-md hover:bg-[#f2eaffff] transition duration-200 overflow-hidden">
                         {{-- Baris pertama (header tabel) --}}
                         <div class="grid grid-cols-12 items-center px-3 pt-2 pb-1">
                             {{-- Nama Fitur --}}
-                            <div class="col-span-5 text-[13px] font-medium text-gray-900 whitespace-normal break-words">
+                            <div wire:click="openCatatan({{ $fitur->id }})"
+                                 class="col-span-5 text-[13px] font-medium text-gray-900 whitespace-normal break-words">
                                 {{ $fitur->nama_fitur }}
                             </div>
 
                             {{-- Status --}}
-                            <div class="col-span-1 flex items-center justify-center">
+                            <div wire:click="openCatatan({{ $fitur->id }})"
+                                 class="col-span-1 flex items-center justify-center">
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold
                                     @if($fitur->status_fitur === 'Done')
                                         text-[#5ca9ff] bg-[#dfeeff]
@@ -70,12 +73,14 @@
                                 </span>
                             </div>
                             {{-- Anggota --}}
-                            <div class="col-span-5 text-xs text-gray-600 flex items-center gap-1">
-                                <button wire:click.stop="openUserModal({{ $fitur->id }})"
+                            <div wire:click.stop="openUserFitur({{ $fitur->id }})"
+                                 class="col-span-5 text-xs text-gray-600 flex items-center gap-1">
+                               <button wire:click.stop="openUserFitur({{ $fitur->id }})"
                                     class="text-[#5ca9ff] hover:text-[#3b7ed9] transition text-xs"
                                     title="Tambah / Kelola User">
                                     <i class="fa-solid fa-user-plus text-[12px]"></i>
                                 </button>
+
 
                                 @if($fitur->anggota->count())
                                     <span class="whitespace-normal break-words">
@@ -103,7 +108,8 @@
                         </div>
 
                         {{-- Baris kedua (isi tabel) --}}
-                        <div class="grid grid-cols-12 items-start px-3 pb-2 text-xs">
+                        <div wire:click="openCatatan({{ $fitur->id }})"
+                             class="grid grid-cols-12 items-start px-3 pb-2 text-xs">
                             {{-- Keterangan --}}
                             <div class="col-span-11 text-gray-700">
                                 {{ $fitur->keterangan ?? '-' }}
@@ -205,32 +211,6 @@
         @endif
 
 
-    {{-- MODAL USER --}}
-    @if($userModalOpen)
-        <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-4">
-            <div class="bg-white shadow-2xl w-full max-w-4xl max-h-screen overflow-y-auto rounded-lg border border-gray-200 p-5">
-                
-                {{-- Header --}}
-                <h3 class="text-lg font-bold text-gray-800 mb-4 text-center flex items-center justify-center gap-2">
-                    <i class="fas fa-users text-blue-600"></i>
-                    User Fitur {{ $selectedFitur?->nama_fitur }}
-                </h3>
-
-                {{-- Konten --}}
-                @livewire('all-fitur-user', ['proyekFiturId' => $selectedFiturId], key('fitur-user-'.$selectedFiturId))
-
-                {{-- Footer --}}
-                <div class="flex justify-end mt-4">
-                    <button wire:click="closeUserModal"
-                        class="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-300 hover:scale-105 transition text-sm">
-                        Tutup
-                    </button>
-                </div>
-            </div>
-        </div>
-    @endif
-
-
     {{-- MODAL TAMBAH FITUR WITH AI--}}
     @if($aiModalOpen)
         <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-4">
@@ -272,7 +252,7 @@
                                     type="button"
                                     wire:loading.attr="disabled"
                                     wire:target="generateFiturAI"
-                                    class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-3xl text-xs transition
+                                    class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-3xl text-xs transition hover:scale-105
                                         disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
                                 Cancel
                             </button>
@@ -376,6 +356,6 @@
 
 
 @livewire('catatan-pekerjaan')
-
+@livewire('all-fitur-user')
 
 </div>
