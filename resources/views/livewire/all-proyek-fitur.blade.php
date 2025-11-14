@@ -1,10 +1,17 @@
 <div class="pt-0 p-2 space-y-2">
     {{-- Flash message --}}
-    @if (session()->has('message'))
-        <div class="mb-3 text-sm text-green-600 bg-green-100 p-2 rounded">
-            {{ session('message') }}
-        </div>
-    @endif
+        @if (session()->has('message'))
+           <div 
+                x-data="{ show: true }"
+                x-init="setTimeout(() => show = false, 2000)" 
+                x-show="show"
+                x-transition.duration.500ms
+                class="mb-3 text-sm text-green-600 bg-green-100 p-2 rounded pointer-events-auto"
+                style="position: relative; z-index: 10;"
+            >
+                {{ session('message') }}
+            </div>
+        @endif
 
 <div class="flex items-center justify-between mb-4">
     <div class="flex items-center gap-3">
@@ -39,14 +46,11 @@
             {{-- List fitur --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
                 @forelse($fiturs as $fitur)
-                    <div 
-                        wire:click="openCatatan({{ $fitur->id }})"
-                        class="bg-white border-y border-gray-200 shadow-sm hover:shadow-md hover:bg-[#f2eaffff] transition duration-200 overflow-hidden"
-                    >
+                    <div class="bg-white border-y border-gray-200 shadow-sm hover:shadow-md hover:bg-[#f2eaffff] transition duration-200 overflow-hidden">
                         {{-- Baris pertama (header tabel) --}}
                         <div class="grid grid-cols-12 items-center px-3 pt-2 pb-1">
                             {{-- Nama Fitur --}}
-                            <div class="col-span-6 text-[13px] font-medium text-gray-900 whitespace-normal break-words">
+                            <div class="col-span-5 text-[13px] font-medium text-gray-900 whitespace-normal break-words">
                                 {{ $fitur->nama_fitur }}
                             </div>
 
@@ -66,7 +70,7 @@
                                 </span>
                             </div>
                             {{-- Anggota --}}
-                            <div class="col-span-4 text-xs text-gray-600 flex items-center gap-1">
+                            <div class="col-span-5 text-xs text-gray-600 flex items-center gap-1">
                                 <button wire:click.stop="openUserModal({{ $fitur->id }})"
                                     class="text-[#5ca9ff] hover:text-[#3b7ed9] transition text-xs"
                                     title="Tambah / Kelola User">
@@ -90,7 +94,7 @@
                                     <i class="fas fa-edit text-[13px]"></i>
                                 </button>
 
-                                <button wire:click.stop="delete({{ $fitur->id }})"
+                                <button wire:click="confirmDelete({{ $fitur->id }})"
                                     class="text-red-600 hover:text-red-800 transition text-xs"
                                     title="Hapus">
                                     <i class="fas fa-trash text-[13px]"></i>
@@ -102,7 +106,7 @@
                         <div class="grid grid-cols-12 items-start px-3 pb-2 text-xs">
                             {{-- Keterangan --}}
                             <div class="col-span-11 text-gray-700">
-                                {{ $fitur->keterangan ?? '—' }}
+                                {{ $fitur->keterangan ?? '-' }}
                             </div>
 
                             {{-- Notes --}}
@@ -130,6 +134,30 @@
                         @endif
                     @endforelse
                 </div>
+                
+    {{-- MODAL KONFIRMASI DELETE --}}   
+        @if ($showConfirmDelete)
+        <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+            <div class="bg-white shadow-2xl w-96 p-6 text-center animate-fadeIn">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Confirm Deletion</h2>
+                <p class="text-gray-600 mb-5 text-sm">Are you sure you want to delete this feature? This action cannot be undone.</p>
+
+                <div class="flex justify-center gap-3">
+                    <button 
+                        wire:click="$set('showConfirmDelete', false)"
+                        class="px-4 py-2 rounded-3xl bg-gray-200 border border-gray-300 text-gray-700 text-sm hover:bg-gray-400 transition">
+                        Cancel
+                    </button>
+
+                    <button 
+                        wire:click="delete"
+                        class="px-4 py-2 rounded-3xl bg-red-500 text-white text-sm hover:bg-red-600 transition">
+                        Yes, Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endif
 
     {{-- MODAL TAMBAH/EDIT --}}
         @if($modalOpen)
@@ -214,11 +242,6 @@
                     </h3>
                 </div>
 
-
-                <div wire:loading wire:target="generateFiturAI" class="mb-3 text-sm text-gray-600 italic">
-                    AI’s thinking, please wait...
-                </div>
-
                 <div class="space-y-3">
                     <div>
                         <div class="flex justify-between items-center">
@@ -239,15 +262,29 @@
                                         focus:ring-2 focus:ring-blue-400 text-xs">></textarea>
                     </div>
 
-                    <div class="flex justify-end gap-3 pt-2">
-                        <button wire:click="closeAiModal"
-                                class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-3xl hover:bg-gray-300 text-xs transition">
-                            Cancel
-                        </button>
-                        <button wire:click="generateFiturAI"
-                                class="bg-[#5ca9ff] text-white px-4 py-1.5 rounded-3xl hover:bg-[#449bffff] hover:scale-105 transition text-xs">
-                            Generate
-                        </button>
+                    <div wire:loading wire:target="generateFiturAI" class="text-xs text-[#9c62ff] italic">
+                        AI's thinking, please wait...
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                       <div class="flex justify-end gap-3">
+                            <button wire:click="closeAiModal"
+                                    type="button"
+                                    wire:loading.attr="disabled"
+                                    wire:target="generateFiturAI"
+                                    class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-3xl text-xs transition
+                                        disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Cancel
+                            </button>
+                            <button wire:click="generateFiturAI"
+                                    wire:loading.attr="disabled"
+                                    wire:target="generateFiturAI"
+                                    class="px-4 py-1.5 rounded-3xl text-xs transition text-white bg-[#5ca9ff] hover:bg-[#449bffff] hover:scale-105
+                                        disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-gray-300">
+                                Generate
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -277,9 +314,15 @@
                 <div class="mb-3 space-y-3">
                     <div>
                         <label class="text-xs font-semibold text-gray-600 pb-2 block">Improve AI Prompt</label>
-                        <textarea wire:model.defer="revisi_deskripsi_ai" rows="3"
-                                placeholder="Example: add a search feature, remove the reports feature ..."
-                                class="text-xs border border-gray-300 rounded-lg  p-2 w-full text-sm resize-y focus:ring-2 focus:ring-indigo-400"></textarea>
+                        <textarea 
+                            wire:model="revisi_deskripsi_ai"
+                            x-data
+                            x-ref="rev"
+                            @clear-revisi.window="$refs.rev.value = ''"
+                            rows="3"
+                            placeholder="Example: add a search feature..."
+                            class="text-xs border border-gray-300 rounded-lg p-2 w-full text-sm"
+                        ></textarea>
                     </div>
 
                     <div>
@@ -287,37 +330,50 @@
                             <label class="text-xs font-semibold text-gray-600 pb-2">Regeneration Feature Count</label>
                             <span class="text-[11px] text-gray-500 italic">May differ from the initial request</span>
                         </div>
-                        <input type="number" min="1" max="10" wire:model.defer="jumlah_fitur_revisi"
+                        <input type="number" min="1" max="10" wire:model="jumlah_fitur_revisi"
                             placeholder="{{ $jumlah_fitur_ai }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                             class="text-xs border border-gray-300 rounded-3xl py-2 px-3 w-full text-sm focus:ring-2 focus:ring-indigo-400">
                     </div>
                 </div>
 
+                {{-- Loading indikator --}}
+                <div wire:loading wire:target="regenerateAiFitur" class="mt-3 text-xs text-[#9c62ff] italic">
+                    Requesting AI to create new features…
+                </div>
 
                 {{-- Tombol aksi --}}
                 <div class="flex justify-end gap-3">
                     <button wire:click="$set('showAiReview', false)"
-                            class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-3xl hover:bg-gray-300 text-xs">
+                            type="button"
+                            wire:loading.attr="disabled"
+                            wire:target="regenerateAiFitur"
+                            class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-3xl text-xs transition
+                                disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
                         Cancel
                     </button>
+
                     <button wire:click="regenerateAiFitur"
-                            class="bg-[#9c62ff] text-white px-4 py-1.5 rounded-3xl hover:bg-purple-700 hover:scale-105 hover:bg-[#8a48fa] transition text-xs">
+                            wire:loading.attr="disabled"
+                            wire:target="regenerateAiFitur"
+                            class="bg-[#9c62ff] text-white px-4 py-1.5 rounded-3xl hover:bg-purple-700 hover:scale-105 hover:bg-[#8a48fa] transition text-xs
+                                disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fa-solid fa-arrows-rotate"></i> Regenerate
                     </button>
+
                     <button wire:click="approveAiFitur"
-                            class="bg-[#5ca9ff] text-white px-4 py-1.5 rounded-3xl hover:bg-indigo-700 hover:scale-105 hover:bg-[#449bffff] transition text-xs">
+                            wire:loading.attr="disabled"
+                            wire:target="regenerateAiFitur"
+                            class="bg-[#5ca9ff] text-white px-4 py-1.5 rounded-3xl hover:bg-indigo-700 hover:scale-105 hover:bg-[#449bffff] transition text-xs
+                                disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
                         Agree then Add
                     </button>
                 </div>
 
-                {{-- Loading indikator --}}
-                <div wire:loading wire:target="regenerateAiFitur" class="mt-3 text-sm text-gray-600 italic">
-                    Requesting AI to create new features…
-                </div>
             </div>
         </div>
         
     @endif
+
 
 @livewire('catatan-pekerjaan')
 

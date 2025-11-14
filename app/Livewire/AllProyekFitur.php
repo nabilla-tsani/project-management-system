@@ -45,7 +45,8 @@ class AllProyekFitur extends Component
     public $catatanModal = false;
     public $search = '';
 
-
+    public $showConfirmDelete = false; 
+    public $deleteId;
 
     public function mount($proyekId)
     {
@@ -97,16 +98,30 @@ class AllProyekFitur extends Component
         );
 
         $this->closeModal();
-       $this->dispatch('$refresh');
 
+        session()->flash('message', $this->fiturId ? 'Feature successfully updated!' : 'New feature successfully added!');
+
+        $this->dispatch('$refresh');
     }
 
-    public function delete($id)
+    public function confirmDelete($id)
     {
-        ProyekFitur::findOrFail($id)->delete();
-       $this->dispatch('$refresh');
-
+        $this->deleteId = $id;
+        $this->showConfirmDelete = true;
     }
+
+    public function delete()
+    {
+        ProyekFitur::find($this->deleteId)->delete();
+
+        $this->showConfirmDelete = false;
+        $this->deleteId = null;
+
+        session()->flash('message', 'Data deleted successfully.');
+
+        $this->dispatch('$refresh');
+    }
+
 
     public function closeModal()
     {
@@ -164,7 +179,7 @@ class AllProyekFitur extends Component
         $this->loadingAi = false;
 
         if (empty($this->aiFiturList)) {
-            session()->flash('message', 'AI gagal menghasilkan fitur. Silakan coba lagi.');
+            session()->flash('message', 'AI generated feature failed. Please try again.');
             return;
         }
         $this->aiModalOpen = false;
@@ -183,11 +198,13 @@ class AllProyekFitur extends Component
 
         $this->showAiReview = false;
         $this->aiFiturList = [];
-       $this->dispatch('$refresh');
 
+        session()->flash('message', 'AI-generated features added successfully!');
+
+        $this->dispatch('$refresh');
         $this->closeAiModal();
-        session()->flash('message', 'Fitur AI berhasil ditambahkan ke proyek!');
     }
+
 
     public function regenerateAiFitur()
     {
@@ -211,16 +228,15 @@ class AllProyekFitur extends Component
         $this->loadingAi = false;
 
         if (empty($this->aiFiturList)) {
-            session()->flash('message', 'AI gagal menghasilkan fitur baru. Silakan coba lagi.');
+            session()->flash('message', 'AI failed to generate new features. Please try again.');
             return;
         }
 
-        // Kosongkan kolom revisi agar siap dipakai lagi
         $this->revisi_deskripsi_ai = '';
         $this->jumlah_fitur_revisi = null;
-
         $this->resetValidation();
-        $this->reset(['revisi_deskripsi_ai']);
+        $this->dispatch('clear-revisi');
+
     }
     
 
@@ -302,32 +318,29 @@ class AllProyekFitur extends Component
         $this->selectedFiturId = null;
     }
 
-   public function render()
-{
-    \Log::info('Search term:', [$this->search]);
+    public function render()
+    {
+        \Log::info('Search term:', [$this->search]);
 
-    $searchTerm = strtolower($this->search); // ubah pencarian jadi lowercase
+        $searchTerm = strtolower($this->search); // ubah pencarian jadi lowercase
 
-    $fiturs = ProyekFitur::with(['anggota.user'])
-        ->where('proyek_id', $this->proyekId)
-        ->when($this->search, function ($query) use ($searchTerm) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->whereRaw('LOWER(nama_fitur) LIKE ?', ['%' . $searchTerm . '%'])
-                  ->orWhereHas('anggota.user', function ($subQuery) use ($searchTerm) {
-                      $subQuery->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%']);
-                  });
-            });
-        })
-        ->orderBy('id', 'desc')
-        ->get();
+        $fiturs = ProyekFitur::with(['anggota.user'])
+            ->where('proyek_id', $this->proyekId)
+            ->when($this->search, function ($query) use ($searchTerm) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->whereRaw('LOWER(nama_fitur) LIKE ?', ['%' . $searchTerm . '%'])
+                    ->orWhereHas('anggota.user', function ($subQuery) use ($searchTerm) {
+                        $subQuery->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%']);
+                    });
+                });
+            })
+            ->orderBy('id', 'desc')
+            ->get();
 
-    return view('livewire.all-proyek-fitur', [
-        'fiturs' => $fiturs,
-        'isManajerProyek' => $this->isManajerProyek,
-    ]);
-}
-
-
-
+        return view('livewire.all-proyek-fitur', [
+            'fiturs' => $fiturs,
+            'isManajerProyek' => $this->isManajerProyek,
+        ]);
+    }
 
 }
