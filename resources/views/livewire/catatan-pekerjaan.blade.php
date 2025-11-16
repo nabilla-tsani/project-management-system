@@ -8,7 +8,7 @@
                 {{-- Kiri: Form --}}
                 <div class="w-1/3 border-r pr-5">
                     <h2 class="text-base font-semibold mb-4 text-[#9c62ff] text-center">
-                        {{ $catatanId ? 'Update Notes or Tasks' : 'Add Notes or Tasks' }}
+                        {{ $catatanId ? 'Edit Note / Task' : 'Add Note or Task' }}
                     </h2>
 
                     <form 

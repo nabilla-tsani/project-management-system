@@ -14,7 +14,7 @@
             @foreach ([
                 'dashboard' => ['label' => 'Overview', 'icon' => 'fa-solid fa-chart-line'],
                 'informasi' => ['label' => 'Info', 'icon' => 'fa-solid fa-circle-info'],
-                'team' => ['label' => 'Team', 'icon' => 'fa-solid fa-users'],
+                'team' => ['label' => 'Members', 'icon' => 'fa-solid fa-users'],
                 'fitur' => ['label' => 'Features', 'icon' => 'fa-solid fa-layer-group'],
                 'tasks' => ['label' => 'Tasks', 'icon' => 'fa-solid fa-list-check'],
                 'timeline' => ['label' => 'Timeline', 'icon' => 'fa-solid fa-clock'],

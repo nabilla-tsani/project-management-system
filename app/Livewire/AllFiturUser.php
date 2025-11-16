@@ -9,64 +9,74 @@ use App\Models\ProyekUser;
 use App\Models\User;
 use App\Models\Proyek;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 
 class AllFiturUser extends Component
 {
     public $proyekFiturId;
-    public $fiturUsers = [];
+    public $fiturUsers;
     public $userList = [];
     public $modalOpen = false;
     public $fiturUserId = null;
     public $user_id = null;
     public $keterangan = null;
     public $isEdit = false;
-    public $isManager = false; 
     public $namaFitur;
-
+    public $formKey;
 
     protected $listeners = [
-    'openUserFiturModal' => 'showModal'
-];
-
+        'openUserFiturModal' => 'showModal'
+    ];
 
     protected $rules = [
         'user_id' => 'required|exists:users,id',
         'keterangan' => 'nullable|string|max:255',
     ];
 
+    public function mount()
+    {
+        $this->fiturUsers = collect();
+        $this->formKey = uniqid('form_', true);
+    }
+
     public function loadFiturUsers()
     {
         $this->fiturUsers = ProyekFiturUser::where('proyek_fitur_id', $this->proyekFiturId)
             ->with('user')
-            ->orderBy('id', 'desc')
+            ->orderBy('id', 'asc')
             ->get();
     }
 
-
-    protected function checkIfManager()
+    private function loadAvailableUsers()
     {
-        $fitur = ProyekFitur::findOrFail($this->proyekFiturId);
+        // Ambil ID user yang sudah menjadi anggota fitur ini
+        $existingUserIds = ProyekFiturUser::where('proyek_fitur_id', $this->proyekFiturId)
+            ->pluck('user_id')
+            ->toArray();
 
-        $this->isManager = ProyekUser::where('proyek_id', $fitur->proyek_id)
-            ->where('user_id', Auth::id())
-            ->where('sebagai', 'manajer proyek')
-            ->exists();
-    }
+        // Pada mode edit, user yang sedang diedit TIDAK boleh dihilangkan
+        if ($this->isEdit && $this->user_id) {
+            $existingUserIds = array_filter($existingUserIds, fn($id) => $id != $this->user_id);
+        }
 
-    public function loadData()
-    {
-        $this->fiturUsers = ProyekFiturUser::with('user')
-            ->where('proyek_fitur_id', $this->proyekFiturId)
-            ->orderBy('id', 'desc')
-            ->get();
-
-        $this->userList = User::select('id', 'name')
+        // Ambil user yang BELUM ada di existingUserIds
+        $this->userList = User::whereNotIn('id', $existingUserIds)
             ->orderBy('name')
             ->get();
+
+        // Pada edit, jika user yang diedit hilang, tambahkan kembali ke list
+        if ($this->isEdit && $this->user_id) {
+            $editingUser = User::find($this->user_id);
+            if ($editingUser) {
+                $this->userList->prepend($editingUser);
+            }
+        }
     }
+
 
     public function showModal($id)
     {
+        $this->resetForm();
         $this->resetErrorBag();
         $this->resetValidation();
 
@@ -75,45 +85,67 @@ class AllFiturUser extends Component
         // Ambil fitur
         $fitur = ProyekFitur::find($id);
 
-        // Nama fitur
         $this->namaFitur = $fitur?->nama_fitur ?? 'Fitur Tidak Dikenal';
 
-        // Ambil user proyek dari model Proyek
-        if ($fitur && $fitur->proyek_id) {
-            $this->userList = Proyek::with('users')
-                ->find($fitur->proyek_id)
-                ?->users ?? collect();
-        } else {
-            $this->userList = collect();
-        }
+        // Ambil seluruh user
+        $this->userList = User::orderBy('name')->get();
 
         // Ambil user-user anggota fitur
         $this->loadFiturUsers();
-
-        // Tentukan apakah user adalah manajer proyek
-        $this->checkIfManager();
+        $this->loadAvailableUsers();
 
         // Buka modal
         $this->modalOpen = true;
     }
 
-
     public function edit($id)
     {
-        if (!$this->isManager) return; // Hanya manajer
-
         $data = ProyekFiturUser::findOrFail($id);
+
+        // Pastikan kita tahu fitur & proyek dulu
+        $this->proyekFiturId = $data->proyek_fitur_id;
+        $fitur = ProyekFitur::find($this->proyekFiturId);
+        $this->namaFitur = $fitur?->nama_fitur ?? $this->namaFitur;
+
+        // Load user list dari proyek (biasanya returning User models)
+        if ($fitur && $fitur->proyek_id) {
+            $this->userList = User::select('id', 'name')
+                ->orderBy('name')
+                ->get();
+        } else {
+            $this->userList = collect();
+        }
+
+        // Isi form
         $this->fiturUserId = $data->id;
         $this->user_id = $data->user_id;
         $this->keterangan = $data->keterangan;
         $this->isEdit = true;
+
+        // Jika user yang akan dipilih TIDAK ADA dalam userList, tambahkan user tersebut
+        if (!$this->userList->contains('id', $this->user_id)) {
+            $user = \App\Models\User::find($this->user_id);
+            if ($user) {
+                // prepend agar terlihat di atas
+                $this->userList->prepend($user);
+            }
+        }
+        $this->loadAvailableUsers();
+
+        $this->resetErrorBag();
+        $this->resetValidation();
+
         $this->modalOpen = true;
+    }
+
+    public function cancelEdit()
+    {
+        $this->resetForm();
+        $this->isEdit = false;
     }
 
     public function save()
     {
-        if (!$this->isManager) return; // Hanya manajer
-
         $this->validate();
 
         $fitur = ProyekFitur::findOrFail($this->proyekFiturId);
@@ -141,25 +173,47 @@ class AllFiturUser extends Component
             ]
         );
 
-        $this->loadData();
-        $this->dispatch('refresh-fitur-users');
+        $this->loadFiturUsers();
+
+        $this->resetForm();
+        $this->loadAvailableUsers();
+
+        session()->flash(
+            'message',
+            $this->isEdit 
+                ? 'User updated successfully.' 
+                : 'User added to feature successfully.'
+        );
+
+        $this->dispatch('$refresh');
     }
 
     public function delete($id)
     {
-        if (!$this->isManager) return; // Hanya manajer
         ProyekFiturUser::findOrFail($id)->delete();
-        $this->loadData();
-        $this->dispatch('refresh-fitur-users');
+
+        session()->flash('message', 'User removed from feature successfully.');
+
+        $this->loadFiturUsers();
+        $this->loadAvailableUsers();
+        $this->dispatch('$refresh');
     }
 
-    public function resetForm()
+
+
+    public function resetForm($newKey = true)
     {
         $this->fiturUserId = null;
         $this->user_id = null;
         $this->keterangan = null;
         $this->isEdit = false;
+
         $this->resetValidation();
+        $this->resetErrorBag();
+
+        if ($newKey) {
+            $this->formKey = uniqid('form_', true);
+        }
     }
 
     public function closeModal()

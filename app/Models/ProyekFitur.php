@@ -28,6 +28,7 @@ class ProyekFitur extends Model
     {
         return $this->hasMany(ProyekFiturUser::class, 'proyek_fitur_id');
     }
+    
 
 }
 

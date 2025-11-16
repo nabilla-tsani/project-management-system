@@ -6,7 +6,7 @@
                 x-init="setTimeout(() => show = false, 2000)" 
                 x-show="show"
                 x-transition.duration.500ms
-                class="mb-3 text-sm text-green-600 bg-green-100 p-2 rounded pointer-events-auto"
+                class="text-xs p-2 rounded bg-green-100 text-green-700 border border-green-300"
                 style="position: relative; z-index: 10;"
             >
                 {{ session('message') }}
@@ -15,15 +15,15 @@
 
 <div class="flex items-center justify-between mb-4">
     <div class="flex items-center gap-3">
-        <h2 class="text-lg font-medium flex items-center gap-2 text-[#5ca9ff]">
-            Feature List
-            ({{ $fiturs->count() }})
+        <h2 class="text-md font-medium flex items-center gap-2 text-[#5ca9ff]">
+            <i class="fa-solid fa-layer-group"></i>
+            Feature List ({{ $fiturs->count() }})
         </h2>
         <input 
             type="text"
             wire:model.live="search" 
             placeholder="Search feature..."
-            class="text-sm px-3 py-1.5 border border-gray-300 rounded-3xl focus:ring-[#5ca9ff] focus:border-[#5ca9ff] outline-none w-96"
+            class="text-xs px-3 py-1.5 border border-gray-500 rounded-3xl focus:ring-[#5ca9ff] focus:border-[#5ca9ff] outline-none w-96"
         />
     </div>
 
@@ -94,15 +94,15 @@
                             {{-- Aksi --}}
                             <div class="col-span-1 flex items-center justify-end gap-2">
                                 <button wire:click.stop="openModal({{ $fitur->id }})"
-                                    class="text-blue-600 hover:text-blue-800 transition text-xs"
+                                    class="text-blue-500 hover:text-blue-800 transition text-xs"
                                     title="Edit">
-                                    <i class="fas fa-edit text-[13px]"></i>
+                                    <i class="fas fa-edit"></i>
                                 </button>
 
                                 <button wire:click="confirmDelete({{ $fitur->id }})"
-                                    class="text-red-600 hover:text-red-800 transition text-xs"
+                                    class="text-red-500 hover:text-red-800 transition text-xs"
                                     title="Hapus">
-                                    <i class="fas fa-trash text-[13px]"></i>
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
@@ -170,7 +170,7 @@
             <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
                 <div class="bg-white shadow-2xl p-5 w-[30rem] max-w-[65%] border border-gray-200">
                     <h3 class="text-md font-medium text-[#9c62ff] mb-2 text-center">
-                        {{ $fiturId ? 'Feature Update' : 'New Feature' }}
+                        {{ $fiturId ? 'Edit Feature' : 'New Feature' }}
                     </h3>
 
                     <label class="block text-xs font-semibold text-gray-600 py-2">Name</label>
@@ -203,7 +203,7 @@
                         <button wire:click="save"
                             class="bg-[#5ca9ff] text-white px-4 py-2 shadow rounded-3xl
                                 hover:scale-105 hover:bg-[#449bffff] transition text-xs">
-                            Save
+                            {{ $fiturId ? 'Update' : 'Save' }}
                         </button>
                     </div>
                 </div>

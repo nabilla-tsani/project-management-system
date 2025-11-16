@@ -13,6 +13,7 @@ class AllProyekUser extends Component
     public $users;
     public $user_id, $sebagai, $keterangan, $editId;
     public $showModal = false;
+    public $search = '';
 
     protected $rules = [
         'user_id' => 'required|exists:users,id',
@@ -29,25 +30,15 @@ class AllProyekUser extends Component
 
     public function loadProyekUsers()
     {
-        $this->proyekUsers = ProyekUser::with([
+        $query = ProyekUser::with([
             'user',
             'fitur' => function ($q) {
                 $q->select('proyek_fitur.id', 'proyek_fitur.nama_fitur', 'proyek_fitur.proyek_id')
-                ->where('proyek_fitur.proyek_id', $this->proyekId); // 🔹 filter sesuai proyek
+                  ->where('proyek_fitur.proyek_id', $this->proyekId);
             }
-        ])
-            ->where('proyek_id', $this->proyekId)
-            ->orderByRaw("
-                CASE 
-                    WHEN sebagai = 'manajer proyek' THEN 1
-                    WHEN sebagai = 'programmer' THEN 2
-                    WHEN sebagai = 'tester' THEN 3
-                    ELSE 4
-                END
-            ")
-            ->get();
-    }
+        ])->where('proyek_id', $this->proyekId);
 
+    }
 
     public function openModal($id = null)
     {
@@ -63,30 +54,36 @@ class AllProyekUser extends Component
     }
 
     public function save()
-    {
-        $this->validate();
-
-        ProyekUser::updateOrCreate(
-            ['id' => $this->editId],
-            [
-                'proyek_id' => $this->proyekId,
-                'user_id' => $this->user_id,
-                'sebagai' => $this->sebagai,
-                'keterangan' => $this->keterangan,
-            ]
-        );
-
-        $this->showModal = false;
-        $this->loadProyekUsers();
-        $this->resetForm();
-    }
-
-    public function delete($id)
 {
-    ProyekUser::findOrFail($id)->delete();
+    $this->validate();
+
+    ProyekUser::updateOrCreate(
+        ['id' => $this->editId],
+        [
+            'proyek_id' => $this->proyekId,
+            'user_id' => $this->user_id,
+            'sebagai' => $this->sebagai,
+            'keterangan' => $this->keterangan,
+        ]
+    );
+
+    // Flash message
+    session()->flash(
+        'message',
+        $this->editId ? 'Member updated successfully.' : 'Member added successfully.'
+    );
+
+    $this->showModal = false;
     $this->loadProyekUsers();
+    $this->resetForm();
 }
 
+
+    public function delete($id)
+    {
+        ProyekUser::findOrFail($id)->delete();
+        $this->loadProyekUsers();
+    }
 
     public function resetForm()
     {
@@ -98,6 +95,37 @@ class AllProyekUser extends Component
 
     public function render()
     {
+        $search = strtolower($this->search);
+
+        // 🔍 Mapping kata kunci agar "manager" mencocokkan "manajer"
+        $keywordMap = [
+            'manager' => 'manajer',
+            'menejer' => 'manajer',
+        ];
+
+        if (array_key_exists($search, $keywordMap)) {
+            $search = $keywordMap[$search];
+        }
+
+        $this->proyekUsers = ProyekUser::with('user')
+            ->where('proyek_id', $this->proyekId)
+            ->where(function ($query) use ($search) {
+                $query
+                    ->whereHas('user', function ($q) use ($search) {
+                        $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+                    })
+                    ->orWhereRaw('LOWER(sebagai) LIKE ?', ["%{$search}%"]);
+            })
+            ->orderByRaw("
+                CASE 
+                    WHEN sebagai = 'manajer proyek' THEN 1
+                    WHEN sebagai = 'programmer' THEN 2
+                    WHEN sebagai = 'tester' THEN 3
+                    ELSE 4
+                END
+            ")
+            ->get();
+
         return view('livewire.all-proyek-user');
     }
 }

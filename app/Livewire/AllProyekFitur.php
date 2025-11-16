@@ -310,6 +310,10 @@ class AllProyekFitur extends Component
     public function openCatatan($id)
     {
         $this->dispatch('openCatatanModal', id: $id);
+        $this->fiturList = ProyekFitur::withCount('catatan')
+    ->where('proyek_id', $this->proyekId)
+    ->get();
+
     }
 
     public function openCatatanModal($id)
@@ -324,9 +328,7 @@ class AllProyekFitur extends Component
         $this->selectedFiturId = null;
     }
 
-
-
-
+    
 
     public function render()
     {
