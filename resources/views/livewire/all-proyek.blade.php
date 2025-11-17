@@ -357,7 +357,10 @@
 @if($confirmDelete)
 <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
     <div class="bg-white shadow-2xl w-96 p-6 text-center animate-fadeIn">
-        <h2 class="text-lg font-semibold text-gray-800 mb-3">Confirm Deletion</h2>
+        <div class="text-red-600 text-3xl mb-3">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">Confirm Delete Project</h3>
         <p class="text-sm text-gray-600 mb-6">
             Are you sure you want to delete 
             <span class="font-semibold text-gray-900">“{{ $nama_proyek }}”</span>? 
@@ -366,11 +369,11 @@
 
         <div class="flex justify-center gap-3">
             <button wire:click="cancelDelete"
-                class="px-4 py-2 rounded-3xl bg-gray-200 border border-gray-300 text-gray-700 text-sm hover:bg-gray-400 transition">
+                class="px-4 py-2 rounded-3xl bg-gray-200 border border-gray-300 text-gray-700 text-xs hover:bg-gray-400 transition">
                 Cancel
             </button>
             <button wire:click="deleteProyek"
-                class="px-4 py-2 rounded-3xl bg-red-500 text-white text-sm hover:bg-red-600 transition">
+                class="px-4 py-2 rounded-3xl bg-red-500 text-white text-xs hover:bg-red-600 transition">
                 Yes, Delete
             </button>
         </div>

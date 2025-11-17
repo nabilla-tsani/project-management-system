@@ -168,4 +168,53 @@
         </div>
     @endif
 
+
+    {{-- Konfirmasi Delete --}}
+@if($confirmDelete)
+<div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+    <div class="bg-white shadow-2xl p-6 w-[30rem] border border-gray-200">
+
+        <h3 class="text-md font-semibold text-red-600 mb-4 text-center">
+            Confirm Delete Member
+        </h3>
+
+        @if(count($fiturTerlibat) > 0)
+            <p class="text-sm text-gray-700 mb-3">
+                This user is still involved in the following features :
+            </p>
+
+            <ul class="mb-4 text-xs text-gray-800 list-disc pl-6 space-y-1">
+                @foreach($fiturTerlibat as $f)
+                    <li>{{ $f }}</li>
+                @endforeach
+            </ul>
+
+            <p class="text-xs text-gray-600 mb-5">
+                <i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>
+                Deleting this member will also remove the member from all features in this project. Do you want to continue? This action cannot be undone.
+            </p>
+
+        @else
+            <p class="text-sm text-gray-600 mb-5">
+                Are you sure you want to delete this member? This action cannot be undone.
+            </p>
+        @endif
+
+        <div class="flex justify-end gap-3">
+            <button wire:click="$set('confirmDelete', false)"
+                class="bg-gray-200 text-xs text-gray-700 px-4 py-2 rounded-3xl text-xs hover:bg-gray-300 hover:scale-105 transition">
+                Cancel
+            </button>
+            <button wire:click="confirmDeleteAction"
+                class="bg-red-500 text-xs text-white px-4 py-2 rounded-3xl text-xs shadow hover:scale-105 transition">
+                Yes, Delete
+            </button>
+        </div>
+
+    </div>
+</div>
+@endif
+
+
+
 </div>

@@ -145,19 +145,19 @@
         @if ($showConfirmDelete)
         <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
             <div class="bg-white shadow-2xl w-96 p-6 text-center animate-fadeIn">
-                <h2 class="text-lg font-semibold text-gray-800 mb-3">Confirm Deletion</h2>
+                <h3 class="text-md font-semibold text-red-500 mb-4">Confirm Delete Feature</h3>
                 <p class="text-gray-600 mb-5 text-sm">Are you sure you want to delete this feature? This action cannot be undone.</p>
 
                 <div class="flex justify-center gap-3">
                     <button 
                         wire:click="$set('showConfirmDelete', false)"
-                        class="px-4 py-2 rounded-3xl bg-gray-200 border border-gray-300 text-gray-700 text-sm hover:bg-gray-400 transition">
+                        class="px-4 py-2 rounded-3xl bg-gray-200 border border-gray-300 text-gray-700 text-xs hover:bg-gray-400 transition">
                         Cancel
                     </button>
 
                     <button 
                         wire:click="delete"
-                        class="px-4 py-2 rounded-3xl bg-red-500 text-white text-sm hover:bg-red-600 transition">
+                        class="px-4 py-2 rounded-3xl bg-red-500 text-white text-xs hover:bg-red-600 transition">
                         Yes, Delete
                     </button>
                 </div>

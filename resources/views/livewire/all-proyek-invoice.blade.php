@@ -1,15 +1,27 @@
-<div class="relative bg-gray-50 rounded-2xl shadow-lg border border-gray-100 p-4">
+<div class="pt-0 p-2 space-y-2">
 
-    {{-- HEADER --}}
-    <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <i class="fa-solid fa-file-invoice text-blue-600"></i> Daftar Invoice
-        </h3>
-        <button wire:click="$set('openModal', true)"
-                class="px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 hover:shadow-md 
-                       transition-all duration-200 flex items-center gap-2 text-sm font-medium">
-            <i class="fa-solid fa-plus"></i> Tambah Invoice
-        </button>
+    {{-- Header: Judul & Tombol Tambah --}}
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+            <h2 class="text-md font-medium flex items-center gap-2 text-[#5ca9ff]">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                Invoive List ({{ $invoices->count() }})
+            </h2>
+            <input 
+                type="text"
+                wire:model.live="search" 
+                placeholder="Find invoive..."
+                class="text-xs px-3 py-1.5 border border-gray-500 rounded-3xl focus:ring-[#5ca9ff] focus:border-[#5ca9ff] outline-none w-96"
+            />
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button wire:click="$set('openModal', true)"
+                class="px-4 py-1.5 rounded-3xl text-white shadow hover:shadow-md transition-all duration-200 text-xs"
+                style="background-color: #5ca9ff;">
+                <i class="fa-solid fa-plus mr-1"></i> Add Invoice
+            </button>
+        </div>
     </div>
 
 

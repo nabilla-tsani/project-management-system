@@ -220,6 +220,8 @@ class AllFiturUser extends Component
     {
         $this->resetForm();
         $this->modalOpen = false;
+
+        $this->dispatch('reloadPage');
     }
 
     public function render()

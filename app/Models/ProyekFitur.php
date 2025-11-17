@@ -28,6 +28,16 @@ class ProyekFitur extends Model
     {
         return $this->hasMany(ProyekFiturUser::class, 'proyek_fitur_id');
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'proyek_fitur_user', 'proyek_fitur_id', 'user_id');
+    }
+
+    public function catatan()
+    {
+        return $this->hasMany(ProyekCatatanPekerjaan::class, 'proyek_fitur_id');
+    }
     
 
 }

@@ -22,6 +22,9 @@ class AllProyekKwitansi extends Component
     public $edit_tanggal_kwitansi = null;
     public $edit_keterangan = '';
     public $showEditModal = false;
+    public $confirmDelete = false;
+    public $deleteId = null;
+    public $search='';
 
 
     public function mount($proyekId = null)
@@ -37,19 +40,32 @@ class AllProyekKwitansi extends Component
             ->get();
     }
 
-
-    public function deleteKwitansi($id)
+    public function askDelete($id)
     {
-        $kwitansi = ProyekKwitansi::findOrFail($id);
-        $kwitansi->delete();
+        $this->deleteId = $id;
+        $this->confirmDelete = true;
+    }
+
+    public function confirmDeleteKwitansi()
+    {
+        $kwitansi = ProyekKwitansi::find($this->deleteId);
+
+        if ($kwitansi) {
+            $kwitansi->delete();
+        }
+
         $this->loadData();
+        session()->flash('success', 'Receipt successfully deleted.');
+
+        $this->confirmDelete = false;
+        $this->deleteId = null;
     }
 
     public function openEditKwitansi($id)
     {
         $kwitansi = ProyekKwitansi::find($id);
         if (! $kwitansi) {
-            session()->flash('error', 'Kwitansi tidak ditemukan.');
+            session()->flash('error', 'Receipt not found.');
             return;
         }
 
@@ -70,7 +86,7 @@ class AllProyekKwitansi extends Component
 
         $kwitansi = ProyekKwitansi::find($this->editingKwitansiId);
         if (! $kwitansi) {
-            session()->flash('error', 'Kwitansi tidak ditemukan.');
+            session()->flash('error', 'Receipt not found.');
             $this->showEditModal = false;
             return;
         }
@@ -80,7 +96,7 @@ class AllProyekKwitansi extends Component
         $kwitansi->keterangan = $this->edit_keterangan;
         $kwitansi->save();
 
-        session()->flash('success', 'Kwitansi berhasil diperbarui.');
+        session()->flash('success', 'Receipt successfully updated.');
 
         $this->showEditModal = false;
         $this->editingKwitansiId = null;

@@ -39,17 +39,14 @@ class CatatanPekerjaan extends Component
     public function showModal($id)
     {
         $this->resetForm();
+
         $this->proyekFiturId = $id;
 
-        $fitur = ProyekFitur::find($id);
+        $fitur = ProyekFitur::with('users')->find($id);
         $this->namaFitur = $fitur?->nama_fitur ?? 'Fitur Tidak Dikenal';
 
-        if ($fitur && $fitur->proyek_id) {
-            $proyek = Proyek::with('users')->find($fitur->proyek_id);
-            $this->users = $proyek?->users ?? collect();
-        } else {
-            $this->users = collect();
-        }
+        // Ambil hanya user yang terlibat pada fitur
+        $this->users = $fitur?->users ?? collect();
 
         $this->loadCatatan();
         $this->catatanModal = true;

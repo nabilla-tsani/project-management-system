@@ -20,7 +20,7 @@
                         x-data="{ show: true }"
                         x-init="setTimeout(() => show = false, 1000)"
                         x-show="show"
-                        class="mb-3 text-sm text-green-600 bg-green-100 px-3 py-2 rounded-3xl shadow-sm"
+                        class="mb-3 text-xs text-green-600 bg-green-100 px-3 py-2 rounded-3xl shadow-sm"
                     >
                         {{ session('message') }}
                     </div>
@@ -55,6 +55,11 @@
                         @endif
                     </ul>
                 </div>
+            <div class="flex justify-end mt-1"> 
+                <button wire:click="closeModal" class="text-xs bg-gray-300 hover:bg-gray-400 text-xs px-4 py-2 rounded-3xl"> 
+                    Close 
+                </button> 
+            </div>       
             </div>
 
 
@@ -130,4 +135,14 @@
         </div>
     </div>
 @endif
+
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('reloadPage', () => {
+            window.location.reload();
+        });
+    });
+</script>
+
+
 </div>
