@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\ProyekKwitansi;
 use App\Models\ProyekInvoice;
+use App\Models\Proyek;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
@@ -12,6 +13,8 @@ class AllProyekKwitansi extends Component
 {
     public $kwitansis = [];
     public $proyekId;
+    public $proyek;
+    public $search = '';
 
     public $invoiceId;
     public $keterangan = '';
@@ -24,21 +27,42 @@ class AllProyekKwitansi extends Component
     public $showEditModal = false;
     public $confirmDelete = false;
     public $deleteId = null;
-    public $search='';
+
+    public $totalPaid = 0;
+    public $totalUnpaid = 0;
 
 
     public function mount($proyekId = null)
     {
         $this->proyekId = $proyekId ?? request()->get('proyek_id');
+        $this->proyek = Proyek::find($this->proyekId);
         $this->loadData();
     }
 
     public function loadData()
     {
-        $this->kwitansis = ProyekKwitansi::where('proyek_id', $this->proyekId)
-            ->latest()
-            ->get();
+        $query = ProyekKwitansi::where('proyek_id', $this->proyekId);
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('judul_kwitansi', 'like', '%' . $this->search . '%')
+                  ->orWhere('nomor_kwitansi', 'like', '%' . $this->search . '%')
+                  ->orWhere('nomor_invoice', 'like', '%' . $this->search . '%')
+                  ->orWhere('keterangan', 'like', '%' . $this->search . '%')
+                  ->orWhere('tanggal_kwitansi', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        $this->kwitansis = $query->latest()->get();
+        $this->totalPaid = $this->kwitansis->sum('jumlah');
+        $this->totalUnpaid = $this->proyek->anggaran - $this->totalPaid;
     }
+
+    public function updatedSearch()
+{
+    $this->loadData();
+}
+
 
     public function askDelete($id)
     {

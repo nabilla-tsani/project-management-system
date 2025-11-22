@@ -51,37 +51,40 @@ class AllProyekFile extends Component
     }
 
     public function save()
-{
-    $this->validate([
-        'file' => $this->fileId ? 'nullable|file|max:10240' : 'required|file|max:10240', // max 10MB
-        'namaFile' => 'required|string|max:255',
-        'keterangan' => 'nullable|string|max:1000',
-    ]);
+    {
+        $this->validate([
+            'file' => $this->fileId ? 'nullable|file|max:10240' : 'required|file|max:10240', // max 10MB
+            'namaFile' => 'required|string|max:255',
+            'keterangan' => 'nullable|string|max:1000',
+        ]);
 
-    // Hanya upload file baru jika ini create (fileId = null)
-    if (!$this->fileId && $this->file) {
-        $originalName = $this->file->getClientOriginalName(); // nama file asli
-        $path = $this->file->storeAs('proyek_files', $originalName, 'public');
+        // Hanya upload file baru jika ini create (fileId = null)
+        if (!$this->fileId && $this->file) {
+            $originalName = $this->file->getClientOriginalName(); // nama file asli
+            $path = $this->file->storeAs('proyek_files', $originalName, 'public');
+        }
+
+        // Update atau create
+        ProyekFile::updateOrCreate(
+            ['id' => $this->fileId],
+            [
+                'proyek_id' => $this->proyekId,
+                'user_id' => auth()->id(),
+                'keterangan' => $this->keterangan,
+                'nama_file' => $this->namaFile,
+                'path' => $this->fileId 
+                            ? ProyekFile::find($this->fileId)->path // pakai path lama jika edit
+                            : ($this->file ? $path : null),        // pakai path baru jika create
+            ]
+        );
+
+        session()->flash(
+            'message',
+            $this->fileId ? 'File updated successfully.' : 'File uploaded successfully.'
+        );
+        $this->modalOpen = false;
+        $this->loadFiles();
     }
-
-    // Update atau create
-    ProyekFile::updateOrCreate(
-        ['id' => $this->fileId],
-        [
-            'proyek_id' => $this->proyekId,
-            'user_id' => auth()->id(),
-            'keterangan' => $this->keterangan,
-            'nama_file' => $this->namaFile,
-            'path' => $this->fileId 
-                        ? ProyekFile::find($this->fileId)->path // pakai path lama jika edit
-                        : ($this->file ? $path : null),        // pakai path baru jika create
-        ]
-    );
-
-    $this->modalOpen = false;
-    $this->loadFiles();
-
-}
 
 
     public function delete($id)
@@ -91,6 +94,7 @@ class AllProyekFile extends Component
             \Storage::disk('public')->delete($file->path);
         }
         $file->delete();
+        session()->flash('message', 'File deleted successfully.');
         $this->loadFiles();
     }
 

@@ -1,4 +1,3 @@
-
 <div class="pt-0 p-2 space-y-2">
         @if (session()->has('message'))
             <div 
@@ -103,7 +102,7 @@
 
             </div>
 
-            {{-- BARIS 2: FITUR --}}
+            {{-- BARIS 2: Keterangan --}}
                 <div class="mt-2 flex flex-wrap gap-1">
                     @if($pu->keterangan)
                         <p class="text-gray-600 text-[11px] leading-tight whitespace-normal">

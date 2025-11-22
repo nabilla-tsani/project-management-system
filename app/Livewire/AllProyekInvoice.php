@@ -32,12 +32,17 @@ class AllProyekInvoice extends Component
     public $showKwitansiModal = false;
     public $selectedInvoiceId;
     public $keteranganKwitansi = '';
+    public $judulKwitansi = '';    
+    public $tanggalKwitansi = '';
     public $errorMessage = '';
     // Track whether the kwitansi modal is in edit mode
     public $isEditingKwitansi = false;
     public $editingKwitansiId = null;
 
-    public function mount($proyekId)
+    public $confirmDelete = false;
+    public $search = '';
+
+    public function mount($proyekId = null)
     {
         $this->proyekId = $proyekId;
         $this->proyek = Proyek::findOrFail($proyekId);
@@ -46,9 +51,20 @@ class AllProyekInvoice extends Component
 
     public function loadInvoices()
     {
-        $this->invoices = ProyekInvoice::where('proyek_id', $this->proyek->id)
-            ->orderBy('tanggal_invoice', 'desc')
-            ->get();
+        $search = trim(strtolower($this->search));
+
+        $query = ProyekInvoice::where('proyek_id', $this->proyek->id);
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(judul_invoice) LIKE ?', ["%{$search}%"])
+                ->orWhereRaw('CAST(nomor_invoice AS TEXT) LIKE ?', ["%{$search}%"])
+                ->orWhereRaw('CAST(jumlah AS TEXT) LIKE ?', ["%{$search}%"])
+                ->orWhereRaw('CAST(tanggal_invoice AS TEXT) LIKE ?', ["%{$search}%"]);
+            });
+        }
+
+        $this->invoices = $query->orderBy('tanggal_invoice', 'desc')->get();
 
         $this->statuses = $this->invoices->pluck('status', 'id')->toArray();
         $this->totalInvoice = $this->invoices->sum('jumlah');
@@ -98,7 +114,7 @@ class AllProyekInvoice extends Component
             'user_id' => auth()->id(),
         ]);
 
-        session()->flash('success', 'Invoice berhasil ditambahkan.');
+        session()->flash('success', 'Invoice created successfully');
         $this->resetForm();
         $this->loadInvoices();
         $this->openModal = false;
@@ -120,9 +136,10 @@ class AllProyekInvoice extends Component
             'keterangan' => $this->keterangan,
         ]);
 
-        session()->flash('success', 'Invoice berhasil diperbarui.');
+        session()->flash('success', 'Invoice successfully updated.');
         $this->resetForm();
         $this->loadInvoices();
+        $this->isEdit = false;
         $this->openModal = false;
     }
 
@@ -132,11 +149,22 @@ class AllProyekInvoice extends Component
         $this->resetErrorBag();
     }
 
-    public function deleteInvoice($id)
+    public function askDelete($id)
+    {
+        $this->deleteId = $id;
+        $this->confirmDelete = true;
+    }
+
+    public function confirmDeleteInvoice($id)
     {
         $invoice = ProyekInvoice::findOrFail($id);
         $invoice->delete();
+            
+        session()->flash('success', 'Invoice successfully Deleted.');
         $this->loadInvoices();
+
+        $this->confirmDelete = false;
+        $this->deleteId = null;
     }
 
     public function updateStatus($id, $status)
@@ -155,101 +183,93 @@ class AllProyekInvoice extends Component
 
     public function createKwitansi($id)
     {
-        $invoice = ProyekInvoice::find($id);
-        if (! $invoice) {
-            $this->errorMessage = 'Invoice tidak ditemukan.';
-            $this->selectedInvoiceId = $id;
-            return;
-        }
+    $invoice = ProyekInvoice::find($id);
 
-        // only allow creating kwitansi when invoice is marked as paid
-        if ($invoice->status !== 'dibayar') {
-            $this->errorMessage = 'Kwitansi hanya dapat dibuat untuk invoice yang sudah dibayar.';
-            $this->selectedInvoiceId = $id;
-            return;
-        }
-
-        $this->selectedInvoiceId = $id;
-        $this->errorMessage = '';
-
-        // If a kwitansi already exists for this invoice number, open modal in edit mode
-        $existing = ProyekKwitansi::where('nomor_invoice', $invoice->nomor_invoice)->first();
-        if ($existing) {
-            $this->isEditingKwitansi = true;
-            $this->editingKwitansiId = $existing->id;
-            $this->keteranganKwitansi = $existing->keterangan ?? $invoice->keterangan ?? '';
-        } else {
-            $this->isEditingKwitansi = false;
-            $this->editingKwitansiId = null;
-            $this->keteranganKwitansi = $invoice->keterangan ?? '';
-        }
-
-        $this->showKwitansiModal = true;
+    if (! $invoice) {
+        $this->errorMessage = 'Invoice tidak ditemukan.';
+        return;
     }
+
+    if ($invoice->status !== 'dibayar') {
+        $this->errorMessage = 'Kwitansi hanya dapat dibuat untuk invoice yang sudah dibayar.';
+        return;
+    }
+
+    $this->selectedInvoiceId = $id;
+
+    $existing = ProyekKwitansi::where('nomor_invoice', $invoice->nomor_invoice)->first();
+
+    if ($existing) {
+        // MODE EDIT
+        $this->isEditingKwitansi = true;
+        $this->editingKwitansiId = $existing->id;
+
+        $this->judulKwitansi      = $existing->judul_kwitansi;
+        $this->tanggalKwitansi    = $existing->tanggal_kwitansi;
+        $this->keteranganKwitansi = $existing->keterangan;
+    } 
+    else {
+        // MODE CREATE
+        $this->isEditingKwitansi = false;
+        $this->editingKwitansiId = null;
+
+        // DEFAULT VALUES
+        $this->judulKwitansi      = 'Kwitansi ' . $invoice->judul_invoice;
+        $this->tanggalKwitansi    = now()->toDateString();
+        $this->keteranganKwitansi = $invoice->keterangan ?? '';
+    }
+
+    $this->showKwitansiModal = true;
+    }
+
 
     public function simpanKwitansi()
     {
-        $this->validate([
-            'keteranganKwitansi' => 'nullable|string|max:1000',
+    $this->validate([
+        'judulKwitansi' => 'required|string|max:255',
+        'tanggalKwitansi' => 'required|date',
+        'keteranganKwitansi' => 'nullable|string|max:1000',
+    ]);
+
+    $invoice = ProyekInvoice::find($this->selectedInvoiceId);
+
+    $existing = ProyekKwitansi::where('nomor_invoice', $invoice->nomor_invoice)->first();
+
+    if ($existing) {
+        // UPDATE
+        $existing->update([
+            'proyek_id' => $invoice->proyek_id,
+            'judul_kwitansi' => $this->judulKwitansi,       // pakai input user
+            'jumlah' => $invoice->jumlah,
+            'tanggal_kwitansi' => $this->tanggalKwitansi,  // pakai input user
+            'keterangan' => $this->keteranganKwitansi,
+            'user_id' => auth()->id(),
         ]);
 
-        if (! $this->selectedInvoiceId) {
-            $this->errorMessage = 'Tidak ada invoice yang dipilih.';
-            return;
-        }
+        session()->flash('success', 'Receipt successfully updated.');
+    } 
+    else {
+        // CREATE
+        $nomorKwitansi = 'KW-' . time();
 
-        $invoice = ProyekInvoice::find($this->selectedInvoiceId);
-        if (! $invoice) {
-            $this->errorMessage = 'Invoice tidak ditemukan.';
-            return;
-        }
+        ProyekKwitansi::create([
+            'nomor_kwitansi' => $nomorKwitansi,
+            'nomor_invoice' => $invoice->nomor_invoice,
+            'proyek_id' => $invoice->proyek_id,
+            'judul_kwitansi' => $this->judulKwitansi,        // user input
+            'jumlah' => $invoice->jumlah,
+            'tanggal_kwitansi' => $this->tanggalKwitansi,    // user input
+            'keterangan' => $this->keteranganKwitansi,
+            'user_id' => auth()->id(),
+        ]);
 
-        // Cek apakah sudah ada kwitansi dengan nomor_invoice yang sama
-        $existing = ProyekKwitansi::where('nomor_invoice', $invoice->nomor_invoice)->first();
-
-        if ($existing) {
-            // Update kwitansi yang sudah ada dengan data baru
-            $existing->update([
-                'proyek_id' => $invoice->proyek_id,
-                'judul_kwitansi' => 'Kwitansi ' . $invoice->judul_invoice,
-                'jumlah' => $invoice->jumlah,
-                'tanggal_kwitansi' => now()->toDateString(),
-                'keterangan' => $this->keteranganKwitansi,
-                'user_id' => auth()->id(),
-            ]);
-
-            session()->flash('success', 'Kwitansi berhasil diperbarui.');
-        } else {
-            // Buat kwitansi baru
-            $nomorKwitansi = 'KW-' . time();
-            ProyekKwitansi::create([
-                'nomor_kwitansi' => $nomorKwitansi,
-                'nomor_invoice' => $invoice->nomor_invoice,
-                'proyek_id' => $invoice->proyek_id,
-                'judul_kwitansi' => 'Kwitansi ' . $invoice->judul_invoice,
-                'jumlah' => $invoice->jumlah,
-                'tanggal_kwitansi' => now()->toDateString(),
-                'keterangan' => $this->keteranganKwitansi,
-                'user_id' => auth()->id(),
-            ]);
-
-            session()->flash('success', 'Kwitansi berhasil dibuat.');
-        }
-
-    // close modal and reset related props
-    $this->showKwitansiModal = false;
-    $this->keteranganKwitansi = '';
-    $this->selectedInvoiceId = null;
-    $this->isEditingKwitansi = false;
-    $this->editingKwitansiId = null;
-
-        // reload invoices in case any derived values change
+        session()->flash('success', 'Receipt created successfully.');
+    }
+        $this->closeKwitansiModal();
         $this->loadInvoices();
     }
 
-    /**
-     * Close the kwitansi modal and reset related state.
-     */
+
     public function closeKwitansiModal()
     {
         $this->showKwitansiModal = false;
@@ -280,6 +300,12 @@ class AllProyekInvoice extends Component
             echo $pdf->output();
         }, 'invoice-' . $invoice['nomor_invoice'] . '.pdf');
     }
+
+    public function updatedSearch()
+{
+    $this->loadInvoices();
+}
+
 
     public function render()
     {

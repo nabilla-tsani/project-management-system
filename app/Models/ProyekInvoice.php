@@ -32,5 +32,11 @@ class ProyekInvoice extends Model
         return $this->belongsTo(Proyek::class, 'proyek_id');
     }
 
+    public function kwitansi()
+    {
+        return $this->hasOne(ProyekKwitansi::class, 'nomor_invoice', 'nomor_invoice');
+    }
+
+
 }
 

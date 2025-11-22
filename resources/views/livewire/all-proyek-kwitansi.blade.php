@@ -13,8 +13,31 @@
             placeholder="Find receipts..."
             class="text-xs px-3 py-1.5 border border-gray-500 rounded-3xl focus:ring-[#5ca9ff] focus:border-[#5ca9ff] outline-none w-96"
         />
+
     </div>
-</div>
+    </div>
+
+    {{-- INFORMASI ANGGARAN PROYEK --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center pb-4">
+
+        {{-- Sudah Dibayar --}}
+        <div class="space-y-1">
+            <i class="fas fa-coins text-blue-500 text-base"></i>
+            <p class="text-[11px] text-gray-500 uppercase tracking-wide">Paid</p>
+            <p class="text-sm font-semibold text-blue-500">
+                Rp {{ number_format($totalPaid, 0, ',', '.') }}
+            </p>
+        </div>
+
+        {{-- Belum DIbayar --}}
+        <div class="space-y-1">
+            <i class="fas fa-file-invoice text-[#9c62ff] text-base"></i>
+            <p class="text-[11px] text-gray-500 uppercase tracking-wide">Outstanding </p>
+            <p class="text-sm font-semibold text-[#9c62ff]">
+                Rp {{ number_format($totalUnpaid, 0, ',', '.') }}
+            </p>
+        </div>
+    </div>
 
 {{-- Flash Message --}}
 @if (session()->has('success'))
@@ -32,14 +55,14 @@
     {{-- Daftar Kwitansi --}}
     <div>
         @forelse($kwitansis as $kwitansi)
-            <div class="bg-white shadow-md border border-gray-300 rounded p-4 text-sm text-gray-800 flex flex-col gap-1 mb-1">
+            <div class="bg-white shadow-md border border-gray-300 p-3 text-sm text-gray-800 flex flex-col gap-1 mb-1">
 
-    {{-- Baris 1: Judul & Nomor Kwitansi --}}
+    {{-- Baris 1: Judul & Harga --}}
     <div class="grid grid-cols-2">
-        <div class="font-semibold text-gray-800 text-md">
+        <div class="font-semibold text-gray-800 text-xs">
             {{ $kwitansi->judul_kwitansi }}
         </div>
-        <div class="text-right font-bold text-green-700 text-md block">
+        <div class="text-right font-bold text-green-700 text-xs block">
             <i class="fa-solid fa-money-bill-wave text-blue-500"></i>
             <span class="text-blue-600 font-semibold text-sm">
                 Rp {{ number_format($kwitansi->jumlah, 0, ',', '.') }}
@@ -47,50 +70,49 @@
         </div>
     </div>
 
-    {{-- Baris 2: Judul & Nomor Kwitansi --}}
+    {{-- Baris 2: no.kwitansi, no.invoice, tanggal, pembuat --}}
     <div class="grid grid-cols-2">
-        <div class="text-gray-900 text-xs font-base">
-            {{ $kwitansi->nomor_kwitansi }}  <span class="text-gray-500 px-3">|</span>  
-            {{ $kwitansi->nomor_invoice }}    <span class="text-gray-500 px-3">|</span> 
+        <div class="text-gray-700 text-xs font-base">
+            {{ $kwitansi->nomor_kwitansi }}  <span class="text-gray-700 px-3">|</span>  
+            {{ $kwitansi->nomor_invoice }}    <span class="text-gray-700 px-3">|</span> 
+            <i class="fa-regular fa-calendar text-gray-500"></i>
             {{ \Carbon\Carbon::parse($kwitansi->tanggal_kwitansi)->format('d F Y') }}
         </div>
+        <div class="text-right text-[10px] italic text-gray-500">
+            <p>Created by: <span>{{ $kwitansi->user?->name ?? 'User' }} | </span>
+            At: <span>{{ $kwitansi->created_at }}</span></p>
+        </div>
     </div>
 
-    {{-- Baris 2: Keterangan --}}
-    <div>
-        @if(!empty($kwitansi->keterangan))
-            <span class="text-gray-400 text-xs">Description:</span>
-            <span class="text-gray-800 text-xs">{{ $kwitansi->keterangan }}</span>
-        @else
-            <span class="text-gray-400 italic text-xs">No description</span>
-        @endif
-    </div>
-
-    {{-- Baris 3: Aksi & Pembuat --}}
-    <div class="flex justify-between items-center italic">
-        <div class="flex gap-4 text-xs text-gray-500">
-            <p>Created by: <span>{{ $kwitansi->user?->name ?? 'User' }}</span></p>
-            <p>At: <span>{{ $kwitansi->created_at }}</span></p>
+    {{-- Baris 3: desc, aksi --}}
+   <div class="flex justify-between items-start">
+            <div class="text-xs text-justify pr-3">
+            @if(!empty($kwitansi->keterangan))
+                <span class="text-gray-500">Description:</span>
+                <span class="text-gray-500">{{ $kwitansi->keterangan }}</span>
+            @else
+                <span class="text-gray-400 italic">No description</span>
+            @endif
         </div>
 
-        <div class="flex justify-end items-center gap-4 text-xs text-gray-600">
+        <div class="flex items-center gap-4 text-xs text-gray-600">
             <a href="{{ route('proyek-kwitansi.print', $kwitansi->id) }}" target="_blank"
-            class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                <i class="fa-solid fa-file-pdf"></i> PDF
+            class="text-[#9c62ff] hover:text-blue-800 flex items-center gap-1">
+                <i class="fa-solid fa-file-pdf text-[#9c62ff]"></i> PDF
             </a>
 
             <button wire:click="openEditKwitansi({{ $kwitansi->id }})"
-                    class="text-yellow-600 hover:text-yellow-800 flex items-center gap-1">
-                <i class="fa-solid fa-pen-to-square"></i> 
+                    class="text-blue-500 hover:text-yellow-800 flex items-center gap-1">
+                <i class="fa-solid fa-pen-to-square"></i>
             </button>
 
             <button wire:click="askDelete({{ $kwitansi->id }})"
                     class="text-red-600 hover:text-red-800 flex items-center gap-1">
-                <i class="fa-solid fa-trash"></i> 
+                <i class="fa-solid fa-trash"></i>
             </button>
         </div>
-
     </div>
+
 </div>
 
 

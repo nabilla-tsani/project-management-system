@@ -205,7 +205,7 @@
 
         {{-- Header --}}
         <div class="p-5 border-b border-gray-200">
-            <h3 class="text-xl font-semibold text-center" style="color: #9c62ff;">
+            <h3 class="text-sm font-semibold text-center" style="color: #9c62ff;">
                 {{ $isEdit ? 'Update Project' : 'Add New Project' }}
             </h3>
         </div>
@@ -214,7 +214,7 @@
         <div class="p-5">
             {{-- Pesan sukses --}}
             @if (session()->has('message'))
-                <div class="mb-4 text-sm text-green-600 bg-green-50 border border-green-300 rounded-lg px-4 py-2">
+                <div class="mb-4 text-xs text-green-600 bg-green-50 border border-green-300 rounded-lg px-4 py-2">
                     {{ session('message') }}
                 </div>
             @endif
@@ -222,9 +222,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {{-- Nama Proyek --}}
                 <div class="flex flex-col">
-                    <label class="text-sm font-medium text-gray-700">Project Name</label>
+                    <label class="text-xs font-medium text-gray-700 mb-1">Project Name</label>
                     <input type="text" wire:model="nama_proyek"
-                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm 
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs 
                         @error('nama_proyek') border-red-400 @enderror">
                     @error('nama_proyek')
                         <span class="text-red-800"></span>
@@ -233,10 +233,10 @@
 
                 {{-- Customer --}} 
                 <div class="flex flex-col"> 
-                    <label class="text-sm font-medium text-gray-700">Customer</label> 
+                    <label class="text-xs font-medium text-gray-700 mb-1">Customer</label> 
                     <select wire:model="customer_id" 
                         class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] 
-                        focus:outline-none text-sm @error('customer_id') border-red-400 @enderror"> 
+                        focus:outline-none text-xs @error('customer_id') border-red-400 @enderror"> 
                     <option value="">-- Select Customer --</option> 
                     @foreach($customers as $c) 
                         <option value="{{ $c->id }}">{{ $c->nama }}</option> 
@@ -249,9 +249,9 @@
 
                 {{-- Deskripsi --}}
                 <div class="flex flex-col md:col-span-2">
-                    <label class="text-sm font-medium text-gray-700">Description</label>
-                    <textarea wire:model="deskripsi" rows="2"
-                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                    <label class="text-xs font-medium text-gray-700 mb-1">Description</label>
+                    <textarea wire:model="deskripsi" rows="4"
+                        class="border rounded-md px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
                         @error('deskripsi') border-red-400 @enderror"></textarea>
                     @error('deskripsi')
                         <span class="text-red-500"></span>
@@ -260,9 +260,9 @@
 
                 {{-- Lokasi --}}
                 <div class="flex flex-col md:col-span-2">
-                    <label class="text-sm font-medium text-gray-700">Location</label>
+                    <label class="text-xs font-medium text-gray-700 mb-1">Location</label>
                     <input type="text" wire:model="lokasi"
-                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
                         @error('lokasi') border-red-400 @enderror">
                     @error('lokasi')
                         <span class="text-red-500"></span>
@@ -271,9 +271,9 @@
 
                 {{-- Tanggal Mulai --}}
                 <div class="flex flex-col">
-                    <label class="text-sm font-medium text-gray-700">Start Date</label>
+                    <label class="text-xs font-medium text-gray-700 mb-1">Start Date</label>
                     <input type="date" wire:model="tanggal_mulai"
-                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
                         @error('tanggal_mulai') border-red-400 @enderror">
                     @error('tanggal_mulai')
                         <span class="text-red-500"></span>
@@ -282,9 +282,9 @@
 
                 {{-- Tanggal Selesai --}}
                 <div class="flex flex-col">
-                    <label class="text-sm font-medium text-gray-700">End Date</label>
+                    <label class="text-xs font-medium text-gray-700 mb-1">End Date</label>
                     <input type="date" wire:model="tanggal_selesai"
-                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
                         @error('tanggal_selesai') border-red-400 @enderror">
                     @error('tanggal_selesai')
                         <span class="text-red-500"></span>
@@ -293,11 +293,11 @@
 
                 {{-- Anggaran --}}
                 <div class="flex flex-col">
-                    <label class="text-sm font-medium text-gray-700">Budget</label>
+                    <label class="text-xs font-medium text-gray-700 mb-1">Budget</label>
                     <input type="number" wire:model="anggaran"
                         step="1"
                         oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
                         @error('anggaran') border-red-400 @enderror">
                     @error('anggaran')
                         <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
@@ -307,9 +307,9 @@
 
                 {{-- Status --}}
                 <div class="flex flex-col">
-                    <label class="text-sm font-medium text-gray-700">Status</label>
+                    <label class="text-xs font-medium text-gray-700 mb-1">Status</label>
                     <select wire:model="status"
-                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-sm
+                        class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
                         @error('status') border-red-400 @enderror">
                         <option value="">-- Select Status --</option>
                         <option value="belum_dimulai">Upcoming</option>
@@ -325,13 +325,13 @@
                 <div class="mt-5 flex justify-end gap-3 md:col-span-2">
                     @if($isEdit)
                         <button wire:click="update"
-                            class="px-4 py-2 rounded-3xl shadow text-white text-sm font-medium transition"
+                            class="px-4 py-2 rounded-3xl shadow text-white text-xs font-medium transition"
                             style="background-color: #5ca9ff;">
                             Update
                         </button>
                     @else
                         <button wire:click="store"
-                            class="px-4 py-2 rounded-3xl shadow text-white text-sm font-medium transition"
+                            class="px-4 py-2 rounded-3xl shadow text-white text-xs font-medium transition"
                             style="background-color: #5ca9ff;">
                             Save
                         </button>
