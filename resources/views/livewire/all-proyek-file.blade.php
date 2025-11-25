@@ -37,17 +37,17 @@
         @endif
 
 
-<div class="space-y-2">
+<div class="space-y-1">
     @forelse ($files as $f)
         @php
             $ext = strtolower(pathinfo($f->path, PATHINFO_EXTENSION));
         @endphp
 
-        <div class="px-4 border border-gray-200 bg-white shadow-xl hover:shadow-32xl transition-all duration-200 text-xs">
+        <div class="px-3 border border-gray-200 bg-white shadow-xl hover:shadow-32xl transition-all duration-200 text-xs">
             <div class="flex items-center gap-3 w-full">
 
                 {{-- ICON (FIT) --}}
-                <span class="px-3 py-3 text-center w-auto shrink-0">
+                <span class="px-1 py-2 text-center w-auto shrink-0">
                     @if (in_array($ext, ['jpg','jpeg','png','gif']))
                         <i class="fa-solid fa-file-image text-purple-600 text-xl"></i>
                     @elseif ($ext === 'pdf')
@@ -66,20 +66,20 @@
                 </span>
 
                {{-- NAME (NARROWER) --}}
-                <span class="px-3 py-3 font-medium text-gray-900 break-words flex-[2] min-w-[120px]"
+                <span class="px-1 py-2 font-medium text-gray-900 break-words flex-[2] min-w-[120px]"
                     title="{{ $f->nama_file }}">
                     {{ $f->nama_file }}
                 </span>
 
                 {{-- DESCRIPTION (WIDE) --}}
-                <span class="px-3 py-3 text-gray-600 break-words flex-[3] min-w-[200px] text-justify"
+                <span class="px-3 py-2 text-gray-600 break-words flex-[3] min-w-[200px] text-justify"
                     title="{{ $f->keterangan }}">
                     {{ $f->keterangan ?: '-' }}
                 </span>
 
 
                 {{-- USER (FIT) --}}
-                <span class="px-3 py-3 text-gray-500 text-[10px] w-auto shrink-0 flex items-center italic">
+                <span class="px-3 py-2 text-gray-500 text-[10px] w-auto shrink-0 flex items-center italic">
                     <i class="fa-solid fa-user mr-1"></i>
                     {{ $f->user?->name ?? '-' }}
                 </span>
@@ -107,8 +107,7 @@
                     </button>
 
                     {{-- Delete --}}
-                    <button x-data
-                        @click="if (confirm('Are you sure you want to delete this file?')) { $wire.delete({{ $f->id }}) }"
+                    <button wire:click="askDelete({{ $f->id }})" 
                         class="text-red-600 hover:text-red-800">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -135,31 +134,49 @@
                 {{ $fileId ? 'Edit File' : 'Upload File' }}
             </h3>
 
-            <label class="text-xs text-gray-700 mb-2">File Name</label>    
-            <input type="text" wire:model.defer="namaFile" placeholder="Nama File"
-                class="border border-gray-300 rounded-3xl p-2.5 w-full mb-4 focus:ring-2 focus:ring-blue-400 text-xs">
-            @error('namaFile') 
-                <div class="text-red-600 text-xs mb-2">{{ $message }}</div> 
-            @enderror
-
-            <label class="text-xs text-gray-700 mb-2">Notes</label>    
-            <textarea wire:model.defer="keterangan" placeholder="Keterangan"
-                rows="5"
-                class="border border-gray-300 rounded-md p-2.5 w-full mb-4 focus:ring-2 focus:ring-blue-400 text-xs"></textarea>
-            @error('keterangan') 
-                <div class="text-red-600 text-xs mb-2">{{ $message }}</div> 
-            @enderror
-
-
+           {{-- File Upload (Hanya saat Create) --}}
             @if(!$fileId)
-                <input type="file" wire:model="file"
-                    class="text-xs">
-                @error('file') 
-                    <div class="text-red-600 text-xs mb-2">{{ $message }}</div> 
-                @enderror
+                <div class="mb-4">
+                    <input 
+                        type="file" 
+                        wire:model="file"
+                        class="block w-full text-xs text-gray-700"
+                    >
+                    @error('file')
+                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
             @endif
 
-            <div class="flex justify-end gap-3 mt-4">
+            {{-- Rename File --}}
+            <div class="mb-4">
+                <label class="block text-xs text-gray-700 mb-1">Rename File</label>
+                <input 
+                    type="text" 
+                    wire:model.defer="namaFile" 
+                    placeholder="Leave blank to keep the original name"
+                    class="block w-full text-xs text-gray-700 border border-gray-300 rounded-3xl p-2.5 focus:ring-2 focus:ring-blue-400"
+                >
+                @error('namaFile')
+                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            {{-- Notes --}}
+            <div class="mb-4">
+                <label class="block text-xs text-gray-700 mb-1">Notes</label>
+                <textarea
+                    wire:model.defer="keterangan"
+                    rows="4"
+                    class="block w-full text-xs text-gray-700 border border-gray-300 rounded-md p-2.5 focus:ring-2 focus:ring-blue-400 resize-none"
+                ></textarea>
+                @error('keterangan')
+                    <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+            
+
+            <div class="flex justify-end gap-3">
                 <button wire:click="$set('modalOpen', false)"
                     class="bg-gray-200 text-gray-700 px-4 py-2 rounded-3xl hover:bg-gray-300 hover:scale-105 transition text-xs">
                     Cancel
@@ -171,6 +188,51 @@
             </div>
         </div>
     </div>
+@endif
+
+ {{-- Modal Konfirmasi Delete --}}
+    @if($confirmDelete)
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+        x-data
+        x-init="$el.classList.add('opacity-0'); setTimeout(()=> $el.classList.remove('opacity-0'), 10)"
+    >
+        <div class="bg-white p-6 shadow-xl w-full max-w-sm text-center animate-fadeIn">
+
+            <h3 class="text-sm font-semibold text-red-500 mb-2">
+                Delete File
+            </h3>
+
+            <p class="text-xs text-gray-600 mb-5 px-2 leading-relaxed">
+                Delete {{ $deleteName }}?
+            </p>
+
+            <div class="flex justify-center gap-3">
+                <button wire:click="$set('confirmDelete', false)"
+                    class="px-4 py-1.5 rounded-3xl bg-gray-300 text-gray-700 text-xs hover:bg-gray-400">
+                    Cancel
+                </button>
+
+                <button wire:click="delete({{ $deleteId }})"
+                    class="px-4 py-1.5 rounded-3xl bg-red-600 text-white text-xs hover:bg-red-700">
+                    Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+.animate-fadeIn {
+    opacity: 0;
+    transform: scale(0.95);
+    animation: fadeInModal 0.2s forwards;
+}
+@keyframes fadeInModal {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+</style>
 @endif
 
 </div>

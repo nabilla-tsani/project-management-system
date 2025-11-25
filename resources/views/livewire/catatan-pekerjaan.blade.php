@@ -145,9 +145,9 @@
                                             {{ $item->jenis === 'pekerjaan' ? 'Task' : ($item->jenis === 'bug' ? 'Bug' : $item->jenis) }}
                                         </span>
 
-                                        <div class="flex items-center gap-3 text-xs text-gray-900">
+                                        <div class="flex items-center gap-3 text-[10px] italic text-gray-400">
                                             <span>
-                                                {{ $item->jenis === 'pekerjaan' ? 'To: ' : ($item->jenis === 'bug' ? 'From : ' : '') }} {{ $item->user->name ?? '-' }}
+                                                {{ $item->jenis === 'pekerjaan' ? 'Assign to: ' : ($item->jenis === 'bug' ? 'Reported by : ' : '') }} {{ $item->user->name ?? '-' }}
                                             </span>
 
                                             <button wire:click="edit({{ $item->id }})" class="text-blue-500 hover:text-blue-700" title="Edit">

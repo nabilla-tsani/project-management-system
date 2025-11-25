@@ -13,6 +13,7 @@ class ProyekCatatanPekerjaan extends Model
     protected $table = 'proyek_catatan_pekerjaan';
 
     protected $fillable = [
+        'proyek_id',
         'proyek_fitur_id',
         'user_id',
         'jenis',
@@ -28,5 +29,11 @@ class ProyekCatatanPekerjaan extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function fitur()
+{
+    return $this->belongsTo(ProyekFitur::class, 'proyek_fitur_id');
+}
+
 
 }

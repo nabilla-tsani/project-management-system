@@ -52,4 +52,9 @@ class User extends Authenticatable
                     ->withPivot('sebagai', 'keterangan');
     }
 
+    public function fitur()
+    {
+        return $this->belongsToMany(ProyekFitur::class, 'proyek_fitur_user', 'user_id', 'proyek_fitur_id');
+    }
+
 }

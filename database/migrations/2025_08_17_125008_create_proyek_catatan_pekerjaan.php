@@ -14,12 +14,18 @@ return new class extends Migration
         Schema::create('proyek_catatan_pekerjaan', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedBigInteger('proyek_fitur_id');
+            $table->unsignedBigInteger('proyek_fitur_id')->nullable();
             $table->foreign('proyek_fitur_id')
                     ->references('id')
                     ->on('proyek_fitur')
                     ->onDelete('cascade');
-                    
+
+            $table->unsignedBigInteger('proyek_id');
+            $table->foreign('proyek_id')
+                ->references('id')
+                ->on('proyek')
+                ->onDelete('cascade');
+              
             $table->foreignId('user_id')->constrained('users');
             $table->enum('jenis', ['pekerjaan', 'bug']);
             $table->text('catatan');
