@@ -5,6 +5,7 @@ use App\Services\GeminiService;
 use App\Livewire\DetailProyek;
 use App\Livewire\AllProyekInvoice;
 use App\Livewire\AllProyekKwitansi;
+use App\Livewire\MyTasks;
 use App\Livewire\UiTab;
 
 Route::view('/', 'welcome');
@@ -18,6 +19,10 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 require __DIR__.'/auth.php';
+
+Route::get('/tasks', function () {
+    return view('livewire.my-tasks');
+})->middleware(['auth']);
 
 Route::get('/customer', function () {
     return view('customer');

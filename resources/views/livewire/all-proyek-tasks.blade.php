@@ -7,6 +7,12 @@
                 <i class="fa-solid fa-list-check"></i>
                 Tasks List
             </h2>
+            <input 
+                type="text"
+                wire:model.live="search" 
+                placeholder="Find tasks by features and users..."
+                class="text-xs px-3 py-1.5 border border-gray-500 rounded-3xl focus:ring-[#5ca9ff] focus:border-[#5ca9ff] outline-none w-96"
+            />
         </div>
 
         <div class="flex items-center gap-3">
@@ -22,7 +28,7 @@
 
     {{-- LEFT COLUMN: feature task --}}
     <div>
-         <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <i class="fa-solid fa-layer-group"></i> Feature Notes
         </h3>
 
@@ -44,13 +50,20 @@
                         </span>
 
                     <div class="text-[10px] italic text-gray-400">
-                        @if($item->jenis === 'pekerjaan')
-                            Assign to: {{ $item->user->name ?? '-' }}
-                        @else 
-                            Reported by : {{ $item->user->name ?? '-' }}
-                        @endif
+                        Assign to: {{ $item->user->name ?? '-' }}
                         <span class="mx-1">•</span>
-                        {{ $item->updated_at->diffForHumans() }}
+                        <span>
+                            {{ \Carbon\Carbon::parse($item->tanggal_mulai)->format('d M Y') }}
+                            -
+                            @if ($item->tanggal_selesai)
+                                {{ \Carbon\Carbon::parse($item->tanggal_selesai)->format('d M Y') }}
+                            @elseif ($item->proyek?->tanggal_selesai)
+                                {{ \Carbon\Carbon::parse($item->proyek->tanggal_selesai)->format('d M Y') }}
+                            @else
+                                Project done
+                            @endif
+                        </span>
+
                     </div>
                 </div>
 
@@ -89,7 +102,17 @@
                     <div class="text-[10px] italic text-gray-400">
                         Assign to: {{ $item->user->name ?? '-' }}
                         <span class="mx-1">•</span>
-                        {{ $item->updated_at->diffForHumans() }}
+                        <span>
+                            {{ \Carbon\Carbon::parse($item->tanggal_mulai)->format('d M Y') }}
+                            -
+                            @if ($item->tanggal_selesai)
+                                {{ \Carbon\Carbon::parse($item->tanggal_selesai)->format('d M Y') }}
+                            @elseif ($item->proyek?->tanggal_selesai)
+                                {{ \Carbon\Carbon::parse($item->proyek->tanggal_selesai)->format('d M Y') }}
+                            @else
+                                Project done
+                            @endif
+                        </span>
                     </div>
 
                     <div class="flex items-center gap-3 text-[10px] text-gray-500">
@@ -118,14 +141,21 @@
             <p class="text-xs text-gray-400 italic">No general tasks yet.</p>
         @endforelse
     </div>
-
 </div>
+
+    {{-- Footer Tombol Kembali --}}
+    <div class="flex justify-start pt-4">
+        <a href="{{ route('proyek') }}"
+           class="px-4 py-2 bg-[#5ca9ff] text-white text-[10px] rounded-3xl shadow hover:bg-[#884fd9] transition">
+            Back to Project List
+        </a>
+    </div>
 
 
 
     {{-- MODAL TAMBAH CATATAN --}}
     @if($openModal)
-    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
         <div class="bg-white shadow-xl w-[500px] p-5">
 
             <div class="text-center">
@@ -136,19 +166,49 @@
 
 
             {{-- User --}}
-            <label class="text-xs font-medium">User</label>
+            <label class="block text-gray-600 text-xs">User</label>
             <select wire:model="selectedUser"
-                    class="w-full text-xs border border-gray-300 rounded-3xl px-3 py-2 mt-1 mb-3 focus:ring-[#5ca9ff]">
+                    class="w-full text-xs border  rounded-3xl px-3 py-2 mt-1 mb-3 focus:ring-[#5ca9ff]">
                 <option value="">-- Select User --</option>
                 @foreach ($users as $u)
                     <option value="{{ $u->id }}">{{ $u->name }}</option>
                 @endforeach
             </select>
 
+            <div class="flex items-center gap-3">
+                            {{-- Tanggal Mulai --}}
+                            <div class="w-1/2 text-xs">
+                                <label class="block text-gray-600 mb-1">Start Date</label>
+                                <input 
+                                    type="date" 
+                                    wire:model.live="tanggal_mulai"
+                                    class="text-xs w-full border rounded-3xl px-3 py-1.5 bg-white focus:outline-none focus:ring focus:ring-[#5ca9ff]/50"
+                                >
+                                @error('tanggal_mulai') 
+                                    <span class="text-xs text-red-500">{{ $message }}</span> 
+                                @enderror
+                            </div>
+
+                            {{-- Tanggal Selesai --}}
+                            <div class="w-1/2 text-xs">
+                                <label class="block text-gray-600 mb-1">End Date
+                                    <span class="text-gray-400">(Blank allowed)</span>
+                                </label>
+                                <input 
+                                    type="date" 
+                                    wire:model.live="tanggal_selesai"
+                                    class="text-xs w-full border rounded-3xl px-3 py-1.5 bg-white focus:outline-none focus:ring focus:ring-[#5ca9ff]/50"
+                                >
+                                @error('tanggal_selesai') 
+                                    <span class="text-xs text-red-500">{{ $message }}</span> 
+                                @enderror
+                            </div>
+                        </div>
+
             {{-- Catatan --}}
-            <label class="text-xs font-medium">Description</label>
+            <label  class="block text-gray-600 text-xs pt-3">Description</label>
             <textarea wire:model="catatanText"
-                class="w-full border text-xs border-gray-300 rounded-md px-3 py-2 mt-1 h-24 focus:ring-[#5ca9ff]"></textarea>
+                class="w-full border text-xs rounded-md px-3 py-2 mt-1 h-24 focus:ring-[#5ca9ff]"></textarea>
 
             {{-- Buttons --}}
             <div class="flex justify-end gap-2 mt-4">

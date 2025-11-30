@@ -1,14 +1,14 @@
 <div>
     @if($catatanModal)
         <div 
-            class="fixed inset-0 bg-gray-800/50 flex items-center justify-center z-50"
+        class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
             wire:click.self="closeModal"
         >
             <div class="bg-white p-6 w-full max-w-5xl shadow-xl flex gap-6">
                 {{-- Kiri: Form --}}
                 <div class="w-1/3 border-r pr-5">
                     <h2 class="text-base font-semibold mb-4 text-[#9c62ff] text-center">
-                        {{ $catatanId ? 'Edit Note / Task' : 'Add Note or Task' }}
+                        {{ $catatanId ? 'Edit Task' : 'Add Task' }}
                     </h2>
 
                     <form 
@@ -49,14 +49,44 @@
                             @enderror
                         </div>
 
+                        <div class="flex items-center gap-3">
+                            {{-- Tanggal Mulai --}}
+                            <div class="w-1/2 text-xs">
+                                <label class="block text-gray-600 mb-1">Start Date</label>
+                                <input 
+                                    type="date" 
+                                    wire:model.live="tanggal_mulai"
+                                    class="text-xs w-full border rounded-3xl px-3 py-1.5 bg-white focus:outline-none focus:ring focus:ring-[#5ca9ff]/50"
+                                >
+                                @error('tanggal_mulai') 
+                                    <span class="text-xs text-red-500">{{ $message }}</span> 
+                                @enderror
+                            </div>
+
+                            {{-- Tanggal Selesai --}}
+                            <div class="w-1/2 text-xs">
+                                <label class="block text-gray-600 mb-1">End Date
+                                    <span class="text-gray-400">(Blank allowed)</span>
+                                </label>
+                                <input 
+                                    type="date" 
+                                    wire:model.live="tanggal_selesai"
+                                    class="text-xs w-full border rounded-3xl px-3 py-1.5 bg-white focus:outline-none focus:ring focus:ring-[#5ca9ff]/50"
+                                >
+                                @error('tanggal_selesai') 
+                                    <span class="text-xs text-red-500">{{ $message }}</span> 
+                                @enderror
+                            </div>
+                        </div>
+
                         {{-- Catatan --}}
                         <div class="text-xs">
-                            <label class="block text-gray-600 mb-1">Notes or Tasks</label>
+                            <label class="block text-gray-600 mb-1">Task</label>
                             <textarea 
                                 wire:model.live="isiCatatan" 
                                 rows="10"
                                 class="w-full border rounded-lg px-3 py-1.5 focus:outline-none focus:ring focus:ring-[#5ca9ff]/50"
-                                placeholder="Add notes or tasks here"
+                                placeholder="Add tasks here"
                             ></textarea>
                             @error('isiCatatan') 
                                 <span class="text-red-500">{{ $message }}</span> 
@@ -74,6 +104,7 @@
                                     Cancel
                                 </button>
                             @endif
+
                             <button 
                                 type="submit"
                                 class="px-3 py-1.5 bg-[#5ca9ff] text-white rounded-3xl text-xs hover:bg-[#449bff] transition"
@@ -82,6 +113,7 @@
                             </button>
                         </div>
                     </form>
+
                 </div>
 
                 {{-- Kanan: Daftar --}}
@@ -125,39 +157,65 @@
 
                 <div class="h-[400px] overflow-y-auto pr-2">
                     @if($catatan->isEmpty())
-                        <p class="text-gray-400 text-xs italic text-center">No notes or tasks yet.</p>
+                        <p class="text-gray-400 text-xs italic text-center">No tasks yet.</p>
                     @else
                         <ul class="text-[13px]">
                             @foreach($catatan as $item)
                                 <li class="border-b py-3">
                                     <div class="flex justify-between items-center">
-                                        <span class="text-[12px] capitalize flex items-center gap-1 pl-1
-                                            {{ $item->jenis === 'pekerjaan' 
-                                                ? 'text-[#5ca9ff]' 
-                                                : ($item->jenis === 'bug' 
-                                                    ? 'text-[#9c62ff]' 
-                                                    : 'text-gray-700') }}">
-                                           
-                                            {{-- Icon berdasarkan jenis --}}
-                                            <i class="{{ $item->jenis === 'pekerjaan' ? 'fa-solid fa-check-circle' : ($item->jenis === 'bug' ? 'fa-solid fa-bug' : 'fa-solid fa-circle') }}"></i>
-                                            
-                                            {{-- Teks --}}
-                                            {{ $item->jenis === 'pekerjaan' ? 'Task' : ($item->jenis === 'bug' ? 'Bug' : $item->jenis) }}
-                                        </span>
 
-                                        <div class="flex items-center gap-3 text-[10px] italic text-gray-400">
-                                            <span>
-                                                {{ $item->jenis === 'pekerjaan' ? 'Assign to: ' : ($item->jenis === 'bug' ? 'Reported by : ' : '') }} {{ $item->user->name ?? '-' }}
+                                        {{-- Jenis + User --}}
+                                        <div class="flex items-center gap-2 text-[12px] capitalize pl-1">
+
+                                            {{-- Jenis --}}
+                                            <span class="flex items-center gap-1
+                                                {{ $item->jenis === 'pekerjaan' 
+                                                    ? 'text-[#5ca9ff]' 
+                                                    : ($item->jenis === 'bug' 
+                                                        ? 'text-[#9c62ff]' 
+                                                        : 'text-gray-700') }}">
+                                                
+                                                {{-- Icon --}}
+                                                <i class="{{ $item->jenis === 'pekerjaan' 
+                                                    ? 'fa-solid fa-check-circle' 
+                                                    : ($item->jenis === 'bug' 
+                                                        ? 'fa-solid fa-bug' 
+                                                        : 'fa-solid fa-circle') }}">
+                                                </i>
+
+                                                {{-- Teks --}}
+                                                {{ $item->jenis === 'pekerjaan' ? 'Task' : ($item->jenis === 'bug' ? 'Bug' : $item->jenis) }}
                                             </span>
 
+                                            {{-- User (menempel tepat setelah jenis) --}}
+                                            <span class="text-[10px] italic text-gray-400">
+                                                Assign to: {{ $item->user->name ?? '-' }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Tanggal + Aksi --}}
+                                        <div class="flex items-center gap-3 text-[10px] italic text-gray-400">
+
+                                            {{-- Tanggal --}}
+                                            <span>
+                                                {{ \Carbon\Carbon::parse($item->tanggal_mulai)->format('d M Y') }}
+                                                -
+                                                {{ $item->tanggal_selesai 
+                                                    ? \Carbon\Carbon::parse($item->tanggal_selesai)->format('d M Y') 
+                                                    : 'Project done' }}
+                                            </span>
+
+                                            {{-- Edit --}}
                                             <button wire:click="edit({{ $item->id }})" class="text-blue-500 hover:text-blue-700" title="Edit">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </button>
 
+                                            {{-- Delete --}}
                                             <button wire:click="delete({{ $item->id }})" class="text-red-500 hover:text-red-700" title="Delete">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </div>
+
                                     </div>
 
                                     <p class="text-xs text-gray-700 mt-1 pl-1 text-justify">

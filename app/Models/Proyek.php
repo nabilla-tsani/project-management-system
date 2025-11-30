@@ -33,9 +33,15 @@ class Proyek extends Model
     }
 
     public function users()
-{
-    return $this->belongsToMany(User::class, 'proyek_user', 'proyek_id', 'user_id')
-                ->withPivot('sebagai', 'keterangan');
-}
+    {
+        return $this->belongsToMany(User::class, 'proyek_user', 'proyek_id', 'user_id')
+                    ->withPivot('sebagai', 'keterangan');
+    }
+
+    protected $casts = [
+        'tanggal_mulai' => 'date',
+        'tanggal_selesai' => 'date',
+    ];
+
 
 }

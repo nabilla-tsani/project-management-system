@@ -29,6 +29,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->enum('jenis', ['pekerjaan', 'bug']);
             $table->text('catatan');
+            $table->date('tanggal_mulai')->nullable();
+            $table->date('tanggal_selesai')->nullable();
             $table->timestamps();
         });
     }

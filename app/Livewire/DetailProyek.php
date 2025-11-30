@@ -102,8 +102,9 @@ class DetailProyek extends Component
         $this->customer_id = $proyek->customer_id;
         $this->deskripsi = $proyek->deskripsi;
         $this->lokasi = $proyek->lokasi;
-        $this->tanggal_mulai = $proyek->tanggal_mulai;
-        $this->tanggal_selesai = $proyek->tanggal_selesai;
+        $this->tanggal_mulai = $proyek->tanggal_mulai ? $proyek->tanggal_mulai->format('Y-m-d') : null;
+        $this->tanggal_selesai = $proyek->tanggal_selesai ? $proyek->tanggal_selesai->format('Y-m-d') : null;
+
         $this->anggaran = $proyek->anggaran;
         $this->status = $proyek->status;
 

@@ -11,6 +11,7 @@ use App\Models\ProyekCatatanPekerjaan;
 class CatatanPekerjaan extends Component
 {
     public $proyekFiturId;
+    public $proyekId;
     public $catatan = [];
     public $users = [];
     public $catatanModal = false;
@@ -21,6 +22,9 @@ class CatatanPekerjaan extends Component
     public $namaFitur;
     public $formKey = 'form_default';
     public $filterJenis = '';
+    public $tanggal_mulai;
+    public $tanggal_selesai;
+
 
     public $alert = null;
 
@@ -34,6 +38,9 @@ class CatatanPekerjaan extends Component
         'jenis' => 'required|string|max:50',
         'isiCatatan' => 'required|string|max:1000',
         'user_id' => 'required|exists:users,id',
+        'tanggal_mulai' => 'required|date',
+        'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+
     ];
 
     public function showModal($id)
@@ -47,6 +54,7 @@ class CatatanPekerjaan extends Component
 
         // Ambil hanya user yang terlibat pada fitur
         $this->users = $fitur?->users ?? collect();
+        $this->proyekId = $fitur?->proyek_id;
 
         $this->loadCatatan();
         $this->catatanModal = true;
@@ -74,7 +82,7 @@ class CatatanPekerjaan extends Component
 
     public function resetForm($newKey = true)
     {
-        $this->reset(['catatanId', 'jenis', 'isiCatatan', 'user_id']);
+        $this->reset(['catatanId', 'jenis', 'isiCatatan', 'user_id', 'tanggal_mulai', 'tanggal_selesai']);
         $this->resetValidation();
         if ($newKey) {
             $this->formKey = uniqid('form_', true);
@@ -92,35 +100,45 @@ class CatatanPekerjaan extends Component
             ['id' => $this->catatanId],
             [
                 'proyek_fitur_id' => $this->proyekFiturId,
+                'proyek_id' => $this->proyekId,
                 'user_id' => $this->user_id,
                 'jenis' => $normalizedJenis,
                 'catatan' => $this->isiCatatan,
+                'tanggal_mulai' => $this->tanggal_mulai,
+                'tanggal_selesai' => $this->tanggal_selesai,
             ]
         );
 
         // reflect normalized value back to the component property
         $this->jenis = $normalizedJenis;
 
-       $message = $this->catatanId
-        ? 'Updated successfully!'
-        : 'Added successfully!';
+        $message = $this->catatanId
+            ? 'Updated successfully!'
+            : 'Added successfully!';
 
-    $this->resetForm(true);
-    $this->loadCatatan();
+        $this->resetForm(true);
+        $this->loadCatatan();
 
-    $this->showAlert($message, 'success');
+        $this->showAlert($message, 'success');
     }
+
 
     public function edit($id)
     {
         $data = ProyekCatatanPekerjaan::findOrFail($id);
+
         $this->catatanId = $data->id;
-        // normalize to lowercase for consistency with the form options
         $this->jenis = strtolower($data->jenis);
         $this->isiCatatan = $data->catatan;
         $this->user_id = $data->user_id;
+        $this->tanggal_mulai = $data->tanggal_mulai ? $data->tanggal_mulai->format('Y-m-d') : null;
+        $this->tanggal_selesai = $data->tanggal_selesai ? $data->tanggal_selesai->format('Y-m-d') : null;
+
+        
+
         $this->formKey = 'form_edit_' . $data->id;
     }
+
 
     public function cancelEdit()
     {
@@ -151,7 +169,7 @@ class CatatanPekerjaan extends Component
             'message' => $message,
         ];
 
-        // kirim event browser agar Alpine tahu kapan harus menghilangkan alert
+        // kirim event browser agar Alpine tahfu kapan harus menghilangkan alert
         $this->dispatch('alert-shown');
     }
 

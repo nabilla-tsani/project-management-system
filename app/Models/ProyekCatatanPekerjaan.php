@@ -18,6 +18,8 @@ class ProyekCatatanPekerjaan extends Model
         'user_id',
         'jenis',
         'catatan',
+        'tanggal_mulai',
+        'tanggal_selesai',  
     ];
 
     public function proyek()
@@ -31,9 +33,13 @@ class ProyekCatatanPekerjaan extends Model
     }
 
     public function fitur()
-{
-    return $this->belongsTo(ProyekFitur::class, 'proyek_fitur_id');
-}
+    {
+        return $this->belongsTo(ProyekFitur::class, 'proyek_fitur_id');
+    }
 
+    protected $casts = [
+        'tanggal_mulai' => 'date',
+        'tanggal_selesai' => 'date',
+    ];
 
 }

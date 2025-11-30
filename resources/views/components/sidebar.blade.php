@@ -7,34 +7,6 @@
     <!-- Use Tailwind CDN for standalone rendering; in production the app uses compiled assets -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-    /* Sidebar gradient glow */
-    aside {
-        position: relative; /* Supaya pseudo-element bisa diikat ke aside */
-        overflow: hidden;   /* Mencegah efek glow keluar dari area sidebar */
-    }
-
-    /* Efek glow ungu di tengah bawah */
-    aside::before {
-        content: "";
-        position: absolute;
-        bottom: -120px;          /* Sedikit di luar bawah agar lembut */
-        left: 50%;               /* Tengah horizontal */
-        transform: translateX(-50%);
-        width: 300px;            /* Lebar area glow */
-        height: 300px;           /* Tinggi area glow */
-        background: radial-gradient(circle, #ac7bff 60%, transparent 100%);
-        filter: blur(140px);     /* Efek blur lembut */
-        opacity: 0.7;            /* Transparansi */
-        z-index: 0;              /* Lapisan paling bawah */
-        pointer-events: none;    /* Agar tidak ganggu interaksi sidebar */
-    }
-
-    /* Pastikan isi sidebar di atas efek glow */
-    aside > * {
-        position: relative;
-        z-index: 1;
-    }
-
     [x-cloak] { display: none !important; }
 
 </style>
@@ -130,10 +102,10 @@
                 </div>
 
                 <!-- Tasks -->
-                <a href="{{ url('/customer') }}"
-                   class="flex items-center py-2 transition-all duration-200 {{ request()->is('customer') ? 'text-blue-500 font-semibold' : 'text-black hover:bg-gray-100 hover:text-gray-900' }}">
-                    <span class="w-1 h-6 rounded-full {{ request()->is('customer') ? 'bg-blue-500' : 'bg-transparent' }}"></span>
-                    <svg class="w-4 h-4 flex-shrink-0 mx-2  {{ request()->is('customer') ? 'text-blue-500' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"" 
+                <a href="{{ url('/tasks') }}"
+                   class="flex items-center py-2 transition-all duration-200 {{ request()->is('tasks') ? 'text-blue-500 font-semibold' : 'text-black hover:bg-gray-100 hover:text-gray-900' }}">
+                    <span class="w-1 h-6 rounded-full {{ request()->is('tasks') ? 'bg-blue-500' : 'bg-transparent' }}"></span>
+                    <svg class="w-4 h-4 flex-shrink-0 mx-2  {{ request()->is('tasks') ? 'text-blue-500' : 'text-gray-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"" 
                         xmlns="http://www.w3.org/2000/svg" fill="none" 
                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" 

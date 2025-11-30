@@ -52,7 +52,11 @@
     </div>
 
     {{-- Tab Content --}}
-    <div class="mt-4">
+    <div class="mt-4 h-[calc(100vh-118apx)] overflow-y-auto pr-1"
+        style="
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
+        ">
         @if($tab === 'dashboard')
             @livewire('dashboard-proyek', ['proyekId' => $proyek->id], key('dashboard-'.$proyek->id))
         @endif
@@ -94,11 +98,4 @@
 
     @livewire('chatbot', [], key('chatbot-'.$proyek->id))
 
-    {{-- Footer Tombol Kembali --}}
-    <div class="flex justify-start pt-4">
-        <a href="{{ route('proyek') }}"
-           class="px-4 py-2 bg-[#5ca9ff] text-white text-[10px] rounded-3xl shadow hover:bg-[#884fd9] transition">
-            Back to Project List
-        </a>
-    </div>
 </div>

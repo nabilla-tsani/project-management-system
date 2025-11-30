@@ -23,6 +23,7 @@ class AllFiturUser extends Component
     public $isEdit = false;
     public $namaFitur;
     public $formKey;
+    public $userRole;
 
     protected $listeners = [
         'openUserFiturModal' => 'showModal'
@@ -37,6 +38,8 @@ class AllFiturUser extends Component
     {
         $this->fiturUsers = collect();
         $this->formKey = uniqid('form_', true);
+
+
     }
 
     public function loadFiturUsers()
@@ -75,28 +78,34 @@ class AllFiturUser extends Component
 
 
     public function showModal($id)
-    {
-        $this->resetForm();
-        $this->resetErrorBag();
-        $this->resetValidation();
+{
+    $this->resetForm();
+    $this->resetErrorBag();
+    $this->resetValidation();
 
-        $this->proyekFiturId = $id;
+    $this->proyekFiturId = $id;
 
-        // Ambil fitur
-        $fitur = ProyekFitur::find($id);
+    $fitur = ProyekFitur::find($id);
+    $this->namaFitur = $fitur?->nama_fitur ?? 'Fitur Tidak Dikenal';
 
-        $this->namaFitur = $fitur?->nama_fitur ?? 'Fitur Tidak Dikenal';
-
-        // Ambil seluruh user
-        $this->userList = User::orderBy('name')->get();
-
-        // Ambil user-user anggota fitur
-        $this->loadFiturUsers();
-        $this->loadAvailableUsers();
-
-        // Buka modal
-        $this->modalOpen = true;
+    // ⭐ Ambil role user pada proyek terkait fitur
+    if ($fitur) {
+        $this->userRole = \DB::table('proyek_user')
+            ->where('proyek_id', $fitur->proyek_id)
+            ->where('user_id', auth()->id())
+            ->value('sebagai');
     }
+
+    // Ambil seluruh user
+    $this->userList = User::orderBy('name')->get();
+
+    // Ambil anggota fitur
+    $this->loadFiturUsers();
+    $this->loadAvailableUsers();
+
+    $this->modalOpen = true;
+}
+
 
     public function edit($id)
     {
@@ -198,8 +207,6 @@ class AllFiturUser extends Component
         $this->loadAvailableUsers();
         $this->dispatch('$refresh');
     }
-
-
 
     public function resetForm($newKey = true)
     {

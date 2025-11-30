@@ -47,7 +47,7 @@
 
     <div class="max-w-7xl mx-auto">
         <!-- Title Halaman -->
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-4 pl-1">
            <h1 class="text-3xl font-medium tracking-tight">
                     <span class="text-[#ac7bff]">Project</span>
                     <span class="text-[#77b6ff]">Management</span>
@@ -71,7 +71,7 @@
         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
             <i class="fas fa-search"></i>
         </span>
-        <input type="text" wire:model.live="search" placeholder="Find Project . . ."
+        <input type="text" wire:model.live="search" placeholder="Find Project..."
             class="w-full pl-10 pr-3 py-2 rounded-3xl bg-white border border-gray-300 text-gray-900 
                 focus:ring-1 focus:ring-[#5ca9ff] focus:border-transparent outline-none 
                 placeholder-gray-400 text-sm transition" />
