@@ -315,6 +315,7 @@
                         <option value="belum_dimulai">Upcoming</option>
                         <option value="sedang_berjalan">Ongoing</option>
                         <option value="selesai">Done</option>
+                        <option value="ditunda">Pending</option>
                     </select>
                     @error('status')
                         <span class="text-red-500"></span>

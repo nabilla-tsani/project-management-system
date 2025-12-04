@@ -117,7 +117,7 @@
                 <i class="fas fa-calendar-day text-indigo-500"></i>
                 <div>
                     <p class="text-gray-400">Start Date</p>
-                    <p class="font-semibold">{{ $proyek->tanggal_mulai ?? '-' }}</p>
+                    <p class="font-semibold">{{ \Carbon\Carbon::parse($proyek->tanggal_mulai)->format('d M Y') ?? '-' }}</p>
                 </div>
             </div>
 
@@ -126,7 +126,7 @@
                 <i class="fas fa-calendar-check text-green-500"></i>
                 <div>
                     <p class="text-gray-400">End Date</p>
-                    <p class="font-semibold">{{ $proyek->tanggal_selesai ?? '-' }}</p>
+                    <p class="font-semibold">{{ \Carbon\Carbon::parse($proyek->tanggal_selesai)->format('d M Y') ?? '-' }}</p>
                 </div>
             </div>
             
@@ -344,6 +344,7 @@
                             <option value="belum_dimulai">Upcoming</option>
                             <option value="sedang_berjalan">Ongoing</option>
                             <option value="selesai">Done</option>
+                            <option value="ditunda">Pending</option>
                         </select>
                         @error('status')
                             <span class="text-red-500"></span>

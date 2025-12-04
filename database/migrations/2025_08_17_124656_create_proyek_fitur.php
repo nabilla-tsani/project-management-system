@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('proyek_id')->constrained('proyek');
             $table->string('nama_fitur');
             $table->text('keterangan')->nullable();
+            $table->text('target')->nullable();
             $table->string('status_fitur')->default('belum_dikerjakan');
             $table->timestamps();
         });

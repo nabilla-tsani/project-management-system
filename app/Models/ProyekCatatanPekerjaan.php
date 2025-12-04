@@ -20,6 +20,7 @@ class ProyekCatatanPekerjaan extends Model
         'catatan',
         'tanggal_mulai',
         'tanggal_selesai',  
+        'feedback',
     ];
 
     public function proyek()

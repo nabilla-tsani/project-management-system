@@ -17,12 +17,13 @@ class AllProyekFitur extends Component
     public $nama_fitur;
     public $keterangan;
     public $status_fitur;
+    public $target;
 
     // Modal states
     public $modalOpen = false;
 
     // Dropdown & user modal
-    public $statusList = ['Pending', 'In Progress', 'Done'];
+    public $statusList = ['Upcoming','In Progress', 'Done', 'Pending'];
     public $selectedFiturId;
     public $selectedFitur;
 
@@ -67,7 +68,7 @@ class AllProyekFitur extends Component
     public function openModal($id = null)
     {
         $this->resetValidation();
-        $this->reset(['fiturId', 'nama_fitur', 'keterangan', 'status_fitur']);
+        $this->reset(['fiturId', 'nama_fitur', 'keterangan', 'status_fitur', 'target']);
 
         if ($id) {
             $fitur = ProyekFitur::findOrFail($id);
@@ -75,6 +76,7 @@ class AllProyekFitur extends Component
             $this->nama_fitur = $fitur->nama_fitur;
             $this->keterangan = $fitur->keterangan;
             $this->status_fitur = $fitur->status_fitur;
+            $this->target = $fitur->target;
         }
 
         $this->modalOpen = true;
@@ -85,7 +87,8 @@ class AllProyekFitur extends Component
         $this->validate([
             'nama_fitur'   => 'required|string|max:255',
             'keterangan'   => 'nullable|string|max:1000',
-            'status_fitur' => 'required|string|in:Pending,In Progress,Done',
+            'status_fitur' => 'required|string|in:Upcoming,Pending,In Progress,Done',
+            'target'       => 'nullable|date',
         ]);
 
         ProyekFitur::updateOrCreate(
@@ -95,6 +98,7 @@ class AllProyekFitur extends Component
                 'nama_fitur'  => $this->nama_fitur,
                 'keterangan'  => $this->keterangan,
                 'status_fitur'=> $this->status_fitur,
+                'target'      => $this->target,
             ]
         );
 
@@ -126,7 +130,7 @@ class AllProyekFitur extends Component
 
     public function closeModal()
     {
-        $this->reset(['modalOpen', 'fiturId', 'nama_fitur', 'keterangan', 'status_fitur']);
+        $this->reset(['modalOpen', 'fiturId', 'nama_fitur', 'keterangan', 'status_fitur', 'target']);
         $this->resetValidation();
     }
 

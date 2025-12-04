@@ -31,6 +31,7 @@ return new class extends Migration
             $table->text('catatan');
             $table->date('tanggal_mulai')->nullable();
             $table->date('tanggal_selesai')->nullable();
+            $table->text('feedback')->nullable();
             $table->timestamps();
         });
     }

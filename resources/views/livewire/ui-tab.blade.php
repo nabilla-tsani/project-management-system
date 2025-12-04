@@ -17,7 +17,7 @@
                 'team' => ['label' => 'Members', 'icon' => 'fa-solid fa-users'],
                 'fitur' => ['label' => 'Features', 'icon' => 'fa-solid fa-layer-group'],
                 'tasks' => ['label' => 'Tasks', 'icon' => 'fa-solid fa-list-check'],
-                'timeline' => ['label' => 'Timeline', 'icon' => 'fa-solid fa-clock'],
+                'timeline' => ['label' => 'Calendar', 'icon' => 'fa-solid fa-calendar'],
                 'file' => ['label' => 'Files', 'icon' => 'fa-solid fa-folder']
             ] as $key => $tabData)
                 <button wire:click="setTab('{{ $key }}')"

@@ -50,7 +50,7 @@
                         </span>
 
                     <div class="text-[10px] italic text-gray-400">
-                        Assign to: {{ $item->user->name ?? '-' }}
+                        Report from: {{ $item->user->name ?? '-' }}
                         <span class="mx-1">•</span>
                         <span>
                             {{ \Carbon\Carbon::parse($item->tanggal_mulai)->format('d M Y') }}

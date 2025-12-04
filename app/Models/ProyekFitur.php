@@ -15,6 +15,7 @@ class ProyekFitur extends Model
         'proyek_id',
         'nama_fitur',
         'keterangan',
+        'target',
         'status_fitur',
     ];
 

@@ -47,7 +47,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
                 @forelse($fiturs as $fitur)
                     <div 
-                         class="bg-white border-y border-gray-200 shadow-sm hover:shadow-md hover:bg-[#f2eaffff] transition duration-200 overflow-hidden">
+                        class="bg-white border-y border-gray-200 shadow-sm hover:shadow-md transition duration-200 overflow-hidden transform hover:scale-[1.02]">
                         {{-- Baris pertama (header tabel) --}}
                         <div class="grid grid-cols-12 items-center px-3 pt-2 pb-1">
                             {{-- Nama Fitur --}}
@@ -112,7 +112,13 @@
                              class="grid grid-cols-12 items-start px-3 pb-2 text-xs">
                             {{-- Keterangan --}}
                             <div class="col-span-11 text-gray-700">
-                                {{ $fitur->keterangan ?? '-' }}
+                                <span class="font-md">
+                                    Goal Date: {{ \Carbon\Carbon::parse($fitur->target)->format('d M Y') }} |
+                                </span>
+
+                                <span class="ml-1 font-normal text-gray-600">
+                                    Notes: {{ $fitur->keterangan ?? '-' }}
+                                </span>
                             </div>
 
                             {{-- Notes --}}
@@ -192,17 +198,28 @@
                         class="border border-gray-300 rounded-xl px-3 py-2 w-full 
                             focus:ring-2 focus:ring-blue-400 text-xs resize-y"></textarea>
 
-                    <label class="block text-xs font-semibold text-gray-600 py-2">Status</label>
-                    <select wire:model.defer="status_fitur"
-                        class="border border-gray-300 rounded-3xl px-3 py-2 w-full mb-3
-                            focus:ring-2 focus:ring-blue-400 text-xs">
-                        <option value="">-- Select Status --</option>
-                        @foreach($statusList as $status)
-                            <option value="{{ $status }}">{{ $status }}</option>
-                        @endforeach
-                    </select>
+                    <div class="flex items-center gap-3">
+                    <div class="w-1/2 text-xs">
+                        <label class="block text-xs font-semibold text-gray-600 py-2">Target</label>
+                        <input type="date" wire:model.defer="target"
+                            class="border border-gray-300 rounded-3xl px-3 w-full mb-1
+                                focus:ring-2 focus:ring-blue-400 text-xs">
 
-                    <div class="flex justify-end gap-3">
+                    </div>
+                    <div class="w-1/2 text-xs">
+                        <label class="block text-xs font-semibold text-gray-600 py-2">Status</label>
+                        <select wire:model.defer="status_fitur"
+                            class="border aborder-gray-300 rounded-3xl px-3 py-2 w-full mb-1
+                                focus:ring-2 focus:ring-blue-400 text-xs">
+                            <option value="">-- Select Status --</option>
+                            @foreach($statusList as $status)
+                                <option value="{{ $status }}">{{ $status }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-3">
                         <button wire:click="closeModal"
                             class="bg-gray-200 text-gray-700 px-4 py-2 rounded-3xl
                                 hover:bg-gray-300 hover:scale-105 transition text-xs">
@@ -363,7 +380,7 @@
     @endif
 
 
-@livewire('catatan-pekerjaan')
+@livewire('catatan-pekerjaan', ['proyekId' => $proyekId])
 @livewire('all-fitur-user')
 
 </div>
