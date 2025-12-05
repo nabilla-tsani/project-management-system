@@ -12,6 +12,8 @@ class TimelineProyek extends Component
     public $proyek;
     public $catatan = [];
     public $allDays = [];
+    public $showModal = false;
+    public $selectedCatatan = null;
 
     public function mount($proyekId)
     {
@@ -61,6 +63,18 @@ class TimelineProyek extends Component
             $this->allDays->push($date->format('Y-m-d'));
         }
     }
+
+    public function openModal($id)
+    {
+        $this->selectedCatatan = ProyekCatatanPekerjaan::with('fitur')->find($id);
+        $this->showModal = true;
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+    }
+
 
     public function render()
     {

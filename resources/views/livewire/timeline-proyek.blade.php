@@ -1,14 +1,16 @@
-<div class="pt-0 p-2 space-y-2">
-    <div class="flex items-center gap-3 pb-1">
+<div class="pt-0 p-2 space-y-2 overflow-hidden"> 
+
+    <div class="flex items-center gap-3">
         <h2 class="text-md font-medium flex items-center gap-2 text-[#5ca9ff]">
             <i class="fa-solid fa-calendar"></i>
             Calendar
         </h2>
     </div>
 
-<div class="border h-screen flex flex-col">
+    <!-- Tinggi maksimum tabel = 75% layar -->
+    <div class="border h-[78vh] flex flex-col overflow-hidden">
 
-        {{-- MAIN SCROLL CONTAINER --}}
+        <!-- Hanya tabel yang boleh scroll -->
         <div class="flex-1 overflow-auto">
 
             <table class="min-w-max border-collapse w-full">
@@ -17,7 +19,7 @@
                 <thead>
 
                     {{-- ========== ROW BULAN ========== --}}
-                    <tr class="sticky top-0 z-30 bg-white">
+                    <tr class="sticky top-0 z-20 bg-white">
                         @php
                             $bulanSekarang = null;
                             $colspan = 0;
@@ -73,7 +75,7 @@
                 <tbody>
 
 
-                ={{-- ========== ROW PROYEK ========== --}}
+                {{-- ========== ROW PROYEK ========== --}}
                 @php
                     $pMulai = \Carbon\Carbon::parse($proyek->tanggal_mulai);
                     $pSelesai = \Carbon\Carbon::parse($proyek->tanggal_selesai);
@@ -93,6 +95,7 @@
                 @endphp
 
                 <tr>
+                    
                     {{-- kolom kosong sebelum proyek --}}
                     @for ($i = 0; $i < $pStart; $i++)
                         <td class="border min-w-[35px] p-0"></td>
@@ -158,7 +161,11 @@
 
                     {{-- bar pekerjaan --}}
                         <td class="border p-0 relative" colspan="{{ $colspan }}">
-                            <div class="h-8 rounded-sm relative" style="background: {{ $barColor }}">
+<div 
+    class="h-8 rounded-sm relative cursor-pointer"
+    style="background: {{ $barColor }}"
+    wire:click="openModal({{ $row->id }})"
+>
                                 <div class="absolute inset-0 text-[10px] p-1 text-white leading-tight flex flex-col justify-center">
 
                                     {{-- Judul catatan --}}
@@ -168,14 +175,13 @@
 
                                     {{-- Target + Overdue dalam satu baris --}}
                                     <div class="flex items-center gap-2 text-[9px] opacity-90">
-                                        @if($target)
-                                            <span>Feature Goal Date {{ $target->format('d M Y') }}</span>
-                                        @endif
-
                                         @if($isOverdue)
                                             <span class="text-white">
                                                 ⚠ Overdue
                                             </span>
+                                        @endif
+                                        @if($target)
+                                            <span>Feature Goal Date = {{ $target->format('d M Y') }}</span>
                                         @endif
                                     </div>
 
@@ -195,4 +201,71 @@
             </table>
         </div>
     </div>
+
+   {{-- MODAL DETAIL CATATAN --}}
+@if($showModal && $selectedCatatan)
+<div 
+    class="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+    wire:click.self="closeModal"
+>
+
+    <div class="bg-white p-4 shadow-md w-full max-w-sm text-xs space-y-3">
+
+        {{-- Header --}}
+        <h3 class="font-semibold text-sm text-gray-700 border-b pb-2 text-center">
+            Notes Detail
+        </h3>
+
+        {{-- Body --}}
+        <div class="space-y-2 text-[11px] text-gray-700 text-justify">
+
+            <div>
+                {{ $selectedCatatan->catatan }}
+            </div>
+
+            <div>
+                {{ $selectedCatatan->ser->name ?? '-'}}
+            </div>
+            
+            <div>
+                <span class="text-gray-500">Tanggal Mulai:</span>
+                {{ \Carbon\Carbon::parse($selectedCatatan->tanggal_mulai)->format('d M Y') }}
+            </div>
+
+            <div>
+                <span class="text-gray-500">Tanggal Selesai:</span>
+                {{ \Carbon\Carbon::parse($selectedCatatan->tanggal_selesai)->format('d M Y') }}
+            </div>
+
+            @if($selectedCatatan->fitur)
+                <div>
+                    <span class="text-gray-500">Fitur:</span>
+                    {{ $selectedCatatan->fitur->nama_fitur ?? '-' }}
+                </div>
+
+                <div>
+                    <span class="text-gray-500">Target Fitur:</span>
+                    {{ $selectedCatatan->fitur->target ? \Carbon\Carbon::parse($selectedCatatan->fitur->target)->format('d M Y') : '-' }}
+                </div>
+            @endif
+
+            <div>
+                <span class="text-gray-500">Jenis:</span>
+                {{ ucfirst($selectedCatatan->jenis ?? '-') }}
+            </div>
+
+            @if($selectedCatatan->keterangan)
+                <div>
+                    <span class="text-gray-500">Keterangan:</span><br>
+                    {{ $selectedCatatan->keterangan }}
+                </div>
+            @endif
+
+        </div>
+
+    </div>
+</div>
+@endif
+
+
 </div>

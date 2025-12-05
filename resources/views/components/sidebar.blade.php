@@ -17,9 +17,9 @@
 <div x-data="{ open: false }" x-cloak class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
     <aside 
-        x-cloak
-        :class="open ? 'translate-x-0' : '-translate-x-60'" 
-        class="fixed top-0 left-0 w-60 bg-white h-screen shadow-lg p-2 flex flex-col justify-between transform transition-transform duration-300 ease-in-out z-40 text-sm">
+    x-cloak
+    :class="open ? 'translate-x-0' : '-translate-x-60'" 
+    class="fixed top-0 left-0 w-60 bg-white h-screen shadow-lg p-2 flex flex-col justify-between transform transition-transform duration-300 ease-in-out z-50 text-sm">
 
         <div>
             <!-- App Title -->
