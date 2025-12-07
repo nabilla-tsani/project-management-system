@@ -141,7 +141,7 @@
                     $progress = $proyek->status === 'belum_dimulai' ? 0 : ($proyek->status === 'sedang_berjalan' ? 50 : 100);
                 @endphp
                 <div class="w-full bg-gray-200 h-3 rounded-full">
-                    <div class="h-3 rounded-full transition-all duration-500 bg-[#9c62ff]"
+                    <div class="h-3 rounded-full transition-all duration-500 bg-[#5ca9ff]"
                          style="width: {{ $progress }}%"></div>
                 </div>
             </div>
