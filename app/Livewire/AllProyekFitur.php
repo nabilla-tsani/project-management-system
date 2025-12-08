@@ -50,6 +50,9 @@ class AllProyekFitur extends Component
     public $showConfirmDelete = false; 
     public $deleteId;
 
+    public $filterStatus = '';
+
+
     public function mount($proyekId)
     {
         $this->proyekId = $proyekId;
@@ -340,18 +343,27 @@ class AllProyekFitur extends Component
 
         $searchTerm = strtolower($this->search); // ubah pencarian jadi lowercase
 
-        $fiturs = ProyekFitur::with(['anggota.user'])
-            ->where('proyek_id', $this->proyekId)
-            ->when($this->search, function ($query) use ($searchTerm) {
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->whereRaw('LOWER(nama_fitur) LIKE ?', ['%' . $searchTerm . '%'])
-                    ->orWhereHas('anggota.user', function ($subQuery) use ($searchTerm) {
-                        $subQuery->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%']);
-                    });
+       $fiturs = ProyekFitur::with(['anggota.user'])
+        ->where('proyek_id', $this->proyekId)
+
+        // --- FILTER STATUS ---
+        ->when($this->filterStatus, function ($query) {
+            $query->where('status_fitur', $this->filterStatus);
+        })
+
+        // --- FILTER SEARCH ---
+        ->when($this->search, function ($query) use ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->whereRaw('LOWER(nama_fitur) LIKE ?', ['%' . $searchTerm . '%'])
+                ->orWhereHas('anggota.user', function ($subQuery) use ($searchTerm) {
+                    $subQuery->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%']);
                 });
-            })
-            ->orderBy('id', 'desc')
-            ->get();
+            });
+        })
+
+        ->orderBy('id', 'desc')
+        ->get();
+
 
         return view('livewire.all-proyek-fitur', [
             'fiturs' => $fiturs,

@@ -13,34 +13,45 @@
             </div>
         @endif
 
-<div class="flex items-center justify-between mb-4">
-    <div class="flex items-center gap-3">
-        <h2 class="text-md font-medium flex items-center gap-2 text-[#5ca9ff]">
-            <i class="fa-solid fa-layer-group"></i>
-            Feature List ({{ $fiturs->count() }})
-        </h2>
-        <input 
-            type="text"
-            wire:model.live="search" 
-            placeholder="Search feature..."
-            class="text-xs px-3 py-1.5 border border-gray-500 rounded-3xl focus:ring-[#5ca9ff] focus:border-[#5ca9ff] outline-none w-96"
-        />
-    </div>
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3 pt-1">
+                <h2 class="text-md font-medium flex items-center gap-2 text-[#5ca9ff]">
+                    <i class="fa-solid fa-layer-group"></i>
+                    Feature List ({{ $fiturs->count() }})
+                </h2>
+                <input 
+                    type="text"
+                    wire:model.live="search" 
+                    placeholder="Search feature..."
+                    class="text-xs px-3 py-1.5 border border-gray-500 rounded-3xl focus:ring-[#5ca9ff] focus:border-[#5ca9ff] outline-none w-96"
+                />
 
-    <div class="flex items-center gap-3">
-        <button wire:click="openAiModal"
-            class="px-3 py-1.5 bg-gradient-to-r from-cyan-400 to-purple-600 text-white rounded-3xl shadow hover:bg-indigo-700 
-                    hover:shadow-md transition-all duration-200 text-xs">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> Create Features with AI
-        </button>
+                <select wire:model.live="filterStatus"
+                    class="text-xs border rounded-full px-7 py-1.5">
+                    <option value="">All Status</option>
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Done">Done</option>
+                </select>
 
-        <button wire:click="openModal"
-            class="px-4 py-1.5 rounded-3xl text-white shadow hover:shadow-md transition-all duration-200 text-xs"
-            style="background-color: #5ca9ff;">
-            <i class="fa-solid fa-plus mr-1"></i> New Feature
-        </button>
-    </div>
-</div>
+
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button wire:click="openAiModal"
+                    class="px-3 py-1.5 bg-gradient-to-r from-cyan-400 to-purple-600 text-white rounded-3xl shadow hover:bg-indigo-700 
+                            hover:shadow-md transition-all duration-200 text-xs">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Create Features with AI
+                </button>
+
+                <button wire:click="openModal"
+                    class="px-4 py-1.5 rounded-3xl text-white shadow hover:shadow-md transition-all duration-200 text-xs"
+                    style="background-color: #5ca9ff;">
+                    <i class="fa-solid fa-plus mr-1"></i> New Feature
+                </button>
+            </div>
+        </div>
 
     
             {{-- List fitur --}}
@@ -72,24 +83,32 @@
                                     {{ ucfirst($fitur->status_fitur) }}
                                 </span>
                             </div>
+                            
                             {{-- Anggota --}}
                             <div wire:click.stop="openUserFitur({{ $fitur->id }})"
-                                 class="col-span-5 text-xs text-gray-600 flex items-center gap-1">
-                               <button wire:click.stop="openUserFitur({{ $fitur->id }})"
+                                class="col-span-5 text-xs text-gray-600 flex items-center gap-1">
+
+                                <button wire:click.stop="openUserFitur({{ $fitur->id }})"
                                     class="text-[#5ca9ff] hover:text-[#3b7ed9] transition text-xs"
-                                    title="Tambah / Kelola User">
+                                    title="Manage Users">
                                     <i class="fa-solid fa-user-plus text-[12px]"></i>
                                 </button>
 
+                                @php
+                                    $countUser = $fitur->anggota->count();
+                                    $listUser = $fitur->anggota->pluck('user.name')->implode(', ');
+                                @endphp
 
-                                @if($fitur->anggota->count())
+                                @if($countUser)
                                     <span class="whitespace-normal break-words">
-                                        {{ $fitur->anggota->pluck('user.name')->implode(', ') }}
+                                        <span class="font-semibold text-gray-700">({{ $countUser }})</span>
+                                        {{ $listUser }}
                                     </span>
                                 @else
                                     <span class="italic text-gray-400">No one’s on this feature yet.</span>
                                 @endif
                             </div>
+
 
                             {{-- Aksi --}}
                             <div class="col-span-1 flex items-center justify-end gap-2">
@@ -111,15 +130,29 @@
                         <div wire:click="openCatatan({{ $fitur->id }})"
                              class="grid grid-cols-12 items-start px-3 pb-2 text-xs">
                             {{-- Keterangan --}}
-                            <div class="col-span-11 text-gray-700">
-                                <span class="font-md">
-                                    Goal Date: {{ \Carbon\Carbon::parse($fitur->target)->format('d M Y') }} |
-                                </span>
+                            <div class="col-span-11 text-gray-700 flex items-center gap-2">
 
-                                <span class="ml-1 font-normal text-gray-600">
-                                    Notes: {{ $fitur->keterangan ?? '-' }}
-                                </span>
-                            </div>
+                            @php
+                                $isOverdue = $fitur->target && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($fitur->target));
+                            @endphp
+
+                            <span class="font-md flex items-center gap-1 {{ $isOverdue ? 'text-red-600 font-semibold' : '' }}">
+                                
+                                {{-- Icon Warning jika overdue --}}
+                                @if ($isOverdue)
+                                    <i class="fa-solid fa-triangle-exclamation text-red-600 text-xs"></i>
+                                @endif
+
+                                Goal Date: 
+                                {{ \Carbon\Carbon::parse($fitur->target)->format('d M Y') }}
+                            </span>
+
+                            {{-- Notes --}}
+                            <span class="ml-1 font-normal text-gray-600">
+                                | Notes: {{ $fitur->keterangan ?? '-' }}
+                            </span>
+
+                        </div>
 
                             {{-- Notes --}}
                             <div class="col-span-1 flex justify-end">
@@ -134,7 +167,7 @@
                          @empty
                         {{-- Pesan jika hasil pencarian kosong --}}
                         @if (!empty($search))
-                            <div class="col-span-full text-center text-gray-400 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-sm">
+                            <div class="col-span-full text-center text-gray-400 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-xs">
                                 No matching features found for 
                                 <span class="font-semibold text-[#5ca9ff]">"{{ $search }}"</span>.
                             </div>

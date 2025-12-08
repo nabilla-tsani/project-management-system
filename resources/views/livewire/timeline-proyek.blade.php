@@ -104,7 +104,7 @@
                     {{-- bar proyek --}}
                     <td class="border p-0 relative" colspan="{{ $pSpan }}">
                         <div class="bg-[#24c1ddff] h-7 rounded-sm relative">
-                            <div class="absolute inset-0 text-[10px] p-1 text-white whitespace-nowrap">
+                            <div class="absolute inset-0 text-[10px] p-1 text-black font-medium whitespace-nowrap">
                                 {{ $proyek->nama_proyek }}
                                 ({{ $pMulai->format('d M Y') }} - {{ $pSelesai->format('d M Y') }})
                             </div>
@@ -145,12 +145,13 @@
                         }
 
                         $barColor = $isOverdue
-                            ? '#ff4d4d'
-                            : match ($row->jenis ?? '') {
-                                'bug' => '#8c4aff',
-                                'pekerjaan' => '#5ca9ff',
-                                default => '#24c1ddff'
-                            };
+                        ? '#ff8383ff' 
+                        : match ($row->jenis ?? '') {
+                            'bug'       => '#D6C4FF', 
+                            'pekerjaan' => '#A7D4FF', 
+                            default     => '#B8F2F6', 
+                        };
+
                     @endphp
 
                     <tr>
@@ -166,17 +167,17 @@
                                 style="background: {{ $barColor }}"
                                 wire:click="openModal({{ $row->id }})"
                             >
-                                <div class="absolute inset-0 text-[10px] p-1 text-white leading-tight flex flex-col justify-center">
+                                <div class="absolute inset-0 text-[10px] p-1 text-black leading-tight flex flex-col justify-center">
 
                                     {{-- Judul catatan --}}
-                                    <div class="font-semibold truncate leading-tight">
+                                    <div class="truncate leading-tight">
                                         {{ $row->catatan }}
                                     </div>
 
                                     {{-- Target + Overdue dalam satu baris --}}
                                     <div class="flex items-center gap-2 text-[9px] opacity-90">
                                         @if($isOverdue)
-                                            <span class="text-white">
+                                            <span class="text-black">
                                                 ⚠ Overdue
                                             </span>
                                         @endif

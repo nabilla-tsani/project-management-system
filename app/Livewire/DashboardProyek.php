@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Proyek;
 use App\Models\ProyekFitur;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardProyek extends Component
 {
@@ -32,8 +33,20 @@ class DashboardProyek extends Component
     public $progressComplete = 0;
     public $progressUncomplete = 0;
 
-    // === Catatan Terbaru ===
+    // === Catatan dan File Terbaru ===
     public $catatanTerbaru = [];
+    public $totalCatatan = 0;
+    public $totalFile = 0;
+    public $fileTerbaru = [];
+
+    // === Catatan dan File Terbaru ===
+    public $totalInvoiceAmount = 0;
+    public $totalPaymentReceived = 0;
+    public $outstandingBalance = 0;
+    public $numberOfInvoices = 0;
+    public $numberOfReceipts = 0;
+    public $isManagerUser = false;
+
 
 
     public function mount($proyekId)
@@ -44,6 +57,22 @@ class DashboardProyek extends Component
         $this->hitungMember();
         $this->hitungProgressFitur();
         $this->ambilCatatanTerbaru();
+        $this->hitungFileProyek();
+
+        $this->isManagerUser = $this->isManager(Auth::id());
+        // Cek apakah user adalah manajer proyek
+        if ($this->isManager(Auth::id())) {
+            $this->hitungKeuanganProyek();
+        }
+
+    }
+
+    public function isManager($userId)
+    {
+        return $this->proyek->proyekUsers()
+            ->where('user_id', $userId)
+            ->where('sebagai', 'manajer proyek')
+            ->exists();
     }
 
     /**
@@ -99,7 +128,7 @@ class DashboardProyek extends Component
 
         $this->fiturTerbaru = ProyekFitur::where('proyek_id', $this->proyek->id)
         ->orderBy('created_at', 'desc')
-        ->take(3)
+        ->take(4)
         ->get();
 
     }
@@ -131,9 +160,48 @@ class DashboardProyek extends Component
 
     private function ambilCatatanTerbaru()
     {
+        $this->totalCatatan = \App\Models\ProyekCatatanPekerjaan::where('proyek_id', $this->proyek->id)->count();
         $this->catatanTerbaru = \App\Models\ProyekCatatanPekerjaan::where('proyek_id', $this->proyek->id)
             ->orderBy('created_at', 'desc')
-            ->take(5)
+            ->take(3)
+            ->get();
+    }
+
+    private function hitungFileProyek()
+    {
+        $this->totalFile = \App\Models\ProyekFile::where('proyek_id', $this->proyek->id)->count();
+
+        $this->fileTerbaru = \App\Models\ProyekFile::where('proyek_id', $this->proyek->id)
+            ->latest()
+            ->take(3)
+            ->get();
+    }
+
+    private function hitungKeuanganProyek()
+    {
+        $proyekId = $this->proyek->id;
+
+        // === Total Invoice ===
+        $this->numberOfInvoices = \App\Models\ProyekInvoice::where('proyek_id', $proyekId)->count();
+        $this->totalInvoiceAmount = \App\Models\ProyekInvoice::where('proyek_id', $proyekId)->sum('jumlah');
+
+        // === Total Pembayaran / Kwitansi ===
+        $this->numberOfReceipts = \App\Models\ProyekKwitansi::where('proyek_id', $proyekId)->count();
+        $this->totalPaymentReceived = \App\Models\ProyekKwitansi::where('proyek_id', $proyekId)->sum('jumlah');
+
+        // === Outstanding (Sisa Tagihan) ===
+        $this->outstandingBalance = $this->totalInvoiceAmount - $this->totalPaymentReceived;
+
+        // === 3 Invoice Terbaru ===
+        $this->invoiceTerbaru = \App\Models\ProyekInvoice::where('proyek_id', $proyekId)
+            ->latest()
+            ->take(3)
+            ->get();
+
+        // === 3 Pembayaran Terbaru ===
+        $this->kwitansiTerbaru = \App\Models\ProyekKwitansi::where('proyek_id', $proyekId)
+            ->latest()
+            ->take(3)
             ->get();
     }
 
