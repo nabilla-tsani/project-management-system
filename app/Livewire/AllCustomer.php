@@ -40,7 +40,10 @@ class AllCustomer extends Component
             $query->where('status', $this->statusFilter);
         }
 
-        $customers = $query->orderBy('id', 'desc')->paginate(10); // sesuaikan jumlah grid
+        $customers = $query
+            ->orderBy('status', 'asc') // Active dulu (A < I)
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
         return view('livewire.all-customer', ['customers' => $customers]);
     }

@@ -56,7 +56,7 @@
             <!-- Tombol Tambah Proyek Minimalis -->
              <div class="pt-3">
             <button wire:click="openModal" 
-                class="text-white px-4 py-2 rounded-3xl shadow-sm flex items-center gap-2 text-sm font-medium hover:brightness-105 transition"
+                class="text-white px-4 py-2 rounded-3xl shadow-sm flex items-center gap-2 text-xs font-medium hover:brightness-105 transition"
                 style="background-color: #5ca9ff;">
                 <i class="fas fa-plus"></i> Add Project
             </button>
@@ -79,7 +79,7 @@
     <!-- Filter berdasarkan status -->
     <div class="flex gap-2">
         <button wire:click="$set('statusFilter', '')"
-            class="px-3 py-1 rounded-3xl text-sm font-medium transition"
+            class="px-3 py-1 rounded-3xl text-xs font-medium transition"
             style="{{ $statusFilter === '' 
                 ? 'background-color:#5ca9ff;color:white;' 
                 : 'background-color:#e5e7eb;color:#374151;' }}">
@@ -87,7 +87,7 @@
         </button>
 
         <button wire:click="$set('statusFilter', 'belum_dimulai')"
-            class="px-3 py-1 rounded-3xl text-sm font-medium transition"
+            class="px-3 py-1 rounded-3xl text-xs font-medium transition"
             style="{{ $statusFilter === 'belum_dimulai' 
                 ? 'background-color:#5ca9ff;color:white;' 
                 : 'background-color:#e5e7eb;color:#374151;' }}">
@@ -95,7 +95,7 @@
         </button>
 
         <button wire:click="$set('statusFilter', 'sedang_berjalan')"
-            class="px-3 py-1 rounded-3xl text-sm font-medium transition"
+            class="px-3 py-1 rounded-3xl text-xs font-medium transition"
             style="{{ $statusFilter === 'sedang_berjalan' 
                 ? 'background-color:#5ca9ff;color:white;' 
                 : 'background-color:#e5e7eb;color:#374151;' }}">
@@ -103,7 +103,7 @@
         </button>
 
         <button wire:click="$set('statusFilter', 'selesai')"
-            class="px-4 py-1 rounded-3xl text-sm font-medium transition"
+            class="px-4 py-1 rounded-3xl text-xs font-medium transition"
             style="{{ $statusFilter === 'selesai' 
                 ? 'background-color:#5ca9ff;color:white;' 
                 : 'background-color:#e5e7eb;color:#374151;' }}">

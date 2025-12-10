@@ -177,7 +177,7 @@
                                     {{-- Target + Overdue dalam satu baris --}}
                                     <div class="flex items-center gap-2 text-[9px] opacity-90">
                                         @if($isOverdue)
-                                            <span class="text-black">
+                                            <span class="text-black font-semibold">
                                                 ⚠ Overdue
                                             </span>
                                         @endif

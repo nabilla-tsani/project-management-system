@@ -1,15 +1,20 @@
-<div class="min-h-screen bg-gray-100 text-gray-900 p-8 font-sans">
+<div class="min-h-screen w-full bg-white text-gray-900 pt-0 p-8 relative overflow-hidden">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-4xl font-extrabold text-gray-800 flex items-center gap-3">
-                <i class="fas fa-users text-blue-500"></i>
-                <span>Customer</span>
-            </h2>
+         <div class="flex items-center justify-between mb-4 pl-1">
+           <h1 class="text-3xl font-medium tracking-tight">
+                    <span class="text-[#5ca9ff]">Manage</span>
+                    <span class="text-[#ac7bff]">Customers</span>
+                </h1>
+
+            <!-- Tombol Tambah Proyek Minimalis -->
+             <div class="pt-3">
             <button wire:click="$set('showModal', true)" 
-                class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 text-sm font-medium hover:brightness-105 transition">
-                <i class="fas fa-plus"></i> Tambah
+                class="text-white px-4 py-2 rounded-3xl shadow-sm flex items-center gap-2 text-xs font-medium hover:brightness-105 transition"
+                style="background-color: #5ca9ff;">
+                <i class="fas fa-plus"></i> Add Customer
             </button>
+            </div>
         </div>
 
         <!-- Search + Filter -->
@@ -18,34 +23,34 @@
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                     <i class="fas fa-search"></i>
                 </span>
-                <input type="text" wire:model.live="search" placeholder="Cari customer..."
-                    class="w-full pl-10 pr-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-900
+                <input type="text" wire:model.live="search" placeholder="Find customer..."
+                    class="w-full pl-10 pr-3 py-2 rounded-full bg-white border border-gray-300 text-gray-900
                            focus:ring-1 focus:ring-blue-500 focus:border-transparent outline-none placeholder-gray-400 text-sm transition" />
             </div>
 
             <div class="flex gap-2">
                 <button wire:click="$set('statusFilter', '')"
-                    class="px-3 py-1 rounded-lg text-sm font-medium {{ $statusFilter === '' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                    Semua
+                    class="px-3 py-1 rounded-full text-xs font-medium {{ $statusFilter === '' ? 'bg-[#5ca9ff] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
+                    All Customer
                 </button>
                 <button wire:click="$set('statusFilter', 'aktif')"
-                    class="px-3 py-1 rounded-lg text-sm font-medium {{ $statusFilter === 'aktif' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                    Aktif
+                    class="px-3 py-1 rounded-full text-xs font-medium {{ $statusFilter === 'aktif' ? 'bg-[#5ca9ff] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
+                    Active
                 </button>
                 <button wire:click="$set('statusFilter', 'tidak_aktif')"
-                    class="px-3 py-1 rounded-lg text-sm font-medium {{ $statusFilter === 'tidak_aktif' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                    Tidak Aktif
+                    class="px-3 py-1 rounded-full text-xs font-medium {{ $statusFilter === 'tidak_aktif' ? 'bg-[#5ca9ff] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
+                    Not Active
                 </button>
             </div>
         </div>
 
         <!-- List Customer Modern (Aktif vs Tidak Aktif) -->
         @if($customers->isEmpty())
-            <div class="text-center py-10 text-gray-500 italic">Tidak ada Customer.</div>
+            <div class="text-center text-xs italic py-10 text-gray-500 italic">No customers found.</div>
         @else
-            <div class="space-y-3">
+            <div>
                 @foreach($customers as $c)
-                    <div class="flex items-center justify-between rounded-lg transition px-4 py-3 cursor-pointer
+                    <div class="flex items-center justify-between transition px-4 py-3 cursor-pointer
                                 {{ $c->status === 'aktif' ? 'bg-white shadow-sm hover:shadow-md' : 'bg-gray-50 text-gray-400 shadow-inner' }}">
                         
                         <!-- Foto profil -->
@@ -57,13 +62,12 @@
 
                             <!-- Info customer -->
                             <div class="flex flex-col">
-                                <h3 class="text-base font-semibold truncate" title="{{ $c->nama }}
+                                <h3 class="text-sm font-medium truncate" title="{{ $c->nama }}
                                     {{ $c->status !== 'aktif' ? 'text-gray-500' : 'text-gray-800' }}">
                                     {{ $c->nama }}
                                 </h3>
-                                <p class="text-sm truncate" title="{{ $c->alamat }}">{{ $c->alamat }}</p>
-                                <p class="text-sm">{{ $c->nomor_telepon }}</p>
-                                <p class="text-sm truncate" title="{{ $c->email }}">{{ $c->email }}</p>
+                                <p class="text-xs truncate" title="{{ $c->alamat }}">{{ $c->alamat }}</p>
+                                <p class="text-xs">{{ $c->nomor_telepon }} | {{ $c->email }}</p>
                             </div>
                         </div>
 
@@ -75,10 +79,11 @@
                                             : 'bg-gray-200 text-gray-700 shadow-inner' }}">
                                 @if($c->status === 'aktif')
                                     <i class="fas fa-check-circle mr-1 text-white text-xs"></i>
+                                    <span class="text-xs">Active</span>
                                 @else
                                     <i class="fas fa-times-circle mr-1 text-gray-500 text-xs"></i>
+                                    <span class="text-xs">Not Active</span>
                                 @endif
-                                {{ ucfirst(str_replace('_',' ',$c->status)) }}
                             </span>
 
                             <!-- Tombol aksi -->
@@ -93,8 +98,8 @@
                                 </button>
                             </div>
                         </div>
-
                     </div>
+                    <hr class="border-gray-300">
                 @endforeach
             </div>
 
@@ -109,28 +114,28 @@
             <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
                 <div class="bg-white w-2/3 max-w-2xl shadow-2xl transform transition-transform duration-300 ease-out animate-fadeIn flex flex-col">
                     <div class="p-5 border-b border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-900 text-center">{{ $isEdit ? 'Edit Customer' : 'Tambah Customer' }}</h3>
+                        <h3 class="text-sm font-semibold text-center" style="color: #9c62ff;">{{ $isEdit ? 'Update Customer' : 'Add Customer' }}</h3>
                     </div>
                     <div class="p-5">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <input type="text" wire:model="nama" placeholder="Nama" class="border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
-                            <input type="text" wire:model="alamat" placeholder="Alamat" class="border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
-                            <input type="text" wire:model="nomor_telepon" placeholder="Nomor Telepon" class="border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
-                            <input type="email" wire:model="email" placeholder="Email" class="border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
-                            <input type="text" wire:model="catatan" placeholder="Catatan" class="border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
-                            <select wire:model="status" class="border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-sm">
+                            <input type="text" wire:model="nama" placeholder="Nama" class="border border-gray-300 rounded-full px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-xs">
+                            <input type="text" wire:model="alamat" placeholder="Alamat" class="border border-gray-300 rounded-full px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-xs">
+                            <input type="text" wire:model="nomor_telepon" placeholder="Nomor Telepon" class="border border-gray-300 rounded-full px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-xs">
+                            <input type="email" wire:model="email" placeholder="Email" class="border border-gray-300 rounded-full px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-xs">
+                            <input type="text" wire:model="catatan" placeholder="Catatan" class="border border-gray-300 rounded-full px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-xs">
+                            <select wire:model="status" class="border border-gray-300 rounded-full px-3 py-2 text-gray-900 focus:ring-1 focus:ring-blue-500 focus:outline-none text-xs">
                                 <option value="">-- Status --</option>
-                                <option value="aktif">Aktif</option>
-                                <option value="tidak_aktif">Tidak Aktif</option>
+                                <option value="aktif">Active</option>
+                                <option value="tidak_aktif">Not Active</option>
                             </select>
                         </div>
                         <div class="mt-5 flex justify-end gap-3">
                             @if($isEdit)
-                                <button wire:click="update" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md shadow text-white text-sm font-medium transition">Update</button>
+                                <button wire:click="update" class="bg-[#5ca9ff] hover:bg-blue-700 px-4 py-2 rounded-full shadow text-white text-xs font-medium transition">Update</button>
                             @else
-                                <button wire:click="store" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md shadow text-white text-sm font-medium transition">Simpan</button>
+                                <button wire:click="store" class="bg-[#5ca9ff] hover:bg-blue-700 px-4 py-2 rounded-full shadow text-white text-xs font-medium transition">Save</button>
                             @endif
-                            <button wire:click="closeModal" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-md shadow text-gray-800 text-sm font-medium transition">Batal</button>
+                            <button wire:click="closeModal" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-full shadow text-gray-800 text-xs font-medium transition">Cancel</button>
                         </div>
                     </div>
                 </div>

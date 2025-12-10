@@ -18,7 +18,7 @@ class GeminiService
     }
 
 
-    public function chat(string $prompt, string $model = 'gemini-2.0-flash')
+    public function chat(string $prompt, string $model = 'gemini-2.5-flash')
     {
         $intent = $this->detectIntent($prompt);
         Log::info('[Gemini] Intent Detected', $intent);
@@ -31,7 +31,7 @@ class GeminiService
     }
 
 
-    public function chatWithHistory(array $messages, string $model = 'gemini-2.0-flash')
+    public function chatWithHistory(array $messages, string $model = 'gemini-2.5-flash')
     {
         $lastMessage = end($messages)['message'] ?? '';
         $intent = $this->detectIntent($lastMessage);
@@ -87,7 +87,7 @@ class GeminiService
      */
     protected function detectIntent(string $prompt): array
     {
-        $url = "{$this->base}/gemini-2.0-flash:generateContent?key={$this->key}";
+        $url = "{$this->base}/gemini-2.5-flash:generateContent?key={$this->key}";
 
         $classifierPrompt = <<<PROMPT
         Anda adalah sistem deteksi intent untuk query database proyek.

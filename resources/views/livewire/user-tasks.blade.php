@@ -115,7 +115,7 @@
             </div>
         @empty
             <p class="text-xs text-gray-400 italic">
-            No assignments assigned to you yet
+            You haven't created any notes yet.
             </p>
         @endforelse
     </div>
@@ -159,7 +159,7 @@
             </div>
         @empty
             <p class="text-xs text-gray-400 italic">            
-                No assignments assigned to you yet
+                You haven't created any notes yet.
             </p>
         @endforelse
     </div>
@@ -203,7 +203,7 @@
             </div>
         @empty
             <p class="text-xs text-gray-400 italic">            
-                No assignments assigned to you yet
+                You haven't created any notes yet.
             </p>
         @endforelse
     </div>
