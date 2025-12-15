@@ -23,7 +23,7 @@ class AllProyekFitur extends Component
     public $modalOpen = false;
 
     // Dropdown & user modal
-    public $statusList = ['Upcoming','In Progress', 'Done', 'Pending'];
+    public $statusList = ['belum_dimulai','sedang_berjalan', 'selesai', 'ditunda'];
     public $selectedFiturId;
     public $selectedFitur;
 
@@ -90,7 +90,7 @@ class AllProyekFitur extends Component
         $this->validate([
             'nama_fitur'   => 'required|string|max:255',
             'keterangan'   => 'nullable|string|max:1000',
-            'status_fitur' => 'required|string|in:Upcoming,Pending,In Progress,Done',
+            'status_fitur' => 'required|string|in:belum_dimulai,sedang_berjalan, selesai, ditunda',
             'target'       => 'nullable|date',
         ]);
 
@@ -187,7 +187,7 @@ class AllProyekFitur extends Component
             ProyekFitur::create([
                 'proyek_id' => $this->proyekId,
                 'nama_fitur' => $namaFitur,
-                'status_fitur' => 'Pending',
+                'status_fitur' => 'ditunda',
             ]);
         }
 

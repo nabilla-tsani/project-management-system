@@ -17,7 +17,7 @@
         <script src="//unpkg.com/alpinejs" defer></script>
     </head>
     <body class="font-sans antialiased">
-        <div class="flex h-screen bg-gray-50">
+        <div class="flex h-screen bg-gray-50 ">
             <!-- Sidebar -->
             <x-sidebar />
 

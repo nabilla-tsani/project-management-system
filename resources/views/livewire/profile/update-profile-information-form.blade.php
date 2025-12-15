@@ -11,105 +11,191 @@ new class extends Component
     public string $name = '';
     public string $email = '';
 
-    /**
-     * Mount the component.
-     */
+    // Password
+    public string $current_password = '';
+    public string $password = '';
+    public string $password_confirmation = '';
+
     public function mount(): void
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
     }
 
-    /**
-     * Update the profile information for the currently authenticated user.
-     */
     public function updateProfileInformation(): void
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
-        ]);
+    $validated = $this->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => [
+            'required', 'string', 'lowercase', 'email', 'max:255',
+            Rule::unique(User::class)->ignore($user->id)
+        ],
+    ]);
 
-        $user->fill($validated);
+    $user->fill($validated);
 
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
-
-        $this->dispatch('profile-updated', name: $user->name);
+    if ($user->isDirty('email')) {
+        $user->email_verified_at = null;
     }
 
-    /**
-     * Send an email verification notification to the current user.
-     */
-    public function sendVerification(): void
-    {
-        $user = Auth::user();
+    $user->save();
 
-        if ($user->hasVerifiedEmail()) {
-            $this->redirectIntended(default: route('dashboard', absolute: false));
+    // Flash message
+    session()->flash('success', 'Profile updated successfully!');
 
-            return;
-        }
+    $this->dispatch('profile-updated', name: $user->name);
+}
 
-        $user->sendEmailVerificationNotification();
 
-        Session::flash('status', 'verification-link-sent');
-    }
+    public function updatePassword(): void
+{
+    $validated = $this->validate([
+        'current_password' => ['required', 'string', 'current_password'],
+        'password' => ['required', 'string', \Illuminate\Validation\Rules\Password::defaults(), 'confirmed'],
+    ]);
+
+    Auth::user()->update([
+        'password' => Hash::make($validated['password']),
+    ]);
+
+    // Kosongkan semua input password
+    $this->reset('current_password', 'password', 'password_confirmation');
+
+    // Flash message
+    session()->flash('success', 'Password updated successfully!');
+
+    $this->dispatch('password-updated');
+}
+
 }; ?>
 
+ @if (session()->has('message'))
+            <div 
+                x-data="{ show: true }"
+                x-init="setTimeout(() => show = false, 1000)"
+                x-show="show"
+                x-transition.duration.500ms
+                class="text-xs p-2 rounded bg-green-100 text-green-700 border border-green-300"
+            >
+                {{ session('message') }}
+            </div>
+        @endif
+
 <section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
-        </h2>
+    <!-- Header Profile -->
+    <div class="flex items-center justify-between -mt-16 mb-10">
+        <div class="flex items-center space-x-4">
+            <div class="w-20 h-20 rounded-full bg-gray-300 overflow-hidden shadow-lg ring-4 ring-white">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&size=80&background=6366f1&color=fff" 
+                     alt="{{ auth()->user()->name }}" 
+                     class="w-full h-full object-cover">
+            </div>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information and email address.") }}
-        </p>
-    </header>
-
-    <form wire:submit="updateProfileInformation" class="mt-6 space-y-6">
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            <div>
+                <h3 class="text-base font-semibold text-gray-900">{{ auth()->user()->name }}</h3>
+                <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+            </div>
         </div>
 
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+        <button onclick="document.getElementById('name').focus()"
+            class="px-4 py-2 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition">
+            Edit
+        </button>
+    </div>
 
-            @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
+    @if (session()->has('success'))
+        <div class="mb-4 px-4 py-3 rounded-md bg-green-100 text-green-800 text-sm shadow">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <!-- GRID 2 KOLOM: PROFILE LEFT + PASSWORD RIGHT -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        {{-- ========================= LEFT: PROFILE FORM ========================= --}}
+        <div class="space-y-6">
+            <h2 class="text-sm font-semibold text-gray-900">Profile Information</h2>
+
+            <form wire:submit="updateProfileInformation" class="space-y-4">
+                
+                <!-- Full Name -->
                 <div>
-                    <p class="text-sm mt-2 text-gray-800">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button wire:click.prevent="sendVerification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
-
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Full Name</label>
+                    <input wire:model="name" id="name" type="text"
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500"
+                        required>
+                    <x-input-error :messages="$errors->get('name')" class="mt-1 text-xs" />
                 </div>
-            @endif
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
+                    <input wire:model="email" id="email" type="email"
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500"
+                        required>
+                    <x-input-error :messages="$errors->get('email')" class="mt-1 text-xs" />
+                </div>
+
+                <!-- Save -->
+                <div class="flex items-center gap-3">
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700">
+                        Save Changes
+                    </button>
+
+                    <x-action-message on="profile-updated" class="text-xs text-green-600">
+                        Saved successfully!
+                    </x-action-message>
+                </div>
+            </form>
         </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
 
-            <x-action-message class="me-3" on="profile-updated">
-                {{ __('Saved.') }}
-            </x-action-message>
+        {{-- ========================= RIGHT: PASSWORD FORM ========================= --}}
+        <div class="space-y-6">
+            <h2 class="text-sm font-semibold text-gray-900">Update Password</h2>
+
+            <form wire:submit="updatePassword" class="space-y-4">
+
+                <!-- Current Password -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Current Password</label>
+                    <input wire:model="current_password" type="password"
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500">
+                    <x-input-error :messages="$errors->get('current_password')" class="mt-1 text-xs" />
+                </div>
+
+                <!-- New Password -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">New Password</label>
+                    <input wire:model="password" type="password"
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500">
+                    <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs" />
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <input wire:model="password_confirmation" type="password"
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500">
+                    <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-xs" />
+                </div>
+
+                <!-- Save -->
+                <div class="flex items-center gap-3">
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700">
+                        Update Password
+                    </button>
+
+                    <x-action-message on="password-updated" class="text-xs text-green-600">
+                        Password updated successfully!
+                    </x-action-message>
+                </div>
+            </form>
         </div>
-    </form>
+
+    </div>
 </section>

@@ -5,22 +5,23 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
+    <div class="min-h-screen bg-gray-50">
+        <div class="h-full w-full">
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <!-- Header Section with Gradient -->
+                <div class="h-32 bg-gradient-to-r from-blue-200 via-blue-100 to-yellow-100"></div>
+                
+                <!-- Profile Content -->
+                <div class="px-8 pb-8">
                     <livewire:profile.update-profile-information-form />
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <livewire:profile.update-password-form />
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
+                    
+                    <!-- Divider -->
+                    <div class="my-8 border-t border-gray-200"></div>
+                    
+                    <!-- Divider -->
+                    <div class="my-8 border-t border-gray-200"></div>
+                    
+                    <!-- Delete Account Section -->
                     <livewire:profile.delete-user-form />
                 </div>
             </div>

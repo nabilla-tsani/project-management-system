@@ -256,23 +256,24 @@
 
                 {{-- Financial Summary --}}
                 <div class="border border-gray-300 bg-white rounded-2xl px-6 pb-6">
-                <div class="py-3 h-44">
-                    <h5 class="text-xs font-semibold text-gray-700 mb-4">Financial Summary</h5>
-                    <canvas id="financialChart" class="w-full h-44"></canvas>
-                </div>
+                    <div class="py-3 h-44">
+                        <h5 class="text-xs font-semibold text-gray-700 mb-4">Financial Summary</h5>
+                        <canvas id="financialChart" class="w-full h-44"></canvas>
+                    </div>
                 </div>
 
                 {{-- Invoice vs Receipt --}}
                 <div class="border border-gray-300 bg-white rounded-2xl px-6 pb-6">
-                <div class="py-3 h-44">
-                    <h5 class="text-xs font-semibold text-gray-700 mb-4">Invoices vs Receipts</h5>
-                    <canvas id="invoiceChart" class="w-full h-44"></canvas>
+                    <div class="py-3 h-44">
+                        <h5 class="text-xs font-semibold text-gray-700 mb-4">Invoices vs Receipts</h5>
+                        <canvas id="invoiceChart" class="w-full h-44"></canvas>
+                    </div>
                 </div>
             </div>
             @endif
-            </div>
 
-             {{-- Notes --}}
+
+            {{-- Notes --}}
                 <div class="border border-gray-300 bg-white rounded-2xl px-6 pt-3 pb-2">
                     <div class="flex justify-between items-center">
                         <h4 class="text-xs font-semibold text-gray-700">Latest Notes</h4>
@@ -310,7 +311,10 @@
                             <p class="text-xs text-gray-500">No notes yet.</p>
                         @endforelse
                     </div>
-        </div>
+                </div>
+             
+            </div>
+
 
 
 

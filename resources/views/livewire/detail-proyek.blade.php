@@ -96,6 +96,7 @@
                             'belum_dimulai'   => 'Upcoming',
                             'sedang_berjalan' => 'Ongoing',
                             'selesai'         => 'Done',
+                            'ditunda'         => 'Pending',
                         ];
                     @endphp
 
@@ -103,9 +104,10 @@
                         @if($proyek->status === 'belum_dimulai') bg-blue-100 text-blue-800
                         @elseif($proyek->status === 'sedang_berjalan') bg-yellow-100 text-yellow-800
                         @elseif($proyek->status === 'selesai') bg-green-100 text-green-800
+                        @elseif($proyek->status === 'ditunda') bg-red-100 text-red-800
                         @else bg-gray-100 text-gray-700 @endif">
 
-                        {{ $statusMap[$proyek->status] ?? 'Unknown' }}
+                        {{ $statusMap[$proyek->status] ?? '-' }}
 
                     </span>
 
@@ -138,8 +140,14 @@
                     <p class="text-gray-400 text-xs">Status Bar</p>
                 </div>
                 @php
-                    $progress = $proyek->status === 'belum_dimulai' ? 0 : ($proyek->status === 'sedang_berjalan' ? 50 : 100);
+                    $progress = match ($proyek->status) {
+                        'sedang_berjalan' => 50,
+                        'selesai' => 100,
+                        'belum_dimulai', 'ditunda' => 0,
+                        default => 0,
+                    };
                 @endphp
+
                 <div class="w-full bg-gray-200 h-3 rounded-full">
                     <div class="h-3 rounded-full transition-all duration-500 bg-[#5ca9ff]"
                          style="width: {{ $progress }}%"></div>

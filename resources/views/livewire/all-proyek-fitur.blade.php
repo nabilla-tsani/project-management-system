@@ -29,10 +29,10 @@
                 <select wire:model.live="filterStatus"
                     class="text-xs border rounded-full px-7 py-1.5">
                     <option value="">All Status</option>
-                    <option value="Upcoming">Upcoming</option>
-                    <option value="Pending">Pending</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Done">Done</option>
+                    <option value="belum_dimulai">Upcoming</option>
+                    <option value="ditunda">Pending</option>
+                    <option value="sedang_berjalan">In Progress</option>
+                    <option value="selesai">Done</option>
                 </select>
 
 
@@ -69,20 +69,36 @@
 
                             {{-- Status --}}
                             <div wire:click="openCatatan({{ $fitur->id }})"
-                                 class="col-span-1 flex items-center justify-center">
+                                class="col-span-1 flex items-center justify-center">
+
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold
-                                    @if($fitur->status_fitur === 'Done')
+                                    @if($fitur->status_fitur === 'selesai')
                                         text-[#5ca9ff] bg-[#dfeeff]
-                                    @elseif($fitur->status_fitur === 'In Progress')
+                                    @elseif($fitur->status_fitur === 'sedang_berjalan')
                                         text-orange-600 bg-orange-100
-                                    @elseif($fitur->status_fitur === 'Pending')
+                                    @elseif($fitur->status_fitur === 'ditunda')
                                         text-red-600 bg-red-100
+                                    @elseif($fitur->status_fitur === 'belum_dimulai')
+                                        text-gray-600 bg-gray-200
                                     @else
                                         text-gray-600 bg-gray-200
                                     @endif">
-                                    {{ ucfirst($fitur->status_fitur) }}
+
+                                    @if($fitur->status_fitur === 'selesai')
+                                        done
+                                    @elseif($fitur->status_fitur === 'sedang_berjalan')
+                                        in progress
+                                    @elseif($fitur->status_fitur === 'ditunda')
+                                        pending
+                                    @elseif($fitur->status_fitur === 'belum_dimulai')
+                                        upcoming
+                                    @else
+                                        {{ ucfirst($fitur->status_fitur) }}
+                                    @endif
+
                                 </span>
                             </div>
+
                             
                             {{-- Anggota --}}
                             <div wire:click.stop="openUserFitur({{ $fitur->id }})"
@@ -241,15 +257,35 @@
                     </div>
                     <div class="w-1/2 text-xs">
                         <label class="block text-xs font-semibold text-gray-600 py-2">Status</label>
+
                         <select wire:model.defer="status_fitur"
-                            class="border aborder-gray-300 rounded-3xl px-3 py-2 w-full mb-1
+                            class="border border-gray-300 rounded-3xl px-3 py-2 w-full mb-1
                                 focus:ring-2 focus:ring-blue-400 text-xs">
                             <option value="">-- Select Status --</option>
+
                             @foreach($statusList as $status)
-                                <option value="{{ $status }}">{{ $status }}</option>
+                                <option value="{{ $status }}">
+                                    @switch($status)
+                                        @case('selesai')
+                                            Done
+                                            @break
+                                        @case('belum_dimulai')
+                                            Upcoming
+                                            @break
+                                        @case('sedang_berjalan')
+                                            In progress
+                                            @break
+                                        @case('ditunda')
+                                            Pending
+                                            @break
+                                        @default
+                                            {{ $status }}
+                                    @endswitch
+                                </option>
                             @endforeach
                         </select>
                     </div>
+
                     </div>
 
                     <div class="flex justify-end gap-3 pt-3">

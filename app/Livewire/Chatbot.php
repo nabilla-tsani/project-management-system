@@ -4,12 +4,11 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Services\GeminiService;
-use Illuminate\Support\Facades\Log;
 
 class Chatbot extends Component
 {
-    public $messages = [];
     public $input;
+    public $messages = [];
     public $isOpen = false;
     public $isLoading = false;
 
@@ -20,37 +19,33 @@ class Chatbot extends Component
 
     public function sendMessage()
     {
-        $userMessage = trim($this->input);
-        if (!$userMessage) return;
+        if (!$this->input) return;
 
-        // Tambahkan pesan user
-        $this->messages[] = ['role' => 'user', 'message' => $userMessage];
+        // Tambah pesan user
+        $this->messages[] = [
+            'role' => 'user',
+            'message' => $this->input
+        ];
+
         $this->isLoading = true;
         $this->input = '';
 
-        // Jalankan AI setelah render UI
-        $this->dispatch('fetch-ai-response');
+        // Ambil respon AI
+        $this->fetchAiResponse();
     }
 
     public function fetchAiResponse()
     {
-        try {
-            $gemini = new GeminiService();
-            $aiResponse = $gemini->chatWithHistory($this->messages);
+        $gemini = new GeminiService();
+        $result = $gemini->chatWithHistory($this->messages);
 
-            // Log untuk debugging hasil AI
-            Log::info('[Chatbot] AI Response', ['response' => $aiResponse]);
+        // Tambah pesan AI
+        $this->messages[] = [
+            'role' => 'ai',
+            'message' => json_encode($result, JSON_PRETTY_PRINT)
+        ];
 
-            $this->messages[] = ['role' => 'ai', 'message' => $aiResponse];
-        } catch (\Throwable $e) {
-            Log::error('[Chatbot] Error', ['message' => $e->getMessage()]);
-            $this->messages[] = [
-                'role' => 'ai',
-                'message' => "⚠️ Terjadi kesalahan saat memproses jawaban AI."
-            ];
-        } finally {
-            $this->isLoading = false;
-        }
+        $this->isLoading = false;
     }
 
     public function resetChat()
