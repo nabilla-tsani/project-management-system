@@ -68,6 +68,22 @@
                                 </h3>
                                 <p class="text-xs truncate" title="{{ $c->alamat }}">{{ $c->alamat }}</p>
                                 <p class="text-xs">{{ $c->nomor_telepon }} | {{ $c->email }}</p>
+
+                                @if($c->proyek->count())
+    <div class="mt-1 flex flex-wrap gap-1">
+        @foreach($c->proyek as $p)
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium
+                         bg-indigo-50 text-indigo-600 border border-indigo-200">
+                {{ $p->nama_proyek }}
+            </span>
+        @endforeach
+    </div>
+@else
+    <p class="text-[10px] italic text-gray-400 mt-1">
+        No project
+    </p>
+@endif
+
                             </div>
                         </div>
 

@@ -19,4 +19,10 @@ class Customer extends Model
         'catatan',
         'status',
     ];
+
+    public function proyek()
+    {
+        return $this->hasMany(Proyek::class, 'customer_id');
+    }
+
 }

@@ -5,18 +5,17 @@
         </h2>
     </x-slot>
 
-    <div class="min-h-screen bg-gray-50">
+    <div class="w-full lg:w-[85%] mx-auto">
+        
         <div class="h-full w-full">
-            <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="bg-white shadow overflow-hidden">
                 <!-- Header Section with Gradient -->
-                <div class="h-32 bg-gradient-to-r from-blue-200 via-blue-100 to-yellow-100"></div>
+                <div class="h-32 bg-gradient-to-r from-cyan-200 to-purple-300"></div>
                 
                 <!-- Profile Content -->
                 <div class="px-8 pb-8">
                     <livewire:profile.update-profile-information-form />
-                    
-                    <!-- Divider -->
-                    <div class="my-8 border-t border-gray-200"></div>
+
                     
                     <!-- Divider -->
                     <div class="my-8 border-t border-gray-200"></div>

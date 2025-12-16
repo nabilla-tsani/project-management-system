@@ -148,6 +148,8 @@
                             Ongoing
                         @elseif ($p->status === 'selesai')
                             Done
+                         @elseif ($p->status === 'ditunda')
+                            Pending
                         @else
                             {{ $p->status }}
                         @endif
@@ -171,7 +173,7 @@
                 <!-- Status Bar -->
                 <div
                     class="mt-4 h-1 rounded-b-xl
-                        @if($p->status == 'belum_dimulai') bg-gray-300
+                        @if($p->status == 'ditunda') bg-gray-300
                         @elseif($p->status == 'selesai') bg-[#5ca9ff]
                         @endif"
                     @if($p->status == 'sedang_berjalan')

@@ -28,17 +28,16 @@ class AllCustomer extends Component
 
     public function render()
     {
-        $query = Customer::query();
+        $query = Customer::with('proyek');
 
-        // Search
         if ($this->search) {
             $query->where('nama', 'like', '%'.$this->search.'%');
         }
 
-        // Filter status
         if ($this->statusFilter) {
             $query->where('status', $this->statusFilter);
         }
+
 
         $customers = $query
             ->orderBy('status', 'asc') // Active dulu (A < I)

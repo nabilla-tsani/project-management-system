@@ -388,6 +388,11 @@ Aturan penting:
         return "Limit: Kuota Harian Habis";
     }
 
+    if ($response->status() === 503) {
+        return "Limit: Model AI sedang sibuk. Silakan coba beberapa saat lagi.";
+    }
+
+
     $error = $response->json();
 
     // Gemini quota exhausted

@@ -7,10 +7,11 @@ use App\Livewire\AllProyekInvoice;
 use App\Livewire\AllProyekKwitansi;
 use App\Livewire\MyTasks;
 use App\Livewire\UiTab;
+use App\Livewire\Dashboard;
 
 Route::view('/', 'welcome');
 
-Route::view('dashboard', 'dashboard')
+Route::get('/dashboard', Dashboard::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 

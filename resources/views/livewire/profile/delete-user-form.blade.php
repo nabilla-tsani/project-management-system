@@ -37,7 +37,7 @@ new class extends Component
     <button type="button"
             x-data=""
             x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-            class="px-4 py-2 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition-colors">
+            class="px-4 py-2 bg-red-600 text-white text-xs font-medium rounded-full hover:bg-red-700 transition-colors">
         {{ __('Delete Account') }}
     </button>
 
@@ -62,7 +62,7 @@ new class extends Component
                        name="password"
                        type="password"
                        placeholder="{{ __('Enter your password') }}"
-                       class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md focus:ring-1 focus:ring-red-500 focus:border-red-500 bg-gray-50">
+                       class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full focus:ring-1 focus:ring-red-500 focus:border-red-500 bg-gray-50">
 
                 <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs" />
             </div>
@@ -70,12 +70,12 @@ new class extends Component
             <div class="flex justify-end gap-3">
                 <button type="button"
                         x-on:click="$dispatch('close')"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 text-xs font-medium rounded-md hover:bg-gray-300 transition-colors">
+                        class="px-4 py-2 bg-gray-200 text-gray-700 text-xs font-medium rounded-full hover:bg-gray-300 transition-colors">
                     {{ __('Cancel') }}
                 </button>
 
                 <button type="submit"
-                        class="px-4 py-2 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition-colors">
+                        class="px-4 py-2 bg-red-600 text-white text-xs font-medium rounded-full hover:bg-red-700 transition-colors">
                     {{ __('Delete Account') }}
                 </button>
             </div>

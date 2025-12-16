@@ -82,7 +82,6 @@ new class extends Component
                 {{ session('message') }}
             </div>
         @endif
-
 <section>
     <!-- Header Profile -->
     <div class="flex items-center justify-between -mt-16 mb-10">
@@ -98,11 +97,6 @@ new class extends Component
                 <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
             </div>
         </div>
-
-        <button onclick="document.getElementById('name').focus()"
-            class="px-4 py-2 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition">
-            Edit
-        </button>
     </div>
 
     @if (session()->has('success'))
@@ -119,12 +113,12 @@ new class extends Component
             <h2 class="text-sm font-semibold text-gray-900">Profile Information</h2>
 
             <form wire:submit="updateProfileInformation" class="space-y-4">
-                
+
                 <!-- Full Name -->
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Full Name</label>
                     <input wire:model="name" id="name" type="text"
-                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500"
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full bg-gray-50 focus:ring-blue-500"
                         required>
                     <x-input-error :messages="$errors->get('name')" class="mt-1 text-xs" />
                 </div>
@@ -133,15 +127,22 @@ new class extends Component
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
                     <input wire:model="email" id="email" type="email"
-                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500"
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full bg-gray-50 focus:ring-blue-500"
                         required>
                     <x-input-error :messages="$errors->get('email')" class="mt-1 text-xs" />
                 </div>
 
                 <!-- Save -->
                 <div class="flex items-center gap-3">
-                    <button type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700">
+                    <button
+                        type="submit"
+                        disabled
+                        wire:dirty.remove.attr="disabled"
+                        wire:dirty.class.remove="opacity-50 cursor-not-allowed"
+                        wire:target="name,email"
+                        class="px-4 py-2 bg-[#5ca9ff] text-white text-xs rounded-full
+                            opacity-50 cursor-not-allowed transition"
+                    >
                         Save Changes
                     </button>
 
@@ -163,7 +164,7 @@ new class extends Component
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Current Password</label>
                     <input wire:model="current_password" type="password"
-                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500">
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full bg-gray-50 focus:ring-blue-500">
                     <x-input-error :messages="$errors->get('current_password')" class="mt-1 text-xs" />
                 </div>
 
@@ -171,7 +172,7 @@ new class extends Component
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">New Password</label>
                     <input wire:model="password" type="password"
-                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500">
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full bg-gray-50 focus:ring-blue-500">
                     <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs" />
                 </div>
 
@@ -179,14 +180,14 @@ new class extends Component
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Confirm Password</label>
                     <input wire:model="password_confirmation" type="password"
-                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-md bg-gray-50 focus:ring-blue-500">
+                        class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full bg-gray-50 focus:ring-blue-500">
                     <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-xs" />
                 </div>
 
                 <!-- Save -->
                 <div class="flex items-center gap-3">
                     <button type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700">
+                        class="px-4 py-2 bg-[#5ca9ff] text-white text-xs rounded-full hover:bg-blue-700">
                         Update Password
                     </button>
 
