@@ -103,5 +103,5 @@
 <div class="font-sans">
     @livewire('chatbot', [], key('chatbot-'.$proyek->id))
 </div>
-a
+
 </div>

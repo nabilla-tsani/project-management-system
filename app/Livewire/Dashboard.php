@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Customer;
 use App\Models\ProyekCatatanPekerjaan;
+use Carbon\Carbon;
 
 class Dashboard extends Component
 {
@@ -66,17 +67,12 @@ class Dashboard extends Component
 
         // ===== DEADLINE TERDEKAT (SEMUA PROYEK DENGAN TANGGAL SAMA) =====
         // 1️⃣ Ambil tanggal deadline terdekat
-        $nearestDeadline = $user->proyeks()
-            ->whereNotNull('tanggal_selesai')
-            ->orderBy('tanggal_selesai', 'asc')
-            ->value('tanggal_selesai');
-        // 2️⃣ Ambil semua proyek dengan deadline tersebut
-        $this->upcomingDeadlines = $nearestDeadline
-            ? $user->proyeks()
-                ->whereDate('tanggal_selesai', $nearestDeadline)
-                ->orderBy('created_at', 'asc')
-                ->get()
-            : collect();
+        $this->upcomingDeadlines = $user->proyeks()
+    ->whereNotNull('tanggal_selesai')
+    ->whereDate('tanggal_selesai', '>=', Carbon::today()) // opsional: hanya deadline ke depan
+    ->orderBy('tanggal_selesai', 'asc')
+    ->limit(3)
+    ->get();
 
         $customerProjects = Customer::from('customer')
             ->select('customer.id', 'customer.nama')

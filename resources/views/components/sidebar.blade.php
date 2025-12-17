@@ -111,7 +111,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" 
                             d="M9 6h11m0 6H9m0 6h11M4 6l1.5 1.5L8 5m-4 7l1.5 1.5L8 11m-4 7l1.5 1.5L8 17" />
                     </svg>
-                    <span class="truncate">Tasks</span>
+                    <span class="truncate">Notes</span>
                 </a>
 
                 <!-- Customer -->
