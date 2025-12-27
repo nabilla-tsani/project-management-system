@@ -31,6 +31,30 @@
 
             {{-- Header --}}
            <div class="relative p-2 bg-white rounded-t-xl flex items-center">
+
+           {{-- Reset Chat Button --}}
+           @if(count($messages) > 0)
+            <button
+                wire:click="resetChat"
+                class="p-1 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition"
+                title="Hapus riwayat chat"
+            >
+                <!-- Trash Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862
+                        a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6M9 7
+                        h6m2 0H7m2-3h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/>
+                </svg>
+            </button>
+            @endif
+
+
                     <h2 class="absolute left-1/2 -translate-x-1/2 font-medium text-md
                         bg-gradient-to-r from-cyan-400 to-purple-600 
                         bg-clip-text text-transparent">
@@ -56,7 +80,10 @@
             </div>
 
             {{-- Messages --}}
-            <div class="flex-1 overflow-y-auto pt-0 p-4 space-y-3">
+<div
+    id="chat-messages"
+    class="flex-1 overflow-y-auto pt-0 p-4 space-y-3"
+>
 
                 {{-- Welcome Message (hanya tampil jika tidak ada pesan) --}}
                 @if(count($messages) === 0 && !$isLoading)
@@ -93,10 +120,18 @@
 
                     {{-- Loading Indicator --}}
                     @if($isLoading)
-                        <div class="text-left">
-                            <div class="inline-block px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-400 text-white rounded-full">
-                                <span class="animate-pulse">AI sedang mengetik...</span>
+                      
+                        <div class="text-left flex justify-start">
+                            <div
+                                class="max-w-[85%] px-4 py-3 
+                                    bg-white text-gray-800 text-sm 
+                                    border border-gray-300 rounded-3xl break-words">
+                                <div class="flex space-x-1">
+                                <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+                                <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                                <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
                             </div>
+                                                        </div>
                         </div>
                     @endif
                 @endif
@@ -106,8 +141,9 @@
             {{-- Input --}}
             <div class="p-4 pt-1 flex items-end space-x-1">
                 <textarea
+                wire:key="chat-input-{{ count($messages) }}"
                     wire:model.defer="input"
-                    wire:keydown.enter="sendMessage"
+                    wire:keydown.enter.prevent="sendMessage"
                     rows="1"
                     placeholder="Ask anything..."
                     class="text-sm flex-1 border rounded-3xl p-2 focus:outline-none resize-none overflow-y-auto"
@@ -143,3 +179,18 @@
         </div>
     @endif
 </div>
+
+<script>
+    window.addEventListener('scroll-to-bottom', () => {
+        const container = document.getElementById('chat-messages');
+        if (!container) return;
+
+        // Tunggu DOM & layout selesai
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                container.scrollTop = container.scrollHeight;
+            });
+        });
+    });
+</script>
+

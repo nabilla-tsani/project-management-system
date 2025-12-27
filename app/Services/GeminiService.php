@@ -20,49 +20,51 @@ use App\Models\User;
 
 class GeminiService
 {
-    protected $base = 'https://generativelanguage.googleapis.com/v1beta/models';
+    // protected $base = 'https://generativelanguage.googleapis.com/v1beta/models';
+    protected $base = 'https://openrouter.ai/api/v1/chat/completions';
     protected $key;
 
     public function __construct()
-    {
-        $this->key = config('services.gemini.key');
-    }
+{
+    $this->key = config('services.openrouter.key');
+}
+
 
 
     /**
      * CHAT BASIC
      */
-    public function chat(string $prompt, string $model = 'gemini-2.5-flash')
+    public function chat(string $prompt, string $model = 'google/gemini-2.0-flash-001')
     {
-        $url = "{$this->base}/{$model}:generateContent?key={$this->key}";
-
-         $payload = [
-            "contents" => [
+        $response = Http::withHeaders([
+            'Authorization' => "Bearer {$this->key}",
+            'Content-Type'  => 'application/json',
+            'Accept'        => 'application/json',
+            'HTTP-Referer'  => config('app.url'),
+            'X-Title'       => 'Manpro AI',
+        ])->post($this->base, [
+            'model' => $model,
+            'messages' => [
                 [
-                    "role" => "user",
-                    "parts" => [[
-                        "text" => "Jawab secara ringkas, jelas, dan profesional:\n\n$prompt"
-                    ]]
+                    'role' => 'user',
+                    'content' => "Jawab secara ringkas, jelas, dan profesional:\n\n$prompt"
                 ]
-            ]
-        ];
-
-        $response = Http::post($url, $payload);
+            ],
+            'temperature' => 0.3,
+        ]);
 
         if ($response->failed()) {
-            return $this->handleGeminiError($response);
+            return "Terjadi error: " . $response->body();
         }
 
-
-        return $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? "";
+        return $response->json('choices.0.message.content');
     }
-
 
 
     /**
      * CHAT → INTENT → FILTER DB → FINAL ANSWER
      */
-    public function chatWithHistory(array $messages, string $model = 'gemini-2.5-flash')
+    public function chatWithHistory(array $messages, string $model = 'google/gemini-2.0-flash-001')
 {
     $raw = $this->classifyAndAskIntent($messages, $model);
 
@@ -101,79 +103,85 @@ class GeminiService
     /**
  * ADVANCED — CLASSIFY + ASK INTENT (1 CALL)
  */
-private function classifyAndAskIntent(array $messages, string $model)
-{
-    $url = "{$this->base}/{$model}:generateContent?key={$this->key}";
+    private function classifyAndAskIntent(array $messages, string $model)
+    {
 
-    // Format riwayat chat
-    $contents = [];
-    foreach ($messages as $msg) {
-        $contents[] = [
-            "role"  => $msg['role'] === 'ai' ? 'model' : 'user',
-            "parts" => [["text" => $msg['message']]]
+        $schema = "Tabel tersedia:
+            1. customer(nama, alamat, nomor_telepon, email, catatan, status)
+            2. proyek(nama_proyek, customer_id, deskripsi, lokasi, tanggal_mulai, tanggal_selesai, anggaran, status)
+            3. proyek_catatan_pekerjaan(proyek_id, proyek_fitur_id, user_id, jenis, catatan, tanggal_mulai, tanggal_selesai, feedback)
+            4. proyek_file(proyek_id, keterangan, nama_file, path, user_id)
+            5. proyek_fitur(proyek_id, nama_fitur, keterangan, target, status_fitur)
+            6. proyek_fitur_user(proyek_fitur_id, user_id, keterangan)
+            7. proyek_invoice(nomor_invoice, proyek_id, judul_invoice, jumlah, tanggal_invoice, keterangan, status, user_id)
+            8. proyek_kwitansi(nomor_kwitansi, nomor_invoice, proyek_id, judul_kwitansi, jumlah, tanggal_kwitansi, keterangan, user_id)
+            9. proyek_user(proyek_id, user_id, sebagai, keterangan)
+            10. users(name, email, password)
+            ";
+
+        $systemPrompt = <<<PROMPT
+            Tugasmu:
+            1. Tentukan apakah pertanyaan user membutuhkan DATA INTERNAL (RAG) atau PENGETAHUAN UMUM (GENERAL).
+            2. Jika GENERAL → balas JSON:
+            { \"type\": \"general\" }
+
+            3. Jika RAG:
+            - Gunakan SCHEMA di bawah
+            - Tentukan tabel & filter
+            - Balas JSON dengan format:
+            {
+            \"type\": \"rag\",
+            \"required_tables\": [...],
+            \"filters\": {...}
+            }
+
+            SCHEMA DATABASE:
+            $schema
+
+            Mapping status (case-insensitive):
+            - belum mulai, not started, upcoming → belum_dimulai
+            - progress, in progress, berjalan, ongoing → sedang_berjalan
+            - done, finished, completed → selesai
+            - pending, hold, paused, delay, ditunda, tertunda → ditunda
+
+            Aturan penting:
+            - Mapping status berlaku untuk semua kolom status
+            - Istilah boleh tidak persis, pilih makna terdekat
+            - Jika user menyebut nama (meskipun satu kata), anggap sebagai pencarian
+            - JANGAN tambahkan teks atau penjelasan di luar JSON
+            PROMPT;
+
+        $chatMessages = [
+            [
+                'role' => 'system',
+                'content' => $systemPrompt
+            ]
         ];
+
+        foreach ($messages as $msg) {
+            $chatMessages[] = [
+                'role' => $msg['role'] === 'ai' ? 'assistant' : 'user',
+                'content' => $msg['message']
+            ];
+        }
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->key,
+            'HTTP-Referer'  => config('app.url'),
+            'X-Title'       => 'Manpro AI',
+        ])->post('https://openrouter.ai/api/v1/chat/completions', [
+            'model' => $model,
+            'messages' => $chatMessages,
+            'temperature' => 0
+        ]);
+
+        if ($response->failed()) {
+            return $this->handleGeminiError($response);
+        }
+
+        return $response->json('choices.0.message.content') ?? '{}';
     }
 
-    // Schema database
-    $schema = "Tabel tersedia:
-1. customer(nama, alamat, nomor_telepon, email, catatan, status)
-2. proyek(nama_proyek, customer_id, deskripsi, lokasi, tanggal_mulai, tanggal_selesai, anggaran, status)
-3. proyek_catatan_pekerjaan(proyek_id, proyek_fitur_id, user_id, jenis, catatan, tanggal_mulai, tanggal_selesai, feedback)
-4. proyek_file(proyek_id, keterangan, nama_file, path, user_id)
-5. proyek_fitur(proyek_id, nama_fitur, keterangan, target, status_fitur)
-6. proyek_fitur_user(proyek_fitur_id, user_id, keterangan)
-7. proyek_invoice(nomor_invoice, proyek_id, judul_invoice, jumlah, tanggal_invoice, keterangan, status, user_id)
-8. proyek_kwitansi(nomor_kwitansi, nomor_invoice, proyek_id, judul_kwitansi, jumlah, tanggal_kwitansi, keterangan, user_id)
-9. proyek_user(proyek_id, user_id, sebagai, keterangan)
-10. users(name, email, password)
-";
-
-    // 🔥 PROMPT UTAMA
-    $contents[] = [
-        "role" => "user",
-        "parts" => [[
-            "text" => "
-Tugasmu:
-1. Tentukan apakah pertanyaan user membutuhkan DATA INTERNAL (RAG) atau PENGETAHUAN UMUM (GENERAL).
-2. Jika GENERAL → balas JSON:
-   { \"type\": \"general\" }
-
-3. Jika RAG:
-   - Gunakan SCHEMA di bawah
-   - Tentukan tabel & filter
-   - Balas JSON dengan format:
-{
-  \"type\": \"rag\",
-  \"required_tables\": [...],
-  \"filters\": {...}
-}
-
-SCHEMA DATABASE:
-$schema
-
-Mapping status (case-insensitive):
-- belum mulai, not started, upcoming → belum_dimulai
-- progress, in progress, berjalan, ongoing → sedang_berjalan
-- done, finished, completed → selesai
-- pending, hold, paused, delay, ditunda, tertunda → ditunda
-
-Aturan penting:
-- Mapping status berlaku untuk semua kolom status
-- Istilah boleh tidak persis, pilih makna terdekat
-- Jika user menyebut nama (meskipun satu kata), anggap sebagai pencarian
-- JANGAN tambahkan teks atau penjelasan di luar JSON
-"
-        ]]
-    ];
-
-    $response = Http::post($url, ["contents" => $contents]);
-
-    if ($response->failed()) {
-        return $this->handleGeminiError($response);
-    }
-
-    return $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? "{}";
-}
 
 
     /**
@@ -217,9 +225,13 @@ Aturan penting:
                     $results['proyek'] = $this->applyProjectFilter(Proyek::query(), $ai['filters']['proyek'] ?? []);
                     break;
 
-                case 'proyek_user':
-                    $results['proyek_user'] = ProyekUser::where('user_id', Auth::id())->get();
-                    break;
+case 'proyek_user':
+    $results['proyek_user'] = ProyekUser::with(['user:id,name', 'proyek:id,nama_proyek'])
+        ->whereIn('proyek_id', $this->myProjectIds())
+        ->get();
+    break;
+
+
 
                 case 'proyek_fitur':
                     $results['proyek_fitur'] = $this->applyProjectChildFilter(ProyekFitur::query(), $ai['filters']['proyek_fitur'] ?? []);
@@ -246,15 +258,22 @@ Aturan penting:
                     break;
 
                 case 'users':
-                case 'user':
-                    $results['users'] = $this->applyFilters(User::query(), $ai['filters']['user'] ?? []);
-                    break;
+case 'user':
+    $results['users'] = $this->applyFilters(
+        User::whereIn('id', function ($q) {
+            $q->select('user_id')
+              ->from('proyek_user')
+              ->whereIn('proyek_id', $this->myProjectIds());
+        }),
+        $ai['filters']['user'] ?? []
+    );
+    break;
+
             }
         }
 
         return $results;
     }
-
 
 
     /**
@@ -287,6 +306,11 @@ Aturan penting:
         return $this->applyFilters($query, $filters);
     }
 
+    private function myProjectIds()
+    {
+        return ProyekUser::where('user_id', Auth::id())
+            ->pluck('proyek_id');
+    }
 
 
     /**
@@ -317,96 +341,95 @@ Aturan penting:
             // ===============================
             // FILTER KOLOM BIASA
             // ===============================
-            $query->whereRaw(
-                "LOWER($column) LIKE ?",
-                ['%' . strtolower($value) . '%']
-            );
+            if (in_array($column, ['id', 'user_id', 'proyek_id'])) {
+                $query->where($column, $value);
+            } else {
+                $query->whereRaw(
+                    "LOWER($column) LIKE ?",
+                    ['%' . strtolower($value) . '%']
+                );
+            }
+
         }
 
         return $query->get();
     }
 
 
-
-
     /**
      * STEP 3 — FINAL ANSWER
      */
-        private function askFinalAnswer(array $messages, $dbResults, string $model)
+    private function askFinalAnswer(array $messages, $dbResults, string $model)
     {
-        $url = "{$this->base}/{$model}:generateContent?key={$this->key}";
-
         $lastUserMessage = end($messages)['message'];
 
-        $prompt = "
-    User bertanya: \"$lastUserMessage\"
+        $user = Auth::user();
 
-    Berikut hasil pencarian database (JSON):
-    " . json_encode($dbResults, JSON_PRETTY_PRINT) . "
+$prompt = "
+User login saat ini:
+- user_id: {$user->id}
+- nama: {$user->name}
 
-    Instruksi sangat penting:
-    1. Jawab HANYA berdasarkan data di atas.
-    2. Jangan menambahkan data lain yang tidak ada dalam hasil pencarian.
-    3. Jangan membuat asumsi atau menebak-nebak.
-    4. Jangan tampilkan JSON.
-    5. Jika data kosong atau tidak ditemukan, jawab singkat:
-    \"Maaf, saya tidak menemukan data terkait pertanyaan tersebut.\"
-    6. Buat jawaban singkat, jelas, dan tidak bertele-tele.
-    7. Gunakan baris baru asli untuk setiap informasi.
-    8. Jangan gunakan karakter '\\n'. Tulis baris baru langsung menggunakan ENTER.
-    ";
+Jika pertanyaan menggunakan kata 'saya', maka yang dimaksud adalah user dengan user_id {$user->id}.
 
-        $contents = [
-            [
-                "role" => "user",
-                "parts" => [["text" => $prompt]]
-            ]
-        ];
+User bertanya:
+\"$lastUserMessage\"
 
-        $response = Http::post($url, ["contents" => $contents]);
+Data berikut adalah DATA RESMI dari database sistem manajemen proyek (JSON):
+" . json_encode($dbResults, JSON_PRETTY_PRINT) . "
+
+ATURAN WAJIB:
+1. Jawab HANYA dari data yang diberikan.
+2. Jika pertanyaan menyebut 'saya', itu berarti user dengan user_id yang terlibat pada proyek.
+3. Jika pertanyaan menanyakan PERAN, gunakan kolom 'sebagai' dari tabel proyek_user.
+4. Jika pertanyaan menanyakan JUMLAH (berapa, ada berapa), hitung dari data yang ada.
+5. Jika pertanyaan menanyakan 'siapa', tampilkan nama user.
+6. Jika data terkait user lain di luar proyek user login, jawab:
+   'Maaf, saya tidak memiliki akses ke data tersebut.'
+7. Jangan tampilkan JSON, ID, atau format khusus.
+8. Gunakan kalimat singkat dan jelas.
+9. Gunakan baris baru nyata jika lebih dari satu informasi.
+";
+
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->key,
+            'HTTP-Referer'  => config('app.url'),
+            'X-Title'       => 'Manpro AI',
+        ])->post('https://openrouter.ai/api/v1/chat/completions', [
+            'model' => $model,
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => $prompt,
+                ]
+            ],
+            'temperature' => 0.2,
+        ]);
 
         if ($response->failed()) {
             return $this->handleGeminiError($response);
         }
 
-        // Ambil output
-        $answer = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? "";
-
-        // 🔥 FIX: Ubah teks '\n' menjadi baris baru asli
-        $answer = str_replace("\\n", "\n", $answer);
-
-        // 🔥 FIX: Hapus tanda kutip di awal & akhir jika Gemini mengirim string quoted
-        $answer = trim($answer, "\"");
-
-        return $answer;
+        return trim($response->json('choices.0.message.content') ?? '');
     }
+
 
    private function handleGeminiError($response)
-{
-    // HTTP 429
-    if ($response->status() === 429) {
-        return "Limit: Kuota Harian Habis";
+    {
+        if ($response->status() === 401) {
+            return "Limit: API Key tidak valid atau tidak terbaca";
+        }
+
+        if ($response->status() === 402) {
+            return "Limit: Saldo OpenRouter habis";
+        }
+
+        if ($response->status() === 429) {
+            return "Limit: Terlalu banyak permintaan";
+        }
+
+        return "Terjadi error: " . $response->body();
     }
-
-    if ($response->status() === 503) {
-        return "Limit: Model AI sedang sibuk. Silakan coba beberapa saat lagi.";
-    }
-
-
-    $error = $response->json();
-
-    // Gemini quota exhausted
-    if (
-        isset($error['error']['status']) &&
-        $error['error']['status'] === 'RESOURCE_EXHAUSTED'
-    ) {
-        return "Limit: Kuota Harian Habis";
-    }
-
-    return "Terjadi error: " . $response->body();
-}
-
-
-
 
 }

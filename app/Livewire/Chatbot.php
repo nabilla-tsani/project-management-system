@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Services\GeminiService;
+use Livewire\Attributes\On;
 
 class Chatbot extends Component
 {
@@ -11,6 +12,12 @@ class Chatbot extends Component
     public $messages = [];
     public $isOpen = false;
     public $isLoading = false;
+
+    public function mount()
+    {
+        $this->messages = session()->get('chatbot_messages', []);
+    }
+
 
     public function toggleChat()
     {
@@ -21,37 +28,47 @@ class Chatbot extends Component
     {
         if (!$this->input) return;
 
-        // Tambah pesan user
+        // 1. Tampilkan pesan user LANGSUNG
         $this->messages[] = [
             'role' => 'user',
             'message' => $this->input
         ];
 
-        $this->isLoading = true;
         $this->input = '';
+        $this->isLoading = true;
 
-        // Ambil respon AI
-        $this->fetchAiResponse();
+        session()->put('chatbot_messages', $this->messages);
+        $this->dispatch('scroll-to-bottom');
+
+        // 2. Trigger AI di request TERPISAH
+        $this->dispatch('fetch-ai-response');
     }
 
+
+   #[On('fetch-ai-response')]
     public function fetchAiResponse()
     {
         $gemini = new GeminiService();
         $result = $gemini->chatWithHistory($this->messages);
 
-        // Tambah pesan AI
         $this->messages[] = [
             'role' => 'ai',
             'message' => json_encode($result, JSON_PRETTY_PRINT)
         ];
 
         $this->isLoading = false;
+
+        session()->put('chatbot_messages', $this->messages);
+        $this->dispatch('scroll-to-bottom');
     }
+
 
     public function resetChat()
     {
         $this->messages = [];
         $this->isLoading = false;
+
+        session()->forget('chatbot_messages');
     }
 
     public function render()
