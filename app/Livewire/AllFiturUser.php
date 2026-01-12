@@ -59,18 +59,26 @@ class AllFiturUser extends Component
 
         // Pada mode edit, user yang sedang diedit TIDAK boleh dihilangkan
         if ($this->isEdit && $this->user_id) {
-            $existingUserIds = array_filter($existingUserIds, fn($id) => $id != $this->user_id);
+            $existingUserIds = array_filter(
+                $existingUserIds,
+                fn ($id) => $id != $this->user_id
+            );
         }
 
-        // Ambil user yang BELUM ada di existingUserIds
+        // Ambil user yang BELUM ada di fitur
+        // + HANYA user yang SUDAH verifikasi email
         $this->userList = User::whereNotIn('id', $existingUserIds)
+            ->whereNotNull('email_verified_at')
             ->orderBy('name')
             ->get();
 
-        // Pada edit, jika user yang diedit hilang, tambahkan kembali ke list
+        // Pada mode edit, pastikan user yang sedang diedit tetap muncul
         if ($this->isEdit && $this->user_id) {
-            $editingUser = User::find($this->user_id);
-            if ($editingUser) {
+            $editingUser = User::where('id', $this->user_id)
+                ->whereNotNull('email_verified_at')
+                ->first();
+
+            if ($editingUser && !$this->userList->contains('id', $editingUser->id)) {
                 $this->userList->prepend($editingUser);
             }
         }
@@ -78,33 +86,33 @@ class AllFiturUser extends Component
 
 
     public function showModal($id)
-{
-    $this->resetForm();
-    $this->resetErrorBag();
-    $this->resetValidation();
+    {
+        $this->resetForm();
+        $this->resetErrorBag();
+        $this->resetValidation();
 
-    $this->proyekFiturId = $id;
+        $this->proyekFiturId = $id;
 
-    $fitur = ProyekFitur::find($id);
-    $this->namaFitur = $fitur?->nama_fitur ?? 'Fitur Tidak Dikenal';
+        $fitur = ProyekFitur::find($id);
+        $this->namaFitur = $fitur?->nama_fitur ?? 'Fitur Tidak Dikenal';
 
-    // ⭐ Ambil role user pada proyek terkait fitur
-    if ($fitur) {
-        $this->userRole = \DB::table('proyek_user')
-            ->where('proyek_id', $fitur->proyek_id)
-            ->where('user_id', auth()->id())
-            ->value('sebagai');
+        // ⭐ Ambil role user pada proyek terkait fitur
+        if ($fitur) {
+            $this->userRole = \DB::table('proyek_user')
+                ->where('proyek_id', $fitur->proyek_id)
+                ->where('user_id', auth()->id())
+                ->value('sebagai');
+        }
+
+        // Ambil seluruh user
+        $this->userList = User::orderBy('name')->get();
+
+        // Ambil anggota fitur
+        $this->loadFiturUsers();
+        $this->loadAvailableUsers();
+
+        $this->modalOpen = true;
     }
-
-    // Ambil seluruh user
-    $this->userList = User::orderBy('name')->get();
-
-    // Ambil anggota fitur
-    $this->loadFiturUsers();
-    $this->loadAvailableUsers();
-
-    $this->modalOpen = true;
-}
 
 
     public function edit($id)
@@ -190,8 +198,8 @@ class AllFiturUser extends Component
         session()->flash(
             'message',
             $this->isEdit 
-                ? 'User updated successfully.' 
-                : 'User added to feature successfully.'
+                ? 'Berhasil memperbarui anggota.' 
+                : 'Berhasil menambahkan anggota.'
         );
 
         $this->dispatch('$refresh');
@@ -201,7 +209,7 @@ class AllFiturUser extends Component
     {
         ProyekFiturUser::findOrFail($id)->delete();
 
-        session()->flash('message', 'User removed from feature successfully.');
+        session()->flash('message', 'Berhasil menghapus anggota.');
 
         $this->loadFiturUsers();
         $this->loadAvailableUsers();

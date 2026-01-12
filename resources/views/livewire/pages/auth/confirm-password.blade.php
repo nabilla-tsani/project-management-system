@@ -10,7 +10,7 @@ new #[Layout('layouts.guest')] class extends Component
     public string $password = '';
 
     /**
-     * Confirm the current user's password.
+     * Konfirmasi kata sandi pengguna saat ini.
      */
     public function confirmPassword(): void
     {
@@ -23,40 +23,54 @@ new #[Layout('layouts.guest')] class extends Component
             'password' => $this->password,
         ])) {
             throw ValidationException::withMessages([
-                'password' => __('auth.password'),
+                'password' => 'Kata sandi yang Anda masukkan salah.',
             ]);
         }
 
         session(['auth.password_confirmed_at' => time()]);
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(
+            default: route('dashboard', absolute: false),
+            navigate: true
+        );
     }
-}; ?>
+};
+?>
 
-<div>
+<div class="card-container w-full max-w-md mx-auto">
     <div class="mb-4 text-sm text-gray-600">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+        Demi keamanan, silakan konfirmasi kata sandi Anda sebelum melanjutkan.
     </div>
 
-    <form wire:submit="confirmPassword">
-        <!-- Password -->
+    <form wire:submit.prevent="confirmPassword" class="space-y-4">
+
+        {{-- Kata Sandi --}}
         <div>
-            <x-input-label for="password" :value="__('Password')" />
+            <label for="password" class="text-sm text-gray-700">
+                Kata Sandi
+            </label>
 
-            <x-text-input wire:model="password"
-                          id="password"
-                          class="block mt-1 w-full"
-                          type="password"
-                          name="password"
-                          required autocomplete="current-password" />
+            <input
+                wire:model="password"
+                id="password"
+                type="password"
+                class="column-input mt-1"
+                placeholder="Masukkan kata sandi Anda"
+                required
+                autocomplete="current-password"
+            >
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            @error('password')
+                <div class="text-red-500 text-sm mt-1">
+                    {{ $message }}
+                </div>
+            @enderror
         </div>
 
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
+        <div class="flex justify-end">
+            <button type="submit" class="btn-submit px-6">
+                Konfirmasi
+            </button>
         </div>
     </form>
 </div>

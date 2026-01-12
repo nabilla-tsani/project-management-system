@@ -6,8 +6,11 @@ use Livewire\Component;
 use App\Models\Proyek;
 use App\Models\Customer;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Services\ProposalAIService;
+use App\Services\ProposalAIService; //Tampilan Word Proposal
+use App\Services\AIGenerateProposalService;
 use Illuminate\Support\Facades\Auth;
+use App\Services\AIGenerateReportService;
+use App\Services\LaporanAIService;
 
 class DetailProyek extends Component
 {
@@ -47,6 +50,44 @@ class DetailProyek extends Component
         'tanggal_selesai.after_or_equal' => 'The end date must be after or same as start date.',
         'anggaran.numeric' => 'The budget must be a number.',
     ];
+
+    public function generateProposalWithAI($proyekId)
+    {
+        $proyek = Proyek::with(['customer', 'fitur'])->findOrFail($proyekId);
+
+        // Generate LATAR BELAKANG dari AI
+        $aiService = app(AIGenerateProposalService::class);
+        $latarBelakang = $aiService->generateLatarBelakang($proyek);
+
+        // Inject ke proposal
+        $proposalService = app(ProposalAIService::class);
+        $filePath = $proposalService->generate($proyek, $latarBelakang);
+
+        return response()->download($filePath);
+    }
+
+    public function generateReportWithAI($proyekId)
+    {
+        // 1️⃣ Ambil SEMUA data proyek
+        $proyek = Proyek::with([
+            'customer',
+            'proyekUsers.user',
+            'fitur.users',
+            'invoice',
+            'kwitansi'
+        ])->findOrFail($proyekId);
+
+        // 2️⃣ Kirim data ke AI
+        $aiService = app(AIGenerateReportService::class);
+        $analisisAI = $aiService->generateAnalisis($proyek);
+
+        // 3️⃣ Generate PDF
+        $laporanService = app(LaporanAIService::class);
+        $filePath = $laporanService->generate($proyek, $analisisAI);
+
+        // 4️⃣ Download
+        return response()->download($filePath);
+    }
 
     public function mount($id)
     {

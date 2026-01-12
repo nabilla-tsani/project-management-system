@@ -23,7 +23,6 @@ class AllProyekFitur extends Component
     public $modalOpen = false;
 
     // Dropdown & user modal
-    public $statusList = ['belum_dimulai','sedang_berjalan', 'selesai', 'ditunda'];
     public $selectedFiturId;
     public $selectedFitur;
 
@@ -90,7 +89,7 @@ class AllProyekFitur extends Component
         $this->validate([
             'nama_fitur'   => 'required|string|max:255',
             'keterangan'   => 'nullable|string|max:1000',
-            'status_fitur' => 'required|string|in:belum_dimulai,sedang_berjalan, selesai, ditunda',
+            'status_fitur' => 'required|string',
             'target'       => 'nullable|date',
         ]);
 
@@ -107,7 +106,7 @@ class AllProyekFitur extends Component
 
         $this->closeModal();
 
-        session()->flash('message', $this->fiturId ? 'Feature successfully updated!' : 'New feature successfully added!');
+        session()->flash('message', $this->fiturId ? 'Fitur berhasil diperbarui!' : 'Fitur berhasil ditambahkan!');
 
         $this->dispatch('$refresh');
     }
@@ -125,7 +124,7 @@ class AllProyekFitur extends Component
         $this->showConfirmDelete = false;
         $this->deleteId = null;
 
-        session()->flash('message', 'Data deleted successfully.');
+        session()->flash('message', 'Fitur berhasil dihapus.');
 
         $this->dispatch('$refresh');
     }
@@ -174,7 +173,7 @@ class AllProyekFitur extends Component
         $this->loadingAi = false;
 
         if (empty($this->aiFiturList)) {
-            session()->flash('message', 'AI generated feature failed. Please try again.');
+            session()->flash('message', 'AI gagal menghasilkan fitur. Silahkan coba lagi');
             return;
         }
         $this->aiModalOpen = false;
@@ -194,10 +193,11 @@ class AllProyekFitur extends Component
         $this->showAiReview = false;
         $this->aiFiturList = [];
 
-        session()->flash('message', 'AI-generated features added successfully!');
+        session()->flash('message', 'Fitur yang dihasilkan AI berhasil ditambahkan!');
 
         $this->dispatch('$refresh');
         $this->closeAiModal();
+        $this->revisi_deskripsi_ai = '';
     }
 
 
@@ -223,7 +223,7 @@ class AllProyekFitur extends Component
         $this->loadingAi = false;
 
         if (empty($this->aiFiturList)) {
-            session()->flash('message', 'AI failed to generate new features. Please try again.');
+            session()->flash('message', 'AI gagal membuat fitur baru. Silahkan coba lagi.');
             return;
         }
 
@@ -239,6 +239,7 @@ class AllProyekFitur extends Component
     {
         $this->showAiReview = false;
         $this->aiFiturList = [];
+        $this->dispatch('clear-revisi');
     }
 
     private function callGeminiApi($deskripsi, $jumlahFitur)

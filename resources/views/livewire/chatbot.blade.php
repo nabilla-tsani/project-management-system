@@ -58,7 +58,7 @@
                     <h2 class="absolute left-1/2 -translate-x-1/2 font-medium text-md
                         bg-gradient-to-r from-cyan-400 to-purple-600 
                         bg-clip-text text-transparent">
-                    Virtual Assistant
+                    Asisten Virtual
                 </h2>
                 <div class="w-8"></div>
                 <button 
@@ -80,17 +80,20 @@
             </div>
 
             {{-- Messages --}}
-<div
-    id="chat-messages"
-    class="flex-1 overflow-y-auto pt-0 p-4 space-y-3"
->
+            <div
+                id="chat-messages"
+                class="flex-1 overflow-y-auto pt-0 p-4 space-y-3"
+            >
 
                 {{-- Welcome Message (hanya tampil jika tidak ada pesan) --}}
                 @if(count($messages) === 0 && !$isLoading)
                     <div class="flex items-center justify-center h-full">
                         <div class="text-center text-gray-400">
-                            <p class="text-sm">Welcome!</p>
-                            <p class="text-xs mt-1">I’m your Virtual Assistant, <br>here to help you track projects and get information quickly.</p>
+                            <p class="text-sm font-semibold">Selamat Datang!</p>
+                            <p class="text-xs mt-1">
+                                Saya Asisten Virtual Anda, <br>
+                                siap membantu memantau proyek dan memberikan informasi dengan cepat.
+                            </p>
                         </div>
                     </div>
                 @else
@@ -101,7 +104,7 @@
                                     class="max-w-[85%] px-4 py-2 
                                         bg-gradient-to-r from-cyan-400 to-purple-600 
                                         text-white text-sm rounded-3xl break-words">
-                                    {{ $msg['message'] }}
+                                    {!! nl2br(e($msg['message'])) !!}
                                 </div>
                             </div>
 
@@ -111,11 +114,34 @@
                                     class="max-w-[85%] px-4 py-2 
                                         bg-white text-gray-800 text-sm 
                                         border border-gray-300 rounded-3xl break-words">
-                                    {{ $msg['message'] }}
+
+                                    @php
+                                        $lines = preg_split("/\r\n|\n|\r/", $msg['message']);
+                                        $nonEmpty = array_values(array_filter($lines, fn($l) => trim($l) !== ''));
+
+                                        $isList = count($nonEmpty) > 1
+                                            && collect($nonEmpty)->every(fn($l) => mb_strlen(trim($l)) < 100);
+                                    @endphp
+
+                                    @if($isList)
+                                        <ul class="space-y-1">
+                                            @foreach($nonEmpty as $line)
+                                                <li class="flex items-start gap-2">
+                                                    <span class="text-gray-500">-</span>
+                                                    <span>{{ $line }}</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        @foreach($lines as $line)
+                                            <p class="mb-2">{{ $line }}</p>
+                                        @endforeach
+                                    @endif
+
                                 </div>
                             </div>
-
                         @endif
+
                     @endforeach
 
                     {{-- Loading Indicator --}}
@@ -145,7 +171,7 @@
                     wire:model.defer="input"
                     wire:keydown.enter.prevent="sendMessage"
                     rows="1"
-                    placeholder="Ask anything..."
+                    placeholder="Tanyakan apapun..."
                     class="text-sm flex-1 border rounded-3xl p-2 focus:outline-none resize-none overflow-y-auto"
                     style="
                         scrollbar-width: none;        /* Firefox */

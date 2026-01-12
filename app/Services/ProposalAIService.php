@@ -125,7 +125,7 @@ class ProposalAIService
 
         $section3->addText("Nomor : 003/JSD/SPH/III/2025");
         $section3->addText("Lampiran : -");
-        $section3->addText("Perihal : Penawaran " . $proyek->nama_proyek);
+        $section3->addText("Perihal : Penawaran Pengembangan" . $proyek->nama_proyek);
         $section3->addTextBreak(1);
         $section3->addText("Kepada Yth,");
         $section3->addText($proyek->customer->nama ?? '-');
@@ -167,7 +167,10 @@ class ProposalAIService
         $section4 = $phpWord->addSection();
         $this->addHeader($section4);
         $section4->addText("I. LATAR BELAKANG PENGEMBANGAN", ['bold' => true, 'size' => 12]);
-        $section4->addText($aiResponse, ['size' => 12]);
+        $section4->addText($aiResponse, 
+            ['size' => 12],
+            ['alignment' => Jc::BOTH]
+        );
 
         $section4->addTextBreak(1);
         $section4->addText("II. TENTANG PERUSAHAAN", ['bold' => true, 'size' => 12]);
@@ -264,10 +267,39 @@ class ProposalAIService
         $table->addCell(800, $styleHeader)->addText('No', $styleTextHeader, $styleParagraphHeader);
         $table->addCell(5000, $styleHeader)->addText('Pengembangan Modul', $styleTextHeader, $styleParagraphHeader);
         $table->addCell(5000, $styleHeader)->addText('Keterangan', $styleTextHeader, $styleParagraphHeader);
-        $table->addRow();
-        $table->addCell(800)->addText('1', [], ['alignment' => Jc::CENTER]);
-        $table->addCell(5000)->addText('Tambahkan Modul Disini');
-        $table->addCell(5000)->addText('Tambahkan Keterangan Disini');
+        $no = 1;
+
+        if ($proyek->fitur && $proyek->fitur->count()) {
+            foreach ($proyek->fitur as $fitur) {
+                $table->addRow();
+
+                $table->addCell(800)->addText(
+                    $no++,
+                    [],
+                    ['alignment' => Jc::CENTER]
+                );
+
+                $table->addCell(5000)->addText(
+                    "  Modul {$fitur->nama_fitur}",
+                    ['size' => 12],
+                    ['alignment' => Jc::LEFT]
+                );
+
+
+                $table->addCell(5000)->addText(
+                    '  ' . ($fitur->keterangan ?? '-'), // 4 spasi
+                    ['size' => 12],
+                    ['alignment' => Jc::LEFT]
+                );
+            }
+        } else {
+            $table->addRow();
+            $table->addCell(10800, ['gridSpan' => 3])->addText(
+                'Belum terdapat data modul atau fitur.',
+                ['italic' => true],
+                ['alignment' => Jc::CENTER]
+            );
+        }
 
         $section4->addTextBreak(1);
         $section4->addText(

@@ -1,143 +1,173 @@
 <div class="pt-0 p-2 space-y-2">
-<div class="flex items-center justify-between">
+    <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <h2 class="text-md font-medium flex items-center gap-2 text-[#5ca9ff]">
-                <i class="fa-solid fa-circle-info"></i>
-                Project Information
+            <h2 class="text-sm font-semibold flex items-center gap-2 text-gray-700">
+                <i class="fa-solid fa-circle-info text-blue-500 text-2xl"></i>
+                Informasi Proyek
             </h2>
         </div>
 
-        <div class="flex items-center gap-3">
-            <a href="{{ route('proposal-proyek.pdf', $proyek->id) }}" target="_blank"
-            class="inline-flex items-center gap-2 px-4 py-1.5 bg-[#5ca9ff] text-white text-xs font-medium rounded-3xl shadow hover:scale-105 transition">
-                <i class="fa-solid fa-file-export"></i> Generate Proposal
-            </a>
-            <button 
-                wire:click="generateProposalWithAI"
-                wire:loading.attr="disabled"
-                class="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-cyan-400 to-purple-600 text-white text-xs font-medium rounded-3xl shadow hover:scale-105 transition cursor-pointer ml-3 disabled:opacity-70">
+        <div class="flex items-center gap-2">
+            @if($proyek->status === 'selesai')
+               @if(
+                    $proyek->proyekUsers
+                        ->where('user_id', auth()->id())
+                        ->where('sebagai', 'manajer proyek')
+                        ->count()
+                )
+                <button 
+                    wire:click="generateReportWithAI({{ $proyek->id }})"
+                    wire:loading.attr="disabled"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-cyan-400 text-white text-xs font-medium rounded-lg shadow-sm hover:shadow-md hover:scale-105 transition-all disabled:opacity-70">
 
-                {{-- Normal state (tidak loading) --}}
-                <span wire:loading.remove wire:target="generateProposalWithAI" class="inline-flex items-center gap-2">
+                    <span wire:loading.remove wire:target="generateReportWithAI({{ $proyek->id }})" class="inline-flex items-center gap-2">
+                        <i class="fa-solid fa-file-export"></i>
+                        Buat Laporan dengan AI
+                    </span>
+
+                    <span wire:loading.flex wire:target="generateReportWithAI({{ $proyek->id }})" class="items-center gap-2">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        Membuat...
+                    </span>
+                </button>
+                @endif
+            @endif
+            <button 
+                wire:click="generateProposalWithAI({{ $proyek->id }})"
+                wire:loading.attr="disabled"
+                class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-cyan-400 to-purple-600 text-white text-white text-xs font-medium rounded-lg shadow-sm hover:shadow-md hover:scale-105 transition-all disabled:opacity-70">
+
+                <span wire:loading.remove wire:target="generateProposalWithAI({{ $proyek->id }})" class="inline-flex items-center gap-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    Generate Proposal with AI
+                    Buat Proposal dengan AI
                 </span>
 
-                {{-- Loading state --}}
-                <span wire:loading.flex wire:target="generateProposalWithAI" class="items-center gap-2">
+                <span wire:loading.flex wire:target="generateProposalWithAI({{ $proyek->id }})" class="items-center gap-2">
                     <i class="fa-solid fa-spinner fa-spin"></i>
-                    Generating proposal with AI...
+                    Membuat...
                 </span>
             </button>
         </div>
     </div>
 
-     @if (session()->has('success'))
-            <div 
-                x-data="{ show: true }"
-                x-init="setTimeout(() => show = false, 1000)"
-                x-show="show"
-                x-transition.duration.500ms
-                class="text-xs p-2 rounded bg-green-100 text-green-700 border border-green-300"
-            >
-                {{ session('success') }}
-            </div>
-        @endif
+    @if (session()->has('success'))
+        <div 
+            x-data="{ show: true }"
+            x-init="setTimeout(() => show = false, 1000)"
+            x-show="show"
+            x-transition.duration.500ms
+            class="text-xs p-2 rounded-lg bg-green-50 text-green-700 border border-green-200"
+        >
+            {{ session('success') }}
+        </div>
+    @endif
 
     {{-- Card Utama --}}
-    <div class="bg-white border shadow-xl p-4 transition-transform transform">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-gray-800 mx-6 text-xs">
+    <div class="bg-white rounded-xl border border-gray-300 shadow-xl p-4 hover:shadow-md transition-shadow">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-gray-800 text-xs">
 
             {{-- Customer --}}
-            <div class="flex items-center gap-3">
-                <i class="fas fa-user-tie text-blue-500"></i>
-                <div>
-                    <p class="text-gray-400">Customer</p>
-                    <p class="font-semibold">{{ $proyek->customer?->nama ?? '-' }}</p>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-user-tie text-blue-500 text-sm"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-gray-500 text-xs mb-0.5">Klien</p>
+                    <p class="font-semibold text-gray-800 truncate">{{ $proyek->customer?->nama ?? '-' }}</p>
                 </div>
             </div>
 
             {{-- Lokasi --}}
-            <div class="flex items-center gap-3">
-                <i class="fas fa-map-marker-alt text-red-500"></i>
-                <div>
-                    <p class="text-gray-400">Location</p>
-                    <p class="font-semibold">{{ $proyek->lokasi ?? '-' }}</p>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-map-marker-alt text-red-500 text-sm"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-gray-500 text-xs mb-0.5">Lokasi</p>
+                    <p class="font-semibold text-gray-800 truncate">{{ $proyek->lokasi ?? '-' }}</p>
                 </div>
             </div>
 
             {{-- Anggaran --}}
-            <div class="flex items-center gap-3">
-                <i class="fas fa-coins text-green-500"></i>
-
-                <div>
-                    <p class="text-gray-400">Budget</p>
-                    <p class="font-semibold">Rp {{ number_format($proyek->anggaran,0,',','.') }}</p>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-coins text-green-500 text-sm"></i>
                 </div>
-
-                <div class="ml-auto">
+                <div class="flex-1 min-w-0">
+                    <p class="text-gray-500 text-xs mb-0.5">Anggaran</p>
+                    <p class="font-semibold text-gray-800">Rp {{ number_format($proyek->anggaran,0,',','.') }}</p>
+                </div>
+                @if(
+                    $proyek->proyekUsers
+                        ->where('user_id', auth()->id())
+                        ->where('sebagai', 'manajer proyek')
+                        ->count()
+                )
                     <button  
                         wire:click="edit({{ $proyek->id }})"
-                        class="px-2 py-1.5 rounded-3xl text-white shadow hover:shadow-md transition-all duration-200 text-xs hover:scale-105"
-                        style="background-color: #5ca9ff;">
-                        <i class="fas fa-pen"></i>
+                        class="w-7 h-7 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-sm hover:shadow-md transition-all hover:scale-105 flex items-center justify-center">
+                        <i class="fas fa-pen text-xs"></i>
                     </button>
-                </div>
+                @endif
+
             </div>
 
-
             {{-- Status --}}
-            <div class="flex items-center gap-3">
-                <i class="fas fa-flag text-yellow-500"></i>
-                <div>
-                    <p class="text-gray-400">Status</p>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-flag text-yellow-500 text-sm"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-gray-500 text-xs mb-0.5">Status</p>
                     @php
                         $statusMap = [
-                            'belum_dimulai'   => 'Upcoming',
-                            'sedang_berjalan' => 'Ongoing',
-                            'selesai'         => 'Done',
-                            'ditunda'         => 'Pending',
+                            'belum_dimulai'   => 'Belum Dimulai',
+                            'sedang_berjalan' => 'Sedang Berjalan',
+                            'selesai'         => 'Selesai',
+                            'ditunda'         => 'Ditunda',
                         ];
                     @endphp
 
-                    <span class="inline-block px-3 py-1 font-medium rounded-full
-                        @if($proyek->status === 'belum_dimulai') bg-blue-100 text-blue-800
-                        @elseif($proyek->status === 'sedang_berjalan') bg-yellow-100 text-yellow-800
-                        @elseif($proyek->status === 'selesai') bg-green-100 text-green-800
-                        @elseif($proyek->status === 'ditunda') bg-red-100 text-red-800
-                        @else bg-gray-100 text-gray-700 @endif">
-
+                    <span class="inline-block px-2.5 py-1 text-xs font-medium rounded-lg
+                        @if($proyek->status === 'belum_dimulai') bg-blue-50 text-blue-600
+                        @elseif($proyek->status === 'sedang_berjalan') bg-yellow-50 text-yellow-600
+                        @elseif($proyek->status === 'selesai') bg-green-50 text-green-600
+                        @elseif($proyek->status === 'ditunda') bg-red-50 text-red-600
+                        @else bg-gray-50 text-gray-600 @endif">
                         {{ $statusMap[$proyek->status] ?? '-' }}
-
                     </span>
-
                 </div>
             </div>
 
             {{-- Tanggal Mulai --}}
-            <div class="flex items-center gap-3">
-                <i class="fas fa-calendar-day text-indigo-500"></i>
-                <div>
-                    <p class="text-gray-400">Start Date</p>
-                    <p class="font-semibold">{{ \Carbon\Carbon::parse($proyek->tanggal_mulai)->format('d M Y') ?? '-' }}</p>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-calendar-day text-blue-500 text-sm"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-gray-500 text-xs mb-0.5">Tanggal Mulai</p>
+                    <p class="font-semibold text-gray-800">{{ \Carbon\Carbon::parse($proyek->tanggal_mulai)->format('d M Y') ?? '-' }}</p>
                 </div>
             </div>
 
             {{-- Tanggal Selesai --}}
-            <div class="flex items-center gap-3">
-                <i class="fas fa-calendar-check text-green-500"></i>
-                <div>
-                    <p class="text-gray-400">End Date</p>
-                    <p class="font-semibold">{{ \Carbon\Carbon::parse($proyek->tanggal_selesai)->format('d M Y') ?? '-' }}</p>
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-calendar-check text-green-500 text-sm"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-gray-500 text-xs mb-0.5">Tanggal Selesai</p>
+                    <p class="font-semibold text-gray-800">{{ \Carbon\Carbon::parse($proyek->tanggal_selesai)->format('d M Y') ?? '-' }}</p>
                 </div>
             </div>
-            
 
             {{-- Progress bar --}}
             <div class="md:col-span-3 mt-2">
-                <div class="flex items-center gap-2 mb-1">
-                    <i class="fas fa-tasks text-blue-500 text-xs"></i>
-                    <p class="text-gray-400 text-xs">Status Bar</p>
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <i class="fas fa-tasks text-blue-500 text-sm"></i>
+                    </div>
+                    <p class="text-gray-700 text-xs font-medium">Status Progres</p>
                 </div>
                 @php
                     $progress = match ($proyek->status) {
@@ -148,234 +178,236 @@
                     };
                 @endphp
 
-                <div class="w-full bg-gray-200 h-3 rounded-full">
-                    <div class="h-3 rounded-full transition-all duration-500 bg-[#5ca9ff]"
+                <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                    <div class="h-2.5 rounded-full transition-all duration-500 bg-gradient-to-r from-blue-500 to-purple-500"
                          style="width: {{ $progress }}%"></div>
                 </div>
+                <p class="text-xs text-gray-500 mt-1">{{ $progress }}% Selesai</p>
             </div>
 
             {{-- Deskripsi --}}
-            <div class="md:col-span-3 mt-1">
-                <div class="flex items-center gap-2 mb-1">
-                    <i class="fas fa-file-alt text-gray-500 text-xs"></i>
-                    <p class="text-gray-400 text-xs">Decription</p>
+            <div class="md:col-span-3 mt-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
+                        <i class="fas fa-file-alt text-gray-500 text-sm"></i>
+                    </div>
+                    <p class="text-gray-700 text-xs font-medium">Deskripsi</p>
                 </div>
-                <p class="text-gray-700">{{ $proyek->deskripsi ?? '-' }}</p>
+                <p class="text-gray-600 text-xs leading-relaxed pl-10 text-justify pr-4">{{ $proyek->deskripsi ?? '-' }}</p>
             </div>
         </div>
     </div>
 
-
     {{-- Customer Info --}}
-    <div class="bg-white border shadow-xl p-4 transition-transform transform">
-        <div class="flex items-center justify-between text-xs mx-6 mb-5">
-            <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-user-tie text-blue-500"></i>
-                Customer Information
+    <div class="bg-white rounded-xl border border-gray-300 shadow-xl p-4 hover:shadow-md transition-shadow mt-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <i class="fas fa-user-tie text-blue-500 text-sm"></i>
+                </div>
+                Informasi Klien
             </h3>
 
             @if($proyek->customer->status === 'aktif')
-                <span class="text-xs px-2 py-1 bg-green-100 text-green-600 rounded-3xl">
-                Active
-            </span>
+                <span class="text-xs px-3 py-1 bg-green-50 text-green-600 rounded-lg font-medium">
+                    Aktif
+                </span>
             @elseif($proyek->customer->status === 'tidak_aktif')
-            <span class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-3xl">
-                Inactive
-            </span>
+                <span class="text-xs px-3 py-1 bg-red-50 text-red-600 rounded-lg font-medium">
+                    Tidak Aktif
+                </span>
             @endif
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mx-6 my-4 text-xs">
-
-            <div>
-                <p class="text-gray-500 mb-1">Full Name</p>
-                <p class="font-medium text-gray-800">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-gray-500 mb-1 text-xs">Nama Lengkap</p>
+                <p class="font-semibold text-gray-800">
                     {{ $proyek->customer->nama ?? '-' }}
                 </p>
             </div>
 
-            <div>
-                <p class="text-gray-500 mb-1">Notes</p>
-                <p class="font-medium text-gray-800">
+            <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-gray-500 mb-1 text-xs">Catatan</p>
+                <p class="font-semibold text-gray-800">
                     {{ $proyek->customer->catatan ?? '-' }}
                 </p>
             </div>
 
-            <div>
-                <p class="text-gray-500 mb-1">Email</p>
-                <p class="font-medium text-gray-800 break-all">
+            <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-gray-500 mb-1 text-xs">Email</p>
+                <p class="font-semibold text-gray-800 break-all">
                     {{ $proyek->customer->email ?? '-' }}
                 </p>
             </div>
 
-            <div>
-                <p class="text-gray-500 mb-1">Phone Number</p>
-                <p class="font-medium text-gray-800">
+            <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-gray-500 mb-1 text-xs">Nomor Telepon</p>
+                <p class="font-semibold text-gray-800">
                     {{ $proyek->customer->nomor_telepon ?? '-' }}
                 </p>
             </div>
 
-            <div class="md:col-span-2">
-                <p class="text-gray-500 mb-1">Address</p>
-                <p class="font-medium text-gray-800">
+            <div class="md:col-span-2 bg-gray-50 rounded-lg p-3">
+                <p class="text-gray-500 mb-1 text-xs">Alamat</p>
+                <p class="font-semibold text-gray-800">
                     {{ $proyek->customer->alamat ?? '-' }}
                 </p>
             </div>
-
         </div>
     </div>
+
     {{-- Footer Tombol Kembali --}}
-    <div class="flex justify-start pt-4">
+    <div class="flex justify-start pt-2">
         <a href="{{ route('proyek') }}"
-           class="px-4 py-2 bg-[#5ca9ff] text-white text-[10px] rounded-3xl shadow hover:bg-[#884fd9] transition">
-            Back to Project List
+           class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-medium rounded-lg shadow-sm hover:shadow-md hover:scale-105 transition-all">
+            <i class="fas fa-arrow-left"></i>
+            Kembali ke Daftar Proyek
         </a>
     </div>
 
-
     {{-- Modal Edit --}}
     @if($showModal)
-    <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-        <div class="bg-white w-2/3 max-w-2xl shadow-2xl transform transition-transform duration-300 ease-out animate-fadeIn flex flex-col">
-
-        {{-- Tombol Close (icon X di kanan atas) --}}
-            <button wire:click="closeModal"
-                class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+    <div class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+        <div class="bg-white w-full max-w-2xl mx-4 rounded-xl shadow-2xl transform transition-transform duration-300 ease-out animate-fadeIn">
 
             {{-- Header --}}
-            <div class="p-5 border-b border-gray-200">
-                <h3 class="text-sm font-semibold text-center" style="color: #9c62ff;">
-                    Update Project
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
+                        <i class="fas fa-edit text-white text-xs"></i>
+                    </div>
+                    Perbarui Proyek
                 </h3>
+                <button wire:click="closeModal"
+                    class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors">
+                    <i class="fas fa-times text-gray-400 hover:text-gray-600"></i>
+                </button>
             </div>
 
             {{-- Body --}}
-            <div class="p-5">
+            <div class="p-5 max-h-[70vh] overflow-y-auto">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {{-- Nama Proyek --}}
                     <div class="flex flex-col">
-                        <label class="text-xs font-medium text-gray-700 mb-1">Project Name</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1.5">Nama Proyek</label>
                         <input type="text" wire:model="nama_proyek"
-                            class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs 
-                            @error('nama_proyek') border-red-400 @enderror">
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-xs
+                            @error('nama_proyek') border-red-300 @enderror">
                         @error('nama_proyek')
-                            <span class="text-red-800"></span>
+                            <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 
-                    {{-- Customer --}} 
-                    <div class="flex flex-col"> 
-                        <label class="text-xs font-medium text-gray-700 mb-1">Customer</label> 
-                        <select wire:model="customer_id" 
-                            class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] 
-                            focus:outline-none text-xs @error('customer_id') border-red-400 @enderror"> 
-                        <option value="">-- Select Customer --</option> 
-                        @foreach($customers as $c) 
-                            <option value="{{ $c->id }}">{{ $c->nama }}</option> 
-                        @endforeach
-                        </select> @error('customer_id') 
-                            <span class="text-red-500"></span> 
-                        @enderror 
+                    {{-- Customer --}}
+                    <div class="flex flex-col">
+                        <label class="text-xs font-medium text-gray-700 mb-1.5">Klien</label>
+                        <select wire:model="customer_id"
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-xs
+                            @error('customer_id') border-red-300 @enderror">
+                            <option value="">-- Pilih Klien --</option>
+                            @foreach($customers as $c)
+                                <option value="{{ $c->id }}">{{ $c->nama }}</option>
+                            @endforeach
+                        </select>
+                        @error('customer_id')
+                            <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
+                        @enderror
                     </div>
-
 
                     {{-- Deskripsi --}}
                     <div class="flex flex-col md:col-span-2">
-                        <label class="text-xs font-medium text-gray-700 mb-1">Description</label>
-                        <textarea wire:model="deskripsi" rows="4"
-                            class="border rounded-md px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
-                            @error('deskripsi') border-red-400 @enderror"></textarea>
+                        <label class="text-xs font-medium text-gray-700 mb-1.5">Deskripsi</label>
+                        <textarea wire:model="deskripsi" rows="3"
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-xs resize-none
+                            @error('deskripsi') border-red-300 @enderror"></textarea>
                         @error('deskripsi')
-                            <span class="text-red-500"></span>
+                            <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 
                     {{-- Lokasi --}}
                     <div class="flex flex-col md:col-span-2">
-                        <label class="text-xs font-medium text-gray-700 mb-1">Location</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1.5">Lokasi</label>
                         <input type="text" wire:model="lokasi"
-                            class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
-                            @error('lokasi') border-red-400 @enderror">
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-xs
+                            @error('lokasi') border-red-300 @enderror">
                         @error('lokasi')
-                            <span class="text-red-500"></span>
+                            <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 
                     {{-- Tanggal Mulai --}}
                     <div class="flex flex-col">
-                        <label class="text-xs font-medium text-gray-700 mb-1">Start Date</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1.5">Tanggal Mulai</label>
                         <input type="date" wire:model="tanggal_mulai"
-                            class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
-                            @error('tanggal_mulai') border-red-400 @enderror">
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-xs
+                            @error('tanggal_mulai') border-red-300 @enderror">
                         @error('tanggal_mulai')
-                            <span class="text-red-500"></span>
+                            <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 
                     {{-- Tanggal Selesai --}}
                     <div class="flex flex-col">
-                        <label class="text-xs font-medium text-gray-700 mb-1">End Date</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1.5">Tanggal Selesai</label>
                         <input type="date" wire:model="tanggal_selesai"
-                            class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
-                            @error('tanggal_selesai') border-red-400 @enderror">
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-xs
+                            @error('tanggal_selesai') border-red-300 @enderror">
                         @error('tanggal_selesai')
-                            <span class="text-red-500"></span>
+                            <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 
                     {{-- Anggaran --}}
                     <div class="flex flex-col">
-                        <label class="text-xs font-medium text-gray-700 mb-1">Budget</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1.5">Anggaran</label>
                         <input type="number" wire:model="anggaran"
                             step="1"
                             oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                            class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
-                            @error('anggaran') border-red-400 @enderror">
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-xs
+                            @error('anggaran') border-red-300 @enderror">
                         @error('anggaran')
                             <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 
-
                     {{-- Status --}}
                     <div class="flex flex-col">
-                        <label class="text-xs font-medium text-gray-700 mb-1">Status</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1.5">Status</label>
                         <select wire:model="status"
-                            class="border rounded-3xl px-3 py-2 text-gray-900 focus:ring-1 focus:ring-[#5ca9ff] focus:outline-none text-xs
-                            @error('status') border-red-400 @enderror">
-                            <option value="">-- Select Status --</option>
-                            <option value="belum_dimulai">Upcoming</option>
-                            <option value="sedang_berjalan">Ongoing</option>
-                            <option value="selesai">Done</option>
-                            <option value="ditunda">Pending</option>
+                            class="border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-xs
+                            @error('status') border-red-300 @enderror">
+                            <option value="">-- Pilih Status --</option>
+                            <option value="belum_dimulai">Belum Dimulai</option>
+                            <option value="sedang_berjalan">Sedang Berjalan</option>
+                            <option value="selesai">Selesai</option>
+                            <option value="ditunda">Ditunda</option>
                         </select>
                         @error('status')
-                            <span class="text-red-500"></span>
+                            <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
                         @enderror
                     </div>
-
-                    {{-- Tombol --}}
-                    <div class="mt-5 flex justify-end gap-3 md:col-span-2">
-                        @if($isEdit)
-                            <button wire:click="update"
-                                class="px-4 py-2 rounded-3xl shadow text-white text-xs font-medium transition"
-                                style="background-color: #5ca9ff;">
-                                Update
-                            </button>
-                        @else
-                            <button wire:click="store"
-                                class="px-4 py-2 rounded-3xl shadow text-white text-xs font-medium transition"
-                                style="background-color: #5ca9ff;">
-                                Save
-                            </button>
-                        @endif
-                    </div>
                 </div>
+            </div>
+
+            {{-- Footer --}}
+            <div class="px-5 py-4 border-t border-gray-100 flex justify-end gap-2">
+                <button wire:click="closeModal"
+                    class="px-4 py-2 rounded-lg text-gray-700 text-xs bg-gray-100 font-medium hover:bg-gray-100 transition-colors">
+                    Batal
+                </button>
+                @if($isEdit)
+                    <button wire:click="update"
+                        class="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all">
+                        Perbarui Proyek
+                    </button>
+                @else
+                    <button wire:click="store"
+                        class="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-medium shadow-sm hover:shadow-md hover:scale-105 transition-all">
+                        Simpan Proyek
+                    </button>
+                @endif
             </div>
         </div>
     </div>
@@ -390,5 +422,4 @@
     }
     </style>
     @endif
-    
 </div>

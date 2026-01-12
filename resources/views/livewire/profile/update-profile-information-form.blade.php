@@ -43,7 +43,7 @@ new class extends Component
     $user->save();
 
     // Flash message
-    session()->flash('success', 'Profile updated successfully!');
+    session()->flash('success', 'Profil berhasil diperbarui!');
 
     $this->dispatch('profile-updated', name: $user->name);
 }
@@ -64,7 +64,7 @@ new class extends Component
     $this->reset('current_password', 'password', 'password_confirmation');
 
     // Flash message
-    session()->flash('success', 'Password updated successfully!');
+    session()->flash('success', 'Kata sandi berhasil diperbarui!');
 
     $this->dispatch('password-updated');
 }
@@ -93,14 +93,20 @@ new class extends Component
             </div>
 
             <div>
-                <h3 class="text-base font-semibold text-gray-900">{{ auth()->user()->name }}</h3>
-                <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                <h3 class="text-lg font-semibold text-white">{{ auth()->user()->name }}</h3>
+                <p class="text-xs text-white">{{ auth()->user()->email }}</p>
             </div>
         </div>
     </div>
 
     @if (session()->has('success'))
-        <div class="mb-4 px-4 py-3 rounded-md bg-green-100 text-green-800 text-sm shadow">
+        <div
+            x-data="{ show: true }"
+            x-init="setTimeout(() => show = false, 1000)"
+            x-show="show"
+            x-transition
+            class="mb-2 px-4 py-2 rounded-md bg-green-100 text-green-800 text-xs shadow"
+        >
             {{ session('success') }}
         </div>
     @endif
@@ -110,13 +116,13 @@ new class extends Component
 
         {{-- ========================= LEFT: PROFILE FORM ========================= --}}
         <div class="space-y-6">
-            <h2 class="text-sm font-semibold text-gray-900">Profile Information</h2>
+            <h2 class="text-sm font-semibold text-gray-900">Informasi Profil</h2>
 
             <form wire:submit="updateProfileInformation" class="space-y-4">
 
                 <!-- Full Name -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Full Name</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Nama Lengkap</label>
                     <input wire:model="name" id="name" type="text"
                         class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full bg-gray-50 focus:ring-blue-500"
                         required>
@@ -143,11 +149,11 @@ new class extends Component
                         class="px-4 py-2 bg-[#5ca9ff] text-white text-xs rounded-full
                             opacity-50 cursor-not-allowed transition"
                     >
-                        Save Changes
+                        Simpan Perubahan
                     </button>
 
                     <x-action-message on="profile-updated" class="text-xs text-green-600">
-                        Saved successfully!
+                        Berhasil diperbarui!
                     </x-action-message>
                 </div>
             </form>
@@ -156,13 +162,13 @@ new class extends Component
 
         {{-- ========================= RIGHT: PASSWORD FORM ========================= --}}
         <div class="space-y-6">
-            <h2 class="text-sm font-semibold text-gray-900">Update Password</h2>
+            <h2 class="text-sm font-semibold text-gray-900">Perbarui Kata Sandi</h2>
 
             <form wire:submit="updatePassword" class="space-y-4">
 
                 <!-- Current Password -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Current Password</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Kata Sandi Saat Ini</label>
                     <input wire:model="current_password" type="password"
                         class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full bg-gray-50 focus:ring-blue-500">
                     <x-input-error :messages="$errors->get('current_password')" class="mt-1 text-xs" />
@@ -170,7 +176,7 @@ new class extends Component
 
                 <!-- New Password -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">New Password</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Kata Sandi Baru</label>
                     <input wire:model="password" type="password"
                         class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full bg-gray-50 focus:ring-blue-500">
                     <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs" />
@@ -178,7 +184,7 @@ new class extends Component
 
                 <!-- Confirm Password -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Konfirmasi Kata Sandi</label>
                     <input wire:model="password_confirmation" type="password"
                         class="w-full px-3 py-2 text-xs border border-gray-200 rounded-full bg-gray-50 focus:ring-blue-500">
                     <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-xs" />
@@ -188,15 +194,18 @@ new class extends Component
                 <div class="flex items-center gap-3">
                     <button type="submit"
                         class="px-4 py-2 bg-[#5ca9ff] text-white text-xs rounded-full hover:bg-blue-700">
-                        Update Password
+                        Perbarui Kata Sandi
                     </button>
 
                     <x-action-message on="password-updated" class="text-xs text-green-600">
-                        Password updated successfully!
+                        Kata sandi diperbarui!
                     </x-action-message>
                 </div>
             </form>
         </div>
-
+    {{-- Chatbot --}}
+    <div class="font-sans" wire:ignore>
+        @livewire('chatbot')
+    </div>
     </div>
 </section>

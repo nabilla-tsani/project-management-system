@@ -4,12 +4,14 @@
 
             {{-- ===================== HEADER SECTION ===================== --}}
             <div class="mb-2">
-                <h1 class="text-lg font-semibold text-gray-900">Dashboard</h1>
-                <p class="text-xs text-gray-500 mt-0.5">Monitor your projects and customers in real-time</p>
+                <h1 class="text-lg font-semibold text-gray-900">Dasbor</h1>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    Pantau proyek dan klien secara real-time
+                </p>
             </div>
 
             {{-- ===================== METRIC CARDS ===================== --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-2">
 
                 {{-- PROJECT --}}
                 <a href="{{ route('proyek') }}" class="block">
@@ -18,7 +20,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <div class="text-[10px] font-semibold text-blue-100 uppercase tracking-wide mb-0.5">
-                                        Total Projects
+                                        Total Proyek
                                     </div>
                                     <div class="text-lg font-bold text-white">
                                         {{ $totalProyek }}
@@ -45,7 +47,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <div class="text-[10px] font-semibold text-indigo-100 uppercase tracking-wide mb-0.5">
-                                        Total Customers
+                                        Total Klien
                                     </div>
                                     <div class="text-lg font-bold text-white">
                                         {{ $totalCustomer }}
@@ -70,7 +72,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <div class="text-[10px] font-semibold text-purple-100 uppercase tracking-wide mb-0.5">
-                                        Total Notes
+                                        Total Catatan
                                     </div>
                                     <div class="text-lg font-bold text-white">
                                         {{ $totalNotes }}
@@ -92,23 +94,6 @@
                     </div>
                 </a>
 
-                {{-- SPENT TIME --}}
-                <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-300 overflow-hidden">
-                    <div class="bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600 px-4 py-2">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <div class="text-[10px] font-semibold text-blue-100 uppercase tracking-wide mb-0.5">Time Spent</div>
-                                <div class="text-lg font-bold text-white">{{ number_format($totalProyek * 2.5, 1) }}h</div>
-                            </div>
-                            <div class="bg-white bg-opacity-20 rounded-full p-2">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
             {{-- ===================== BUDGET & DEADLINE SECTION ===================== --}}
@@ -118,8 +103,8 @@
                 <div class="lg:col-span-2 bg-white rounded-lg shadow p-4" wire:ignore>
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h3 class="text-xs font-semibold text-gray-800">Project Budget Overview</h3>
-                            <p class="text-[10px] text-gray-500 mt-0.5">Budget allocation from lowest to highest</p>
+                            <h3 class="text-xs font-semibold text-gray-800">Ringkasan Anggaran Proyek</h3>
+                            <p class="text-[10px] text-gray-500 mt-0.5">Alokasi anggaran dari terendah ke tertinggi</p>
                         </div>
                         <div class="flex items-center space-x-1.5 text-xs text-gray-500">
                             <span class="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
@@ -135,8 +120,8 @@
                 <div class="bg-white rounded-lg shadow p-4">
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h3 class="text-xs font-semibold text-gray-800">Upcoming Deadlines</h3>
-                            <p class="text-[10px] text-gray-500 mt-0.5">Next 3 closest</p>
+                            <h3 class="text-xs font-semibold text-gray-800">Tenggat Waktu Terdekat</h3>
+                            <p class="text-[10px] text-gray-500 mt-0.5">3 proyek terdekat</p>
                         </div>
                     </div>
 
@@ -157,7 +142,7 @@
                                 <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                <p class="text-xs text-gray-500 mt-1.5">No upcoming deadlines</p>
+                                <p class="text-xs text-gray-500 mt-1.5">Tidak ada tenggat waktu terdekat</p>
                             </div>
                         @endforelse
                     </div>
@@ -172,8 +157,10 @@
                 <div class="bg-white rounded-lg shadow p-4" wire:ignore>
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h3 class="text-xs font-semibold text-gray-800">Project Status</h3>
-                            <p class="text-[10px] text-gray-500 mt-0.5">Status distribution</p>
+                            <h3 class="text-xs font-semibold text-gray-800">Status Proyek</h3>
+                            <p class="text-[10px] text-gray-500 mt-0.5">
+                                Distribusi status proyek
+                            </p>
                         </div>
                         <div class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {{ $totalProyek }}
@@ -188,8 +175,10 @@
                 <div class="bg-white rounded-lg shadow p-4" wire:ignore>
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h3 class="text-xs font-semibold text-gray-800">Customer Status</h3>
-                            <p class="text-[10px] text-gray-500 mt-0.5">Active vs Inactive</p>
+                            <h3 class="text-xs font-semibold text-gray-800">Status Klien</h3>
+                            <p class="text-[10px] text-gray-500 mt-0.5">
+                                Aktif vs Tidak Aktif
+                            </p>
                         </div>
                         <div class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {{ $totalCustomer }}
@@ -202,12 +191,15 @@
                     </div>
                 </div>
 
+
                 {{-- ===== HORIZONTAL BAR CUSTOMER ===== --}}
                 <div class="bg-white rounded-lg shadow p-4" wire:ignore>
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h3 class="text-xs font-semibold text-gray-800">Top Customers</h3>
-                            <p class="text-[10px] text-gray-500 mt-0.5">By project count</p>
+                            <h3 class="text-xs font-semibold text-gray-800">Klien Teratas</h3>
+                            <p class="text-[10px] text-gray-500 mt-0.5">
+                                Berdasarkan jumlah proyek
+                            </p>
                         </div>
                         <div class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
                             Top 5
@@ -218,19 +210,22 @@
                     </div>
                 </div>
 
+
                 {{-- ===== PROYEK TERBARU ===== --}}
                 <div class="bg-white rounded-lg shadow p-4" wire:ignore>
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h3 class="text-xs font-semibold text-gray-800">Recent Projects</h3>
-                            <p class="text-[10px] text-gray-500 mt-0.5">Latest updates</p>
+                            <h3 class="text-xs font-semibold text-gray-800">Proyek Terbaru</h3>
+                            <p class="text-[10px] text-gray-500 mt-0.5">
+                                Pembaruan terbaru
+                            </p>
                         </div>
                         <a href="{{ route('proyek') }}"
                         class="text-[10px] text-blue-600 hover:text-indigo-700 font-semibold hover:underline transition-colors">
-                            View All →
+                            Lihat Semua →
                         </a>
-
                     </div>
+
 
                     <div class="space-y-2">
                         @forelse ($latestProjects->take(3) as $proyek)
@@ -253,7 +248,7 @@
                                 <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                                 </svg>
-                                <p class="text-xs text-gray-500 mt-1.5">No projects yet</p>
+                                <p class="text-xs text-gray-500 mt-1.5">Tidak Proyek</p>
                             </div>
                         @endforelse
                     </div>
@@ -262,6 +257,11 @@
             </div>
 
         </div>
+    </div>
+
+    {{-- Chatbot --}}
+    <div class="font-sans" wire:ignore>
+        @livewire('chatbot', [], key('chatbot-'.$proyek->id))
     </div>
 </div>
 
@@ -291,7 +291,7 @@ function renderStatusChart() {
     window.statusChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Upcoming', 'Ongoing', 'Done', 'Pending'],
+            labels: ['Belum Dimulai', 'Sedang Berjalan', 'Selesai', 'Ditunda'],
             datasets: [{
                 data: [
                     @json($statusChart['belum_dimulai']),
@@ -399,7 +399,7 @@ function renderBudgetChart() {
                     borderWidth: 1,
                     cornerRadius: 6,
                     callbacks: {
-                        label: ctx => 'Budget: Rp ' + Number(ctx.raw).toLocaleString('id-ID')
+                        label: ctx => 'Anggaran: Rp ' + Number(ctx.raw).toLocaleString('id-ID')
                     }
                 }
             },
@@ -420,7 +420,7 @@ function renderBudgetChart() {
                     ticks: {
                         font: { size: 9 },
                         color: '#6B7280',
-                        callback: value => 'Rp ' + (value / 1000000).toFixed(0) + 'M'
+                        callback: value => 'Rp ' + (value / 1000000).toFixed(0) + 'Juta'
                     },
                     grid: { 
                         color: 'rgba(0, 0, 0, 0.05)',
@@ -445,7 +445,7 @@ function renderCustomerStatusChart() {
     window.customerStatusChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Active', 'Inactive'],
+            labels: ['Aktif', 'Tidak Aktif'],
             datasets: [{
                 data: @json($customerStatusValues),
                 backgroundColor: [
@@ -538,7 +538,7 @@ function renderCustomerProjectChart() {
                     borderWidth: 1,
                     cornerRadius: 6,
                     callbacks: {
-                        label: ctx => 'Projects: ' + ctx.parsed.x
+                        label: ctx => 'Jumlah Proyek: ' + ctx.parsed.x
                     }
                 }
             },
@@ -569,3 +569,4 @@ function renderCustomerProjectChart() {
     });
 }
 </script>
+

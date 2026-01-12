@@ -2,59 +2,65 @@
 
     {{-- ===================== TOP METRICS ===================== --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        
-       <div class="bg-white border border-gray-300 rounded-2xl p-3 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-full bg-[#5ca9ff]/10 flex items-center justify-center">
-                <i class="fa-solid fa-layer-group text-[#5ca9ff] text-lg"></i>
+
+        {{-- Total Fitur --}}
+        <div class="bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600 border border-gray-300 rounded-2xl p-3 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                <i class="fa-solid fa-layer-group text-white text-lg"></i>
             </div>
 
             <div>
-                <p class="text-xs text-gray-600">Total Features</p>
-                <p class="text-xs font-semibold text-gray-900 mt-1">{{ $totalFitur }}</p>
+                <p class="text-xs text-white">Total Fitur</p>
+                <p class="text-xs font-semibold text-white mt-1">
+                    {{ $totalFitur }}
+                </p>
             </div>
-
         </div>
 
-        {{-- Total Notes --}}
-        <div class="bg-white border border-gray-300 rounded-2xl p-3 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-full bg-[#5ca9ff]/10 flex items-center justify-center">
-                <i class="fa-solid fa-list-check text-[#5ca9ff] text-lg"></i>
+        {{-- Total Catatan --}}
+        <div class="bg-gradient-to-br from-purple-500 to-pink-600 border border-gray-300 rounded-2xl p-3 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                <i class="fa-solid fa-list-check text-white text-lg"></i>
             </div>
 
             <div>
-                <p class="text-xs text-gray-600">Total Notes</p>
-                <p class="text-xs font-semibold text-gray-900 mt-1">{{ $totalCatatan }}</p>
+                <p class="text-xs text-white">Total Catatan</p>
+                <p class="text-xs font-semibold text-white mt-1">
+                    {{ $totalCatatan }}
+                </p>
             </div>
-
         </div>
 
-        {{-- Total Members --}}
-        <div class="bg-white border border-gray-300 rounded-2xl p-3 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-full bg-[#5ca9ff]/10 flex items-center justify-center">
-                <i class="fa-solid fa-users text-[#5ca9ff] text-lg"></i>
+        {{-- Anggota Proyek --}}
+        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 border border-gray-300 rounded-2xl p-3 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                <i class="fa-solid fa-users text-white text-lg"></i>
             </div>
 
             <div>
-                <p class="text-xs text-gray-600">Project Member</p>
-                <p class="text-xs font-semibold text-gray-900 mt-1">{{ $totalProgrammer + $totalTester + $totalManajer }}</p>
+                <p class="text-xs text-white">Anggota Proyek</p>
+                <p class="text-xs font-semibold text-white mt-1">
+                    {{ $totalProgrammer + $totalTester + $totalManajer }}
+                </p>
             </div>
-
         </div>
 
-        {{-- Total Files --}}
-        <div class="bg-white border border-gray-300 rounded-2xl p-3 flex items-center gap-4">
-            <div class="w-10 h-10 rounded-full bg-[#5ca9ff]/10 flex items-center justify-center">
-                <i class="fa-solid fa-folder text-[#5ca9ff] text-lg"></i>
+        {{-- Total Berkas --}}
+        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 border border-gray-300 rounded-2xl p-3 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                <i class="fa-solid fa-folder text-white text-lg"></i>
             </div>
 
             <div>
-                <p class="text-xs text-gray-600">Total Files</p>
-                <p class="text-xs font-semibold text-gray-900 mt-1">{{ $totalFile }}</p>
+                <p class="text-xs text-white">Total Berkas</p>
+                <p class="text-xs font-semibold text-white mt-1">
+                    {{ $totalFile }}
+                </p>
             </div>
-
         </div>
 
     </div>
+
 
     {{-- ===================== MAIN WRAPPER ===================== --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -63,12 +69,12 @@
         <div class="space-y-3">
 
             {{-- PROJECT HEADER --}}
-            <div class="border border-gray-300 bg-white rounded-2xl py-3 px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+            <div class="border border-gray-300 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl py-3 px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
                 <div>
-                    <p class="text-xs text-gray-400">Customer</p>
+                    <p class="text-xs text-gray-400">Klien</p>
                     <p class="text-xs text-gray-900">{{ $proyek->customer->nama ?? '-' }}</p>
 
-                    <p class="text-xs text-gray-400 mt-3">Location</p>
+                    <p class="text-xs text-gray-400 mt-3">Lokasi Proyek</p>
                     <p class="text-xs text-gray-700">{{ $proyek->lokasi ?? '-' }}</p>
                 </div>
 
@@ -79,9 +85,10 @@
                         <p class="text-xs text-gray-400">Status</p>
                         @php
                             $statusMap = [
-                                'belum_dimulai' => 'Upcoming',
-                                'sedang_berjalan' => 'Ongoing',
-                                'selesai' => 'Done',
+                                'belum_dimulai' => 'Belum Dimulai',
+                                'sedang_berjalan' => 'Sedang Berjalan',
+                                'selesai' => 'Selesai',
+                                'ditunda' => 'Ditunda',
                             ];
                         @endphp
 
@@ -90,62 +97,62 @@
                             @elseif($proyek->status === 'sedang_berjalan') bg-yellow-50 text-yellow-700
                             @elseif($proyek->status === 'selesai') bg-green-50 text-green-700
                             @else bg-gray-100 text-gray-700 @endif">
-                            {{ $statusMap[$proyek->status] ?? 'Unknown' }}
+                            {{ $statusMap[$proyek->status] ?? 'Tidak diketahui' }}
                         </span>
                     </div>
 
                     {{-- DEADLINE --}}
                     <div class="text-right">
-                        <p class="text-xs text-gray-400">Deadline</p>
+                        <p class="text-xs text-gray-400">Tenggat</p>
 
                         @if($sisaHari < 0)
-                            <p class="text-sm font-bold text-red-600">Expired {{ abs($sisaHari) }}d</p>
+                            <p class="text-sm font-bold text-red-600">Terlambat {{ abs($sisaHari) }} hari</p>
                         @elseif($sisaHari > 30)
-                            <p class="text-sm font-bold text-blue-600">{{ $sisaBulan }} mo · {{ $sisaHariDetail }} d</p>
+                            <p class="text-sm font-bold text-blue-600">{{ $sisaBulan }} bulan · {{ $sisaHariDetail }} hari</p>
                         @else
-                            <p class="text-sm font-bold text-red-600">{{ $sisaHari }} days left</p>
+                            <p class="text-sm font-bold text-red-600">{{ $sisaHari }} hari tersisa</p>
                         @endif
                     </div>
                 </div>
             </div>
 
             {{-- FEATURE PROGRESS CARD --}}
-            <div class="border border-gray-300 bg-white rounded-2xl py-3 px-6">
+            <div class="border border-gray-300 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl py-3 px-6">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-semibold text-gray-700">Feature Progress</h3>
+                    <h3 class="text-xs font-semibold text-gray-700">Progres Fitur</h3>
                 </div>
 
                 {{-- Small stat boxes --}}
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-2">
-                    <div class="bg-gray-50 px-4 py-2 rounded-xl">
-                        <p class="text-[10px] text-gray-500">In Progress</p>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-1 mt-2">
+                    <div class="bg-white px-4 py-2 rounded-xl">
+                        <p class="text-[10px] text-gray-500">Berjalan</p>
                         <p class="text-xs font-semibold text-blue-600">{{ $fiturBerjalan }}</p>
                     </div>
 
-                    <div class="bg-gray-50 px-4 py-2 rounded-xl">
-                        <p class="text-[10px] text-gray-500">Pending</p>
+                    <div class="bg-white px-4 py-2 rounded-xl">
+                        <p class="text-[10px] text-gray-500">Ditunda</p>
                         <p class="text-sm font-semibold text-blue-500">{{ $fiturPending }}</p>
                     </div>
 
-                    <div class="bg-gray-50 px-4 py-2 rounded-xl">
-                        <p class="text-[10px] text-gray-500">Done</p>
+                    <div class="bg-white px-4 py-2 rounded-xl">
+                        <p class="text-[10px] text-gray-500">Selesai</p>
                         <p class="text-sm font-semibold text-blue-700">{{ $fiturSelesai }}</p>
                     </div>
 
-                    <div class="bg-gray-50 px-4 py-2 rounded-xl">
-                        <p class="text-[10px] text-gray-500">Upcoming</p>
+                    <div class="bg-white px-4 py-2 rounded-xl">
+                        <p class="text-[10px] text-gray-500">Belum Dimulai</p>
                         <p class="text-sm font-semibold text-blue-700">{{ $fiturUpcoming }}</p>
                     </div>
 
-                    <div class="bg-gray-50 px-4 py-2 rounded-xl">
-                        <p class="text-[10px] text-gray-500">Overdue</p>
+                    <div class="bg-white px-4 py-2 rounded-xl">
+                        <p class="text-[10px] text-gray-500">Terlambat</p>
                         <p class="text-sm font-semibold text-red-500">{{ $fiturOverdue }}</p>
                     </div>
                 </div>
 
 
                 {{-- Progress & latest features --}}
-                <h3 class="text-xs text-gray-400 pt-4 italic">Latest Features</h3>
+                <h3 class="text-xs text-gray-500 pt-4">Fitur Terbaru</h3>
                 <div class="flex items-center gap-8">
 
                     <div class="flex-1">
@@ -162,18 +169,35 @@
                                     </div>
 
                                     <!-- Status Badge (tanpa card) -->
-                                    <span class="text-[10px]
-                                        @if($f->status_fitur === 'Done') text-green-600
-                                        @elseif($f->status_fitur === 'In Progress') text-blue-600
-                                        @elseif($f->status_fitur === 'Pending') text-yellow-600
-                                        @elseif($f->status_fitur === 'Upcoming') text-purple-600
-                                        @else text-gray-600 @endif">
-                                        {{ $f->status_fitur }}
+                                    @php
+                                        $status = strtolower(trim($f->status_fitur));
+                                    @endphp
+
+                                    <span class="text-[10px] font-semibold
+                                        @if($status === 'belum_dimulai') text-gray-500
+                                        @elseif($status === 'sedang_berjalan') text-blue-600
+                                        @elseif($status === 'selesai') text-green-600
+                                        @elseif($status === 'ditunda') text-yellow-600
+                                        @else text-gray-400
+                                        @endif
+                                    ">
+                                        @if($status === 'belum_dimulai')
+                                            Belum Dimulai
+                                        @elseif($status === 'sedang_berjalan')
+                                            Sedang Berjalan
+                                        @elseif($status === 'selesai')
+                                            Selesai
+                                        @elseif($status === 'ditunda')
+                                            Ditunda
+                                        @else
+                                            Tidak Diketahui
+                                        @endif
                                     </span>
+
                                 </div>
 
                             @empty
-                                <p class="text-xs text-gray-500">No features yet.</p>
+                                <p class="text-xs text-gray-400 italic">Belum ada fitur.</p>
                             @endforelse
 
                         </div>
@@ -203,7 +227,7 @@
                         <div class="absolute inset-0 flex items-center justify-center">
                             <div class="text-center">
                                 <p class="text-lg font-semibold text-gray-800">{{ $percent }}%</p>
-                                <p class="text-xs text-gray-400">Complete</p>
+                                <p class="text-xs text-gray-400">Selesai</p>
                             </div>
                         </div>
                     </div>
@@ -218,9 +242,9 @@
            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
                 {{-- Members --}}
-                <div class="border border-gray-300 bg-white rounded-2xl px-6 py-3 h-full">
+                <div class="border border-gray-300 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl px-6 py-3 h-full">
                     <div class="flex items-center justify-between">
-                        <h4 class="text-xs font-semibold text-gray-700">Members</h4>
+                        <h4 class="text-xs font-semibold text-gray-700">Anggota Proyek</h4>
                     </div>
 
                     <div class="flex items-center justify-center mt-3">
@@ -229,9 +253,9 @@
                 </div>
 
                 {{-- Files --}}
-                <div class="border border-gray-300 bg-white rounded-2xl px-6 py-3 h-full">
+                <div class="border border-gray-300 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl px-6 py-3 h-full">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-semibold text-gray-700">Recent Files</h4>
+                        <h4 class="text-xs font-semibold text-gray-700">Berkas Terbaru</h4>
                     </div>
 
                     <div>
@@ -245,7 +269,7 @@
                             </div>
                             <hr class="border-gray-200">
                         @empty
-                            <p class="text-xs text-gray-500 mt-2">There are no files.</p>
+                            <p class="text-xs text-gray-400 mt-2 italic">Belum ada Berkas yang diunggah.</p>
                         @endforelse
                     </div>
                 </div>
@@ -255,17 +279,17 @@
             <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6 items-start">
 
                 {{-- Financial Summary --}}
-                <div class="border border-gray-300 bg-white rounded-2xl px-6 pb-6">
+                <div class="border border-gray-300 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl px-6 pb-6">
                     <div class="py-3 h-44">
-                        <h5 class="text-xs font-semibold text-gray-700 mb-4">Financial Summary</h5>
+                        <h5 class="text-xs font-semibold text-gray-700 mb-4">Ringkasan Keuangan</h5>
                         <canvas id="financialChart" class="w-full h-44"></canvas>
                     </div>
                 </div>
 
                 {{-- Invoice vs Receipt --}}
-                <div class="border border-gray-300 bg-white rounded-2xl px-6 pb-6">
+                <div class="border border-gray-300 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl px-6 pb-6">
                     <div class="py-3 h-44">
-                        <h5 class="text-xs font-semibold text-gray-700 mb-4">Invoices vs Receipts</h5>
+                        <h5 class="text-xs font-semibold text-gray-700 mb-4">Tagihan vs Kwitansi</h5>
                         <canvas id="invoiceChart" class="w-full h-44"></canvas>
                     </div>
                 </div>
@@ -274,9 +298,9 @@
 
 
             {{-- Notes --}}
-                <div class="border border-gray-300 bg-white rounded-2xl px-6 pt-3 pb-2">
+                <div class="border border-gray-300 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl px-6 pt-3 pb-2">
                     <div class="flex justify-between items-center">
-                        <h4 class="text-xs font-semibold text-gray-700">Latest Notes</h4>
+                        <h4 class="text-xs font-semibold text-gray-700">Catatan Terbaru</h4>
                     </div>
 
                     <div class="mt-1">
@@ -291,7 +315,7 @@
                                     @php
                                         $isTask = $c->jenis === 'pekerjaan';
                                         $baseLabel = $isTask ? 'Task' : 'Bug';
-                                        $colorBg = $isTask ? 'bg-blue-50' : 'bg-purple-50';
+                                        $colorBg = $isTask ? 'bg-white' : 'bg-white';
                                         $colorText = $isTask ? 'text-blue-600' : 'text-purple-700';
                                     @endphp
 
@@ -308,7 +332,7 @@
                                 </div>
                             </div>
                         @empty
-                            <p class="text-xs text-gray-500">No notes yet.</p>
+                            <p class="text-xs text-gray-400 italic mt-2">Belum ada Caatan.</p>
                         @endforelse
                     </div>
                 </div>
@@ -354,15 +378,17 @@
                 window.financialChartInstance = new Chart(fctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Total Invoice', 'Payment Received', 'Outstanding'],
+                        labels: ['Total Tagihan', 'Pembayaran Diterima', 'Sisa Tagihan'],
                         datasets: [{
-                            label: 'Amount (Rp)',
+                            label: 'Jumlah (Rp)',
                             data: [
                                 {{ $totalInvoiceAmount ?? 0 }},
                                 {{ $totalPaymentReceived ?? 0 }},
                                 {{ $outstandingBalance ?? 0 }}
-                            ]
+                            ],
+                            backgroundColor: '#2fd5ffff', // satu warna untuk semua bar
                         }]
+
                     },
                     options: {
                         responsive: true,
@@ -403,31 +429,37 @@
 
             // Invoice Doughnut Chart
             const ictx = document.getElementById('invoiceChart');
-            if (ictx) {
-                window.invoiceChartInstance = new Chart(ictx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Invoices', 'Receipts'],
-                        datasets: [{
-                            data: [
-                                {{ $numberOfInvoices ?? 0 }},
-                                {{ $numberOfReceipts ?? 0 }}
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: { font: { size: 10 } } // <- legend 10px
+                if (ictx) {
+                    window.invoiceChartInstance = new Chart(ictx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Tagihan', 'Kwitansi'],
+                            datasets: [{
+                                data: [
+                                    {{ $numberOfInvoices ?? 0 }},
+                                    {{ $numberOfReceipts ?? 0 }}
+                                ],
+                                backgroundColor: [
+                                    '#6366F1', // indigo-500 → Tagihan
+                                    '#DB2777'  // purple-500 → Kwitansi
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { font: { size: 10 } }
+                                }
                             }
-                        }
-                    },
-                    plugins: [centerTextPlugin]
-                });
-            }
+                        },
+                        plugins: [centerTextPlugin]
+                    });
+                }
+
         }
 
         document.addEventListener("DOMContentLoaded", renderCharts);
@@ -448,7 +480,7 @@
         new Chart(ctxMembers, {
             type: 'pie',
             data: {
-                labels: ['Programmers', 'Testers', 'Managers'],
+                labels: ['Programmer', 'Penguji', 'Manajer'],
                 datasets: [{
                     data: [
                         {{ $totalProgrammer }},
@@ -456,14 +488,14 @@
                         {{ $totalManajer }}
                     ],
                     backgroundColor: [
-                        '#b2d6ffff',   // programmer
-                        '#ffae74ff',   // tester
-                        '#d1b6ffff'    // manager
+                        '#3B82F6',   // programmer
+                        '#7C3AED',   // tester
+                        '#DB2777'    // manager
                     ],
                     borderColor: [
-                        '#5ca9ff',
-                        '#F97316',
-                        '#9c62ff'
+                        '#3B82F6',
+                        '#7C3AED',
+                        '#DB2777'
                     ],
                     borderWidth: 1
                 }]

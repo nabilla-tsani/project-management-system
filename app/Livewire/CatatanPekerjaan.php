@@ -143,8 +143,8 @@ class CatatanPekerjaan extends Component
         session()->flash(
             'message',
             $isUpdate
-                ? 'Notes updated successfully.'
-                : 'Notes added successfully.'
+                ? 'Catatan berhasil diperbarui.'
+                : 'Catatan berhasil ditambahkan.'
         );
     }
 
@@ -176,7 +176,7 @@ class CatatanPekerjaan extends Component
         $this->loadCatatan();
 
         // tampilkan alert sukses delete
-        session()->flash('message', 'Notes deleted successfully.');
+        session()->flash('message', 'Catatan berhasil dihapus.');
     }
 
     public function updatedFilterJenis($value)
@@ -218,7 +218,7 @@ class CatatanPekerjaan extends Component
         $this->feedbackText = '';
 
         $this->loadCatatan();
-        session()->flash('message', 'Feedback added successfully.');
+        session()->flash('message', 'Umpan balik berhasil ditambahkan.');
     }
 
     public function deleteFeedback($id)
@@ -229,7 +229,7 @@ class CatatanPekerjaan extends Component
 
         $this->loadCatatan();
 
-        session()->flash('message', 'Feedback deleted successfully.');
+        session()->flash('message', 'Umpan balik berhasil dihapus.');
     }
 
 

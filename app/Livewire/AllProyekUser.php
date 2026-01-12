@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\ProyekUser;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class AllProyekUser extends Component
 {
@@ -29,8 +30,10 @@ class AllProyekUser extends Component
     public function mount($proyekId)
     {
         $this->proyekId = $proyekId;
-        $this->users = User::all(); // untuk dropdown
-        $this->loadProyekUsers();
+        $this->users = User::whereNotNull('email_verified_at')
+            ->orderBy('name')
+            ->get();
+                $this->loadProyekUsers();
     }
 
     public function loadProyekUsers()
@@ -44,6 +47,19 @@ class AllProyekUser extends Component
         ])->where('proyek_id', $this->proyekId);
 
     }
+
+    public function isManajerProyek(): bool
+    {
+        if (!Auth::check()) {
+            return false;
+        }
+
+        return ProyekUser::where('proyek_id', $this->proyekId)
+            ->where('user_id', Auth::id())
+            ->whereRaw('LOWER(sebagai) = ?', ['manajer proyek'])
+            ->exists();
+    }
+
 
     public function openModal($id = null)
     {
@@ -75,7 +91,7 @@ class AllProyekUser extends Component
         // Flash message
         session()->flash(
             'message',
-            $this->editId ? 'Member updated successfully.' : 'Member added successfully.'
+            $this->editId ? 'Anggota berhasil diperbarui.' : 'Anggota berhasil ditambahkan.'
         );
 
         $this->showModal = false;
@@ -123,7 +139,7 @@ class AllProyekUser extends Component
 
         $this->loadProyekUsers();
 
-        session()->flash('message', 'Member deleted successfully.');
+        session()->flash('message', 'Anggota berhasil dihapus.');
     }
 
     public function resetForm()

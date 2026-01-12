@@ -1,47 +1,44 @@
 <?php
 
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rules;
+use Illuminate\Auth\Events\PasswordReset;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
+use Illuminate\Support\Str;
 
 new #[Layout('layouts.guest')] class extends Component
 {
-    #[Locked]
     public string $token = '';
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
 
-    /**
-     * Mount the component.
-     */
     public function mount(string $token): void
     {
         $this->token = $token;
-
-        $this->email = request()->string('email');
+        $this->email = request()->query('email', '');
     }
 
     /**
-     * Reset the password for the given user.
+     * Hilangkan error saat field diubah
+     */
+    public function updated($property): void
+    {
+        $this->resetErrorBag($property);
+    }
+
+    /**
+     * Proses reset password
      */
     public function resetPassword(): void
     {
         $this->validate([
             'token' => ['required'],
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
             $this->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) {
@@ -54,52 +51,89 @@ new #[Layout('layouts.guest')] class extends Component
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        if ($status != Password::PASSWORD_RESET) {
+        if ($status !== Password::PASSWORD_RESET) {
             $this->addError('email', __($status));
-
             return;
         }
 
-        Session::flash('status', __($status));
+        session()->flash('status', 'Password berhasil direset. Silakan login.');
 
-        $this->redirectRoute('login', navigate: true);
+        $this->redirectRoute('login');
     }
-}; ?>
+};
+?>
 
-<div>
-    <form wire:submit="resetPassword">
-        <!-- Email Address -->
+<div class="card-container w-full max-w-md mx-auto">
+    <div class="text-center mb-2">
+        <h2 class="text-lg text-gray-900">Atur Ulang Kata Sandi</h2>
+        <p class="mt-2 text-sm text-gray-600 pb-4">
+            Silakan masukkan kata sandi baru Anda di bawah ini
+        </p>
+    </div>
+
+    {{-- Status Session --}}
+    @if (session('status'))
+        <div
+            x-data="{ show: true }"
+            x-init="setTimeout(() => show = false, 2000)"
+            x-show="show"
+            x-transition.opacity
+            class="mb-4 text-sm text-green-600 text-center"
+        >
+            {{ session('status') }}
+        </div>
+    @endif
+
+    <form wire:submit.prevent="resetPassword" class="space-y-4">
+
+        {{-- Email --}}
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <label class="text-sm text-gray-700">Email</label>
+            <input
+                type="email"
+                wire:model.lazy="email"
+                class="column-input bg-gray-100"
+                readonly
+            >
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        {{-- Kata Sandi Baru --}}
+        <div>
+            <label class="text-sm text-gray-700">Kata Sandi Baru</label>
+            <input
+                type="password"
+                wire:model.lazy="password"
+                class="column-input"
+                placeholder="Minimal 8 karakter"
+            >
+
+            @error('password')
+                <div class="text-red-500 text-sm mt-1">
+                    {{ $message }}
+                </div>
+            @enderror
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
-                          type="password"
-                          name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        {{-- Konfirmasi Kata Sandi --}}
+        <div>
+            <label class="text-sm text-gray-700">Konfirmasi Kata Sandi</label>
+            <input
+                type="password"
+                wire:model.lazy="password_confirmation"
+                class="column-input"
+                placeholder="Ulangi kata sandi"
+            >
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
+        <button type="submit" class="btn-submit w-full text-sm">
+            Atur Ulang Kata Sandi
+        </button>
+
+        <div class="text-center text-sm text-gray-600">
+            Sudah ingat kata sandi?
+            <a href="{{ route('login') }}" class="text-purple hover:underline">
+                Masuk
+            </a>
         </div>
     </form>
 </div>

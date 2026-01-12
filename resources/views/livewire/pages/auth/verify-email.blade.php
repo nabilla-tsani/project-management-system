@@ -24,35 +24,57 @@ new #[Layout('layouts.guest')] class extends Component
         Session::flash('status', 'verification-link-sent');
     }
 
-    /**
-     * Log the current user out of the application.
-     */
-    public function logout(Logout $logout): void
-    {
-        $logout();
+    public function goToLogin(): void
+{
+    Auth::logout();
+    session()->invalidate();
+    session()->regenerateToken();
 
-        $this->redirect('/', navigate: true);
-    }
+    $this->redirect(route('login'), navigate: true);
+}
+
 }; ?>
 
-<div>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
+<div class="card-container w-full max-w-md mx-auto">
+    <div class="text-center mb-4">
+        <h2 class="text-lg text-gray-900">Verifikasi Email</h2>
+        <p class="mt-2 text-sm text-gray-600">
+            Terima kasih telah mendaftar! Silakan verifikasi alamat email Anda
+            dengan mengklik tautan yang baru saja kami kirimkan ke email Anda.
+        </p>
     </div>
 
+    {{-- Status --}}
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+        <div
+            x-data="{ show: true }"
+            x-init="setTimeout(() => show = false, 3000)"
+            x-show="show"
+            x-transition.opacity
+            class="mb-4 text-sm text-green-600 text-center"
+        >
+            Tautan verifikasi baru telah dikirim ke alamat email Anda.
         </div>
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
-        <x-primary-button wire:click="sendVerification">
-            {{ __('Resend Verification Email') }}
-        </x-primary-button>
+    <div class="space-y-4">
 
-        <button wire:click="logout" type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            {{ __('Log Out') }}
+        {{-- Kirim Ulang Verifikasi --}}
+        <button
+            wire:click="sendVerification"
+            class="btn-submit w-full text-sm"
+        >
+            Kirim Ulang Email Verifikasi
         </button>
+
+        {{-- Keluar --}}
+        <button
+    wire:click="goToLogin"
+    class="block w-full text-sm text-center text-gray-600 hover:text-gray-900 underline"
+>
+    Halaman Login
+</button>
+
+
     </div>
 </div>

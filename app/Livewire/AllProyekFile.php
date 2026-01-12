@@ -154,7 +154,7 @@ class AllProyekFile extends Component
         // Feedback UI
         session()->flash(
             'message',
-            $this->fileId ? 'File updated successfully.' : 'File uploaded successfully.'
+            $this->fileId ? 'Berkas berhasil diperbarui.' : 'Berkas berhasil diunggah.'
         );
 
         $this->modalOpen = false;
@@ -231,7 +231,7 @@ class AllProyekFile extends Component
         }
         $this->confirmDelete = false;
         $file->delete();
-        session()->flash('message', 'File deleted successfully.');
+        session()->flash('message', 'Berkas berhasil dihapus.');
         $this->loadFiles();
     }
 

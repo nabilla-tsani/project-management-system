@@ -79,7 +79,7 @@ class AllProyekKwitansi extends Component
         }
 
         $this->loadData();
-        session()->flash('success', 'Receipt successfully deleted.');
+        session()->flash('success', 'Kwitansi berhasil dihapus.');
 
         $this->confirmDelete = false;
         $this->deleteId = null;
@@ -120,7 +120,7 @@ class AllProyekKwitansi extends Component
         $kwitansi->keterangan = $this->edit_keterangan;
         $kwitansi->save();
 
-        session()->flash('success', 'Receipt successfully updated.');
+        session()->flash('success', 'Kwitansi berhasil diperbarui.');
 
         $this->showEditModal = false;
         $this->editingKwitansiId = null;

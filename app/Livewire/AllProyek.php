@@ -61,7 +61,7 @@ class AllProyek extends Component
     {
         $user = Auth::user();
 
-        $query = $user->proyeks()->with('customer')
+        $query = $user->proyeks()->with(['customer', 'proyekUsers']) 
             ->when($this->search, fn($q) => 
                 $q->whereRaw('LOWER(nama_proyek) LIKE ?', ['%' . strtolower(trim($this->search)) . '%'])
             )
@@ -128,10 +128,9 @@ class AllProyek extends Component
             ]);
 
             $this->closeModal();
-            $this->alert = [
-                'type' => 'success',
-                'message' => 'Project added successfully!',
-            ];
+            session()->flash('message', 'Proyek berhasil ditambahkan');
+
+
 
         } catch (\Exception $e) {
             $this->alert = [
@@ -178,10 +177,8 @@ class AllProyek extends Component
             ]);
 
             $this->closeModal();
-            $this->alert = [
-                'type' => 'success',
-                'message' => 'Project update successfully!',
-            ];
+            session()->flash('message', 'Proyek berhasil diperbarui');
+
         } catch (\Exception $e) {
             $this->alert = [
                 'type' => 'error',
@@ -192,31 +189,28 @@ class AllProyek extends Component
     }
 
 
-public function deleteProyek()
-{
-    try {
-        $proyek = Proyek::findOrFail($this->deleteId);
-        $proyek->delete();
+    public function deleteProyek()
+    {
+        try {
+            $proyek = Proyek::findOrFail($this->deleteId);
+            $proyek->delete();
 
-        $this->confirmDelete = false;
-        $this->deleteId = null;
+            $this->confirmDelete = false;
+            $this->deleteId = null;
 
-        $this->alert = [
-            'type' => 'success',
-            'message' => 'Project deleted!',
-        ];
-        $this->dispatch('reset-alert');
+            session()->flash('message', 'Proyek berhasil dihapus');
 
-    } catch (\Illuminate\Database\QueryException $e) {
-        $this->alert = [
-            'type' => 'error',
-            'message' => $e->getCode() === '23503'
-                ? 'Cannot delete this project — it’s being used.'
-                : 'Failed to delete: ' . $e->getMessage(),
-        ];
-        $this->dispatch('reset-alert');
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->alert = [
+                'type' => 'error',
+                'message' => $e->getCode() === '23503'
+                    ? 'Cannot delete this project — it’s being used.'
+                    : 'Failed to delete: ' . $e->getMessage(),
+            ];
+            $this->dispatch('reset-alert');
+        }
     }
-}
 
 
     public function clearAlert()

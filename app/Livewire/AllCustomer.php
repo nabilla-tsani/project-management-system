@@ -16,6 +16,11 @@ class AllCustomer extends Component
     public $search = '';
     public $statusFilter = '';
     public $showModal = false;
+    public $confirmDeleteModal = false;
+    public $showProjectModal = false;
+    public $projectList = [];
+    public $projectOwnerName = '';
+    public $hasProject = false;
 
     protected $rules = [
         'nama' => 'required|string|max:255',
@@ -31,8 +36,12 @@ class AllCustomer extends Component
         $query = Customer::with('proyek');
 
         if ($this->search) {
-            $query->where('nama', 'like', '%'.$this->search.'%');
+            $query->whereRaw(
+                'LOWER(nama) LIKE ?',
+                ['%' . strtolower($this->search) . '%']
+            );
         }
+
 
         if ($this->statusFilter) {
             $query->where('status', $this->statusFilter);
@@ -73,7 +82,7 @@ class AllCustomer extends Component
             'status' => $this->status,
         ]);
 
-        session()->flash('message', 'Customer berhasil ditambahkan.');
+        session()->flash('message', 'Customer berhasil ditambahkan');
         $this->resetForm();
     }
 
@@ -104,20 +113,65 @@ class AllCustomer extends Component
             'status' => $this->status,
         ]);
 
-        session()->flash('message', 'Customer berhasil diperbarui.');
+        session()->flash('message', 'Customer berhasil diperbarui');
         $this->resetForm();
     }
 
-    public function closeModal()
+    public function showProjects($customerId)
 {
-    $this->showModal = false;
-    $this->resetForm();
+    $customer = Customer::with('proyek')->findOrFail($customerId);
+
+    $this->projectList = $customer->proyek;
+    $this->projectOwnerName = $customer->nama;
+
+    $this->showProjectModal = true;
 }
 
 
-    public function delete($id)
+    public function closeModal()
     {
-        Customer::findOrFail($id)->delete();
-        session()->flash('message', 'Customer berhasil dihapus.');
+        $this->showModal = false;
+        $this->resetForm();
     }
+
+    public function confirmDelete($id)
+    {
+        $customer = Customer::with('proyek')->findOrFail($id);
+
+        $this->customer_id = $customer->id;
+        $this->nama = $customer->nama;
+
+        // INI YANG PENTING
+        $this->hasProject = $customer->proyek->isNotEmpty();
+
+        $this->confirmDeleteModal = true;
+    }
+
+    public function deleteCustomer()
+    {
+        $customer = Customer::with('proyek')->findOrFail($this->customer_id);
+
+        if ($customer->proyek->isNotEmpty()) {
+            session()->flash(
+                'error',
+                'Klien masih memiliki proyek dan tidak dapat dihapus.'
+            );
+            return;
+        }
+
+        $customer->delete();
+
+        session()->flash('message', 'Customer berhasil dihapus');
+
+        $this->confirmDeleteModal = false;
+        $this->resetForm();
+    }
+
+
+    public function cancelDelete()
+    {
+        $this->confirmDeleteModal = false;
+        $this->customer_id = null;
+    }
+
 }

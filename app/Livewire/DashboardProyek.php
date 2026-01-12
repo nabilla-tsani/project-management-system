@@ -97,26 +97,28 @@ class DashboardProyek extends Component
 
         $this->totalFitur = $fitur->count();
 
-        $this->fiturSelesai  = $fitur->where('status_fitur', 'Done')->count();
-        $this->fiturBerjalan = $fitur->where('status_fitur', 'In Progress')->count();
-        $this->fiturPending  = $fitur->where('status_fitur', 'Pending')->count();
-        $this->fiturUpcoming = $fitur->where('status_fitur', 'Upcoming')->count();
+        $this->fiturSelesai  = $fitur->where('status_fitur', 'selesai')->count();
+        $this->fiturBerjalan = $fitur->where('status_fitur', 'sedang_berjalan')->count();
+        $this->fiturPending  = $fitur->where('status_fitur', 'ditunda')->count();
+        $this->fiturUpcoming = $fitur->where('status_fitur', 'belum_dimulai')->count();
 
         // === OVERDUE ===
         $this->fiturOverdue = $fitur->filter(function ($f) use ($today) {
 
-            if (!$f->target) return false;
+    if (!$f->target) return false;
 
-            try {
-                $target = Carbon::createFromFormat('Y-m-d', trim($f->target), 'Asia/Jakarta')
-                                ->startOfDay();
-            } catch (\Exception $e) {
-                return false;
-            }
+    try {
+        $target = Carbon::createFromFormat('Y-m-d', trim($f->target), 'Asia/Jakarta')
+            ->startOfDay();
+    } catch (\Exception $e) {
+        return false;
+    }
 
-            return strtolower($f->status_fitur) === 'in progress'
-                && $target->lt($today);
-        })->count();
+    return strtolower($f->status_fitur) !== 'selesai'
+        && $target->lt($today);
+
+})->count();
+
 
         // === Hilangkan overdue dari In Progress ===
         $this->fiturBerjalan -= $this->fiturOverdue;

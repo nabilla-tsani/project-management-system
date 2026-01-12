@@ -27,15 +27,40 @@ class Proyek extends Model
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 
-    public function proyekUsers()
-    {
-        return $this->hasMany(ProyekUser::class);
-    }
-
     public function users()
     {
         return $this->belongsToMany(User::class, 'proyek_user', 'proyek_id', 'user_id')
                     ->withPivot('sebagai', 'keterangan');
+    }
+
+    public function proyekUsers()
+    {
+        return $this->hasMany(ProyekUser::class, 'proyek_id');
+    }
+
+    public function fitur()
+    {
+        return $this->hasMany(ProyekFitur::class, 'proyek_id');
+    }
+
+    public function fiturUser()
+    {
+        return $this->hasMany(ProyekFiturUser::class, 'proyek_fitur_id');
+    }
+
+    public function file()
+    {
+        return $this->hasMany(ProyekFile::class, 'proyek_id');
+    }
+
+    public function invoice()
+    {
+        return $this->hasMany(ProyekInvoice::class, 'proyek_id');
+    }
+
+    public function kwitansi()
+    {
+        return $this->hasMany(ProyekKwitansi::class, 'proyek_id');
     }
 
     protected $casts = [

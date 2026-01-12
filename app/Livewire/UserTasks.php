@@ -10,7 +10,7 @@ class UserTasks extends Component
 {
     public $tasks = [];
     public $search = '';
-    public $filter = 'nearest'; // default: deadline terdekat
+    public $filter = 'all'; // all | pekerjaan | bug | tambahan
 
     public function mount()
     {
@@ -27,40 +27,49 @@ class UserTasks extends Component
         $this->loadTasks();
     }
 
+    public function setFilter($filter)
+    {
+        $this->filter = $filter;
+        $this->loadTasks();
+    }
+
     public function loadTasks()
     {
         $search = strtolower($this->search);
 
         $query = ProyekCatatanPekerjaan::with(['proyek', 'fitur'])
             ->where('user_id', Auth::id())
-            ->when($this->search, function ($q) use ($search) {
-                $q->whereHas('proyek', function ($p) use ($search) {
+
+            // 🔍 SEARCH: NAMA PROYEK ATAU ISI CATATAN
+        ->when($this->search, function ($q) use ($search) {
+            $q->where(function ($sub) use ($search) {
+
+                // Cari di nama proyek
+                $sub->whereHas('proyek', function ($p) use ($search) {
                     $p->whereRaw('LOWER(nama_proyek) LIKE ?', ['%' . $search . '%']);
                 });
+
+                // ATAU cari di isi catatan
+                $sub->orWhereRaw('LOWER(catatan) LIKE ?', ['%' . $search . '%']);
             });
+        })
 
-        // ⬇️ Tambahkan filter sorting
-        switch ($this->filter) {
-            case 'nearest':
-                $query->orderBy('tanggal_selesai', 'asc');
-                break;
+            // 🧩 FILTER LOGIC
+            ->when($this->filter === 'bug', function ($q) {
+                $q->where('jenis', 'bug');
+            })
 
-            case 'farthest':
-                $query->orderBy('tanggal_selesai', 'desc');
-                break;
+            ->when($this->filter === 'pekerjaan', function ($q) {
+                $q->where('jenis', 'pekerjaan')
+                  ->whereNotNull('proyek_fitur_id');
+            })
 
-            case 'newest':
-                $query->orderBy('created_at', 'desc');
-                break;
+            ->when($this->filter === 'tambahan', function ($q) {
+                $q->where('jenis', 'pekerjaan')
+                  ->whereNull('proyek_fitur_id');
+            })
 
-            case 'oldest':
-                $query->orderBy('created_at', 'asc');
-                break;
-
-            default:
-                $query->orderBy('tanggal_selesai', 'asc');
-                break;
-        }
+            ->latest();
 
         $this->tasks = $query->get();
     }

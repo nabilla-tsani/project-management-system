@@ -9,7 +9,15 @@ new #[Layout('layouts.guest')] class extends Component
     public string $email = '';
 
     /**
-     * Send a password reset link to the provided email address.
+     * Hilangkan error saat field diubah
+     */
+    public function updated($property): void
+    {
+        $this->resetErrorBag($property);
+    }
+
+    /**
+     * Kirim link reset password
      */
     public function sendPasswordResetLink(): void
     {
@@ -17,16 +25,12 @@ new #[Layout('layouts.guest')] class extends Component
             'email' => ['required', 'string', 'email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
         $status = Password::sendResetLink(
             $this->only('email')
         );
 
-        if ($status != Password::RESET_LINK_SENT) {
+        if ($status !== Password::RESET_LINK_SENT) {
             $this->addError('email', __($status));
-
             return;
         }
 
@@ -34,28 +38,65 @@ new #[Layout('layouts.guest')] class extends Component
 
         session()->flash('status', __($status));
     }
-}; ?>
+};
+?>
 
-<div>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+<div class="card-container w-full max-w-md mx-auto">
+    <div class="text-center mb-2">
+        <h2 class="text-lg text-gray-900">Lupa Kata Sandi</h2>
+        <p class="mt-2 text-sm text-gray-600 pb-4">
+            Masukkan email Anda dan kami akan mengirimkan tautan untuk mengatur ulang kata sandi
+        </p>
     </div>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    {{-- Status Session --}}
+    @if (session('status'))
+        <div
+            x-data="{ show: true }"
+            x-init="setTimeout(() => show = false, 2000)"
+            x-show="show"
+            x-transition.opacity
+            class="mb-4 text-sm text-green-600 text-center"
+        >
+            {{ session('status') }}
+        </div>
+    @endif
 
-    <form wire:submit="sendPasswordResetLink">
-        <!-- Email Address -->
+    <form wire:submit.prevent="sendPasswordResetLink" class="space-y-4">
+
+        {{-- Email --}}
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <label class="text-sm text-gray-700">Email</label>
+            <input
+                type="email"
+                wire:model.lazy="email"
+                class="column-input"
+                autofocus
+                placeholder="Masukkan email terdaftar"
+            >
+
+            @error('email')
+                <div
+                    x-data="{ show: true }"
+                    x-init="setTimeout(() => show = false, 2000)"
+                    x-show="show"
+                    x-transition.opacity
+                    class="text-red-500 text-sm mt-1"
+                >
+                    {{ $message }}
+                </div>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
+        <button type="submit" class="btn-submit w-full text-sm">
+            Kirim Tautan Reset Kata Sandi
+        </button>
+
+        <div class="text-center text-sm text-gray-600">
+            Sudah ingat kata sandi?
+            <a href="{{ route('login') }}" class="text-purple hover:underline">
+                Masuk
+            </a>
         </div>
     </form>
 </div>

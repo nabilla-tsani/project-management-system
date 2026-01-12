@@ -13,440 +13,583 @@
             </div>
         @endif
 
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3 pt-1">
-                <h2 class="text-md font-medium flex items-center gap-2 text-[#5ca9ff]">
-                    <i class="fa-solid fa-layer-group"></i>
-                    Feature List ({{ $fiturs->count() }})
+
+    {{-- Header: Judul & Tombol Tambah --}}
+    <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <h2 class="text-sm font-semibold flex items-center gap-2 text-gray-700 pr-4">
+                    <i class="fa-solid fa-layer-group text-blue-500 text-2xl"></i>
+                    Daftar Fitur ({{ $fiturs->count() }})
                 </h2>
-                <input 
-                    type="text"
-                    wire:model.live="search" 
-                    placeholder="Search feature..."
-                    class="text-xs px-3 py-1.5 border border-gray-500 rounded-3xl focus:ring-[#5ca9ff] focus:border-[#5ca9ff] outline-none w-96"
-                />
+            </div>
+            <input 
+                type="text"
+                wire:model.live="search" 
+                placeholder="Cari fitur..."
+                class="text-xs px-3 py-1.5 border border-gray-300 rounded-full focus:ring-1 focus:ring-[#5ca9ff] focus:border-[#5ca9ff] outline-none w-72"
+            />
+            <div class="pl-2">
+            <select wire:model.live="filterStatus"
+                class="text-[10px] border rounded-full px-6 py-1.5">
+                <option value="">Semua Status</option>
+                <option value="belum_dimulai">Belum Dimulai</option>
+                <option value="sedang_berjalan">Sedang Berjalan</option>
+                <option value="ditunda">Ditunda</option>
+                <option value="selesai">Selesai</option>
+            </select>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button wire:click="openAiModal"
+                class="px-3 py-1.5 rounded-full text-white shadow
+                    transition-all duration-200 ease-out
+                    text-xs font-medium
+                    bg-gradient-to-r from-cyan-400 to-purple-600
+                    transform hover:scale-105 hover:shadow-lg">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Buat Fitur dengan AI
+            </button>
+            <button wire:click="openModal"
+                class="px-3 py-1.5 rounded-full text-white shadow 
+                    transition-all duration-200 ease-out
+                    text-xs font-medium
+                    bg-gradient-to-r from-blue-500 to-indigo-600
+                    transform hover:scale-105 hover:shadow-lg">
+                <i class="fa-solid fa-plus mr-1 text-xs"></i>
+                Tambah Fitur
+            </button>
 
-                <select wire:model.live="filterStatus"
-                    class="text-xs border rounded-full px-7 py-1.5">
-                    <option value="">All Status</option>
-                    <option value="belum_dimulai">Upcoming</option>
-                    <option value="ditunda">Pending</option>
-                    <option value="sedang_berjalan">In Progress</option>
-                    <option value="selesai">Done</option>
-                </select>
+        </div>
+    </div>
+
+    {{-- Daftar Fitur --}}
+    <div class="space-y-2">
+        @forelse($fiturs as $fitur)
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm
+                        hover:shadow-md hover:border-blue-300
+                        transition-all duration-200 overflow-hidden">
+
+                {{-- Baris Atas --}}
+                <div class="grid grid-cols-12 items-center px-3 pt-2 pb-1">
+
+                {{-- Nama Fitur --}}
+                <div wire:click="openCatatan({{ $fitur->id }})"
+                    class="col-span-3 flex items-center gap-2
+                        text-xs font-medium text-gray-900 break-words cursor-pointer">
+
+                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600
+                                flex items-center justify-center shadow-sm flex-shrink-0
+                                hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-cube text-white text-[10px]"></i>
+                    </div>
+
+                    <span class="leading-tight">
+                        {{ $fitur->nama_fitur }}
+                    </span>
+                </div>
 
 
+                {{-- Status --}}
+                <div wire:click="openCatatan({{ $fitur->id }})"
+                    class="col-span-1 flex justify-center cursor-pointer">
+
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold
+                        @if($fitur->status_fitur === 'selesai')
+                            text-white bg-gradient-to-r from-green-500 to-green-600
+                        @elseif($fitur->status_fitur === 'sedang_berjalan')
+                            text-white bg-gradient-to-r from-orange-500 to-orange-600
+                        @elseif($fitur->status_fitur === 'ditunda')
+                            text-white bg-gradient-to-r from-red-500 to-red-600
+                        @else
+                            text-gray-700 bg-gray-200
+                        @endif">
+
+                        @if($fitur->status_fitur === 'selesai')
+                            <i class="fa-solid fa-check text-[8px]"></i> Selesai 
+                        @elseif($fitur->status_fitur === 'sedang_berjalan')
+                            <i class="fa-solid fa-spinner text-[8px]"></i> Berjalan
+                        @elseif($fitur->status_fitur === 'ditunda')
+                            <i class="fa-solid fa-pause text-[8px]"></i> Ditunda
+                        @else
+                            <i class="fa-solid fa-clock text-[8px]"></i> Belum Dimulai
+                        @endif
+                    </span>
+                </div>
+
+                {{-- Anggota --}}
+                <div wire:click.stop="openUserFitur({{ $fitur->id }})"
+                    class=" pl-2 col-span-7 text-[10px] text-gray-600 hover:scale-105 flex items-center gap-1 cursor-pointer">
+
+                    <button
+                        title="Kelola Anggota"
+                        class="transition hover:scale-110"
+                    >
+                        <i class="fa-solid fa-user-plus text-[12px]
+                            bg-gradient-to-r from-blue-500 to-purple-600
+                            bg-clip-text text-transparent">
+                        </i>
+                    </button>
+
+                    @php
+                        $countUser = $fitur->anggota->count();
+                        $listUser = $fitur->anggota->pluck('user.name')->implode(', ');
+                    @endphp
+
+                    @if($countUser)
+                        <div class="leading-relaxed break-words">
+                            <span class="font-semibold text-gray-700">
+                                {{ $countUser }} anggota:
+                            </span>
+                            <span class="text-gray-600">
+                                {{ $listUser }}
+                            </span>
+                        </div>
+                    @else
+                        <span class="italic text-gray-400">Belum ada anggota pada fitur ini.</span>
+                    @endif
+                </div>
+
+                {{-- Aksi --}}
+                <div class="col-span-1 flex justify-end gap-2.5">
+                    <button wire:click.stop="openCatatan({{ $fitur->id }})"
+                        class="text-purple-600 text-xs hover:scale-150"
+                        title="Lihat Catatan Fitur">
+                        <i class="fa-solid fa-note-sticky text-[12px]"></i>
+                    </button>
+                    <button wire:click.stop="openModal({{ $fitur->id }})"
+                        class="text-blue-500 text-xs hover:scale-150"
+                        title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+
+                    <button wire:click="confirmDelete({{ $fitur->id }})"
+                        class="text-red-500 text-xs hover:scale-150"
+                        title="Hapus">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="flex items-center gap-3">
-                <button wire:click="openAiModal"
-                    class="px-3 py-1.5 bg-gradient-to-r from-cyan-400 to-purple-600 text-white rounded-3xl shadow hover:bg-indigo-700 
-                            hover:shadow-md transition-all duration-200 text-xs">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Create Features with AI
-                </button>
+            {{-- Baris Bawah --}}
+            <div wire:click="openCatatan({{ $fitur->id }})"
+                class="grid grid-cols-12 items-start px-3 pb-2 text-xs cursor-pointer">
 
-                <button wire:click="openModal"
-                    class="px-4 py-1.5 rounded-3xl text-white shadow hover:shadow-md transition-all duration-200 text-xs"
-                    style="background-color: #5ca9ff;">
-                    <i class="fa-solid fa-plus mr-1"></i> New Feature
-                </button>
+                <div class="col-span-12 text-gray-700 flex items-start gap-2 flex-wrap">
+
+                    @php
+                        $isSelesai = $fitur->status_fitur === 'selesai';
+
+                        $isOverdue = !$isSelesai
+                            && $fitur->target
+                            && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($fitur->target));
+                    @endphp
+
+                    {{-- Target --}}
+                    @if($fitur->target)
+                        <span class="flex items-center gap-1 text-[9px]
+                            {{ $isOverdue ? 'text-red-600 font-semibold' : 'text-gray-700' }}">
+
+                            {{-- Icon Target hanya jika TIDAK overdue --}}
+                            @if(!$isOverdue)
+                                <i class="fa-solid fa-crosshairs"></i>
+                            @endif
+
+                            {{-- Icon Warning hanya jika overdue --}}
+                            @if($isOverdue)
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            @endif
+
+                            Target: {{ \Carbon\Carbon::parse($fitur->target)->format('d M Y') }}
+                        </span>
+                    @endif
+
+                    {{-- Keterangan --}}
+                    <p class="text-gray-600 text-justify leading-relaxed break-words text-[10px]">
+                        Keterangan: {{ $fitur->keterangan ?? '-' }}
+                    </p>
+
+                </div>
             </div>
         </div>
 
-    
-            {{-- List fitur --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
-                @forelse($fiturs as $fitur)
-                    <div 
-                        class="bg-white border-y border-gray-200 shadow-sm hover:shadow-md transition duration-200 overflow-hidden transform hover:scale-[1.02]">
-                        {{-- Baris pertama (header tabel) --}}
-                        <div class="grid grid-cols-12 items-center px-3 pt-2 pb-1">
-                            {{-- Nama Fitur --}}
-                            <div wire:click="openCatatan({{ $fitur->id }})"
-                                 class="col-span-5 text-[13px] font-medium text-gray-900 whitespace-normal break-words">
-                                {{ $fitur->nama_fitur }}
-                            </div>
+    @empty
+        @if (!empty($search))
+            <div class="text-center text-gray-400 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-xs">
+                Tidak ada fitur yang cocok dengan
+                <span class="font-semibold text-[#5ca9ff]">"{{ $search }}"</span>.
+            </div>
+        @else
+             <div class="text-center text-gray-500 bg-gradient-to-r from-blue-50 to-purple-50 p-8">
+                <i class="fa-solid fa-layer-group text-3xl text-gray-300 mb-3"></i>
+                <p class="font-medium text-xs">Proyek ini belum memiliki Fitur.</p>
+                <p class="text-[10px] text-gray-400 mt-1">Silakan buat Fitur.</p>
+            </div>
+        @endif
+    @endforelse
+    </div>
 
-                            {{-- Status --}}
-                            <div wire:click="openCatatan({{ $fitur->id }})"
-                                class="col-span-1 flex items-center justify-center">
+    {{-- Tombol Kembali --}}
+    <div class="flex justify-start pt-4">
+        <a href="{{ route('proyek') }}"
+            class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-[10px] rounded-3xl shadow hover:bg-[#884fd9] transition">
+            Kembali ke Daftar Proyek
+        </a>
+    </div>
 
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold
-                                    @if($fitur->status_fitur === 'selesai')
-                                        text-[#5ca9ff] bg-[#dfeeff]
-                                    @elseif($fitur->status_fitur === 'sedang_berjalan')
-                                        text-orange-600 bg-orange-100
-                                    @elseif($fitur->status_fitur === 'ditunda')
-                                        text-red-600 bg-red-100
-                                    @elseif($fitur->status_fitur === 'belum_dimulai')
-                                        text-gray-600 bg-gray-200
-                                    @else
-                                        text-gray-600 bg-gray-200
-                                    @endif">
-
-                                    @if($fitur->status_fitur === 'selesai')
-                                        done
-                                    @elseif($fitur->status_fitur === 'sedang_berjalan')
-                                        in progress
-                                    @elseif($fitur->status_fitur === 'ditunda')
-                                        pending
-                                    @elseif($fitur->status_fitur === 'belum_dimulai')
-                                        upcoming
-                                    @else
-                                        {{ ucfirst($fitur->status_fitur) }}
-                                    @endif
-
-                                </span>
-                            </div>
-
-                            
-                            {{-- Anggota --}}
-                            <div wire:click.stop="openUserFitur({{ $fitur->id }})"
-                                class="col-span-5 text-xs text-gray-600 flex items-center gap-1">
-
-                                <button wire:click.stop="openUserFitur({{ $fitur->id }})"
-                                    class="text-[#5ca9ff] hover:text-[#3b7ed9] transition text-xs"
-                                    title="Manage Users">
-                                    <i class="fa-solid fa-user-plus text-[12px]"></i>
-                                </button>
-
-                                @php
-                                    $countUser = $fitur->anggota->count();
-                                    $listUser = $fitur->anggota->pluck('user.name')->implode(', ');
-                                @endphp
-
-                                @if($countUser)
-                                    <span class="whitespace-normal break-words">
-                                        <span class="font-semibold text-gray-700">({{ $countUser }})</span>
-                                        {{ $listUser }}
-                                    </span>
-                                @else
-                                    <span class="italic text-gray-400">No one’s on this feature yet.</span>
-                                @endif
-                            </div>
-
-
-                            {{-- Aksi --}}
-                            <div class="col-span-1 flex items-center justify-end gap-2">
-                                <button wire:click.stop="openModal({{ $fitur->id }})"
-                                    class="text-blue-500 hover:text-blue-800 transition text-xs"
-                                    title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-
-                                <button wire:click="confirmDelete({{ $fitur->id }})"
-                                    class="text-red-500 hover:text-red-800 transition text-xs"
-                                    title="Hapus">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        {{-- Baris kedua (isi tabel) --}}
-                        <div wire:click="openCatatan({{ $fitur->id }})"
-                             class="grid grid-cols-12 items-start px-3 pb-2 text-xs">
-                            {{-- Keterangan --}}
-                            <div class="col-span-11 text-gray-700 flex items-center gap-2">
-
-                            @php
-                                $isOverdue = $fitur->target && \Carbon\Carbon::now()->gt(\Carbon\Carbon::parse($fitur->target));
-                            @endphp
-
-                            <span class="font-md flex items-center gap-1 {{ $isOverdue ? 'text-red-600 font-semibold' : '' }}">
-                                
-                                {{-- Icon Warning jika overdue --}}
-                                @if ($isOverdue)
-                                    <i class="fa-solid fa-triangle-exclamation text-red-600 text-xs"></i>
-                                @endif
-
-                                Goal Date: 
-                                {{ \Carbon\Carbon::parse($fitur->target)->format('d M Y') }}
-                            </span>
-
-                            {{-- Notes --}}
-                            <span class="ml-1 font-normal text-gray-600">
-                                | Notes: {{ $fitur->keterangan ?? '-' }}
-                            </span>
-
-                        </div>
-
-                            {{-- Notes --}}
-                            <div class="col-span-1 flex justify-end">
-                                <button wire:click.stop="openCatatan({{ $fitur->id }})"
-                                    class="text-gray-500 hover:text-gray-700 flex items-center gap-1">
-                                    <i class="fa-solid fa-note-sticky text-[13px]"></i>
-                                    Notes
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                         @empty
-                        {{-- Pesan jika hasil pencarian kosong --}}
-                        @if (!empty($search))
-                            <div class="col-span-full text-center text-gray-400 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-xs">
-                                No matching features found for 
-                                <span class="font-semibold text-[#5ca9ff]">"{{ $search }}"</span>.
-                            </div>
-                        @else
-                            {{-- Pesan default jika belum ada fitur --}}
-                            <div class="col-span-full text-center text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-200 text-xs">
-                                No features added yet.
-                            </div>
-                        @endif
-                    @endforelse
-                </div>
-
-                {{-- Footer Tombol Kembali --}}
-                <div class="flex justify-start pt-4">
-                    <a href="{{ route('proyek') }}"
-                    class="px-4 py-2 bg-[#5ca9ff] text-white text-[10px] rounded-3xl shadow hover:bg-[#884fd9] transition">
-                        Back to Project List
-                    </a>
-                </div>
                 
     {{-- MODAL KONFIRMASI DELETE --}}   
-        @if ($showConfirmDelete)
+    @if ($showConfirmDelete)
         <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-            <div class="bg-white shadow-2xl w-96 p-6 text-center animate-fadeIn">
-                <h3 class="text-md font-semibold text-red-500 mb-4">Confirm Delete Feature</h3>
-                <p class="text-gray-600 mb-5 text-sm">Are you sure you want to delete this feature? This action cannot be undone.</p>
+            <div class="bg-white rounded-2xl shadow-2xl p-5 w-[26rem] border border-gray-100">
 
-                <div class="flex justify-center gap-3">
-                    <button 
-                        wire:click="$set('showConfirmDelete', false)"
-                        class="px-4 py-2 rounded-3xl bg-gray-200 border border-gray-300 text-gray-700 text-xs hover:bg-gray-400 transition">
-                        Cancel
+                <div class="text-center mb-4">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-lg"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-red-600">
+                        Konfirmasi Hapus Fitur
+                    </h3>
+                </div>
+                    <p class="text-xs text-gray-600 mb-4 text-center">
+                        Apakah Anda yakin ingin menghapus fitur ini? Tindakan ini tidak dapat dibatalkan.
+                    </p>
+
+                <div class="flex justify-center gap-2">
+                    <button wire:click="$set('showConfirmDelete', false)"
+                        class="bg-gray-200 text-xs text-gray-700 px-4 py-1.5 rounded-full hover:bg-gray-300 hover:scale-105 transition font-medium">
+                        <i class="fa-solid fa-times mr-1 text-[10px]"></i>
+                        Batal
                     </button>
-
-                    <button 
-                        wire:click="delete"
-                        class="px-4 py-2 rounded-3xl bg-red-500 text-white text-xs hover:bg-red-600 transition">
-                        Yes, Delete
+                    <button wire:click="delete"
+                        class="bg-gradient-to-r from-red-500 to-red-600 text-xs text-white px-4 py-1.5 rounded-full shadow hover:shadow-md hover:scale-105 transition font-medium">
+                        <i class="fa-solid fa-trash mr-1 text-[10px]"></i>
+                        Ya, Hapus
                     </button>
                 </div>
+
             </div>
         </div>
-        @endif
+    @endif
+
 
     {{-- MODAL TAMBAH/EDIT --}}
-        @if($modalOpen)
+       @if($modalOpen)
             <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-                <div class="bg-white shadow-2xl p-5 w-[30rem] max-w-[65%] border border-gray-200">
-                    <h3 class="text-md font-medium text-[#9c62ff] mb-2 text-center">
-                        {{ $fiturId ? 'Edit Feature' : 'New Feature' }}
+                <div class="bg-white rounded-2xl shadow-2xl p-5 w-[28rem] max-w-[90%] border border-gray-100">
+
+                    {{-- Judul --}}
+                    <h3 class="text-sm font-semibold text-transparent bg-clip-text 
+                            bg-gradient-to-r from-blue-600 to-purple-600 mb-4 text-center">
+                        {{ $fiturId ? 'Edit Fitur' : 'Tambah Fitur' }}
                     </h3>
 
-                    <label class="block text-xs font-semibold text-gray-600 py-2">Name</label>
-                    <input type="text" wire:model.defer="nama_fitur"
-                        class="border border-gray-300 rounded-3xl px-3 w-full mb-1
-                            focus:ring-2 focus:ring-blue-400 text-xs">
+                    <div class="space-y-3">
 
-                    <label class="block text-xs font-semibold text-gray-600 py-2">Description</label>
-                    <textarea wire:model.defer="keterangan"
-                        rows="6"
-                        class="border border-gray-300 rounded-xl px-3 py-2 w-full 
-                            focus:ring-2 focus:ring-blue-400 text-xs resize-y"></textarea>
+                        {{-- Nama Fitur --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-700 mb-1 block">
+                                Nama Fitur
+                            </label>
+                            <input type="text"
+                                wire:model.defer="nama_fitur"
+                                placeholder="Masukkan nama fitur"
+                                class="text-xs border border-gray-300 rounded-lg p-2 w-full bg-white text-gray-800
+                                    placeholder-gray-400 focus:ring-2 focus:ring-blue-400
+                                    focus:border-blue-400 outline-none">
+                        </div>
 
-                    <div class="flex items-center gap-3">
-                    <div class="w-1/2 text-xs">
-                        <label class="block text-xs font-semibold text-gray-600 py-2">Target</label>
-                        <input type="date" wire:model.defer="target"
-                            class="border border-gray-300 rounded-3xl px-3 w-full mb-1
-                                focus:ring-2 focus:ring-blue-400 text-xs">
+                        {{-- Deskripsi --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-700 mb-1 block">
+                                Deskripsi
+                            </label>
+                            <textarea
+                                wire:model.defer="keterangan"
+                                rows="4"
+                                placeholder="Tambahkan deskripsi atau catatan fitur"
+                                class="text-xs border border-gray-300 rounded-lg p-2.5 w-full bg-white text-gray-800
+                                    placeholder-gray-400 focus:ring-2 focus:ring-blue-400
+                                    focus:border-blue-400 outline-none resize-y"></textarea>
+                        </div>
+
+                        {{-- Target --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-700 mb-1 block">
+                                Target Tanggal
+                            </label>
+                            <input type="date"
+                                wire:model.defer="target"
+                                class="text-xs border border-gray-300 rounded-lg p-2 w-full bg-white text-gray-800
+                                    focus:ring-2 focus:ring-blue-400
+                                    focus:border-blue-400 outline-none">
+                        </div>
+
+                        {{-- Status --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-700 mb-1 block">
+                                Status Proyek
+                            </label>
+                            <select
+                                wire:model.defer="status_fitur"
+                                class="text-xs border border-gray-300 rounded-lg p-2 w-full bg-white text-gray-800
+                                    focus:ring-2 focus:ring-blue-400
+                                    focus:border-blue-400 outline-none">
+                                <option value="">-- Pilih Status --</option>
+                                <option value="belum_dimulai">Belum Dimulai</option>
+                                <option value="sedang_berjalan">Sedang Berjalan</option>
+                                <option value="selesai">Selesai</option>
+                                <option value="ditunda">Ditunda</option>
+                            </select>
+                        </div>
 
                     </div>
-                    <div class="w-1/2 text-xs">
-                        <label class="block text-xs font-semibold text-gray-600 py-2">Status</label>
 
-                        <select wire:model.defer="status_fitur"
-                            class="border border-gray-300 rounded-3xl px-3 py-2 w-full mb-1
-                                focus:ring-2 focus:ring-blue-400 text-xs">
-                            <option value="">-- Select Status --</option>
-
-                            @foreach($statusList as $status)
-                                <option value="{{ $status }}">
-                                    @switch($status)
-                                        @case('selesai')
-                                            Done
-                                            @break
-                                        @case('belum_dimulai')
-                                            Upcoming
-                                            @break
-                                        @case('sedang_berjalan')
-                                            In progress
-                                            @break
-                                        @case('ditunda')
-                                            Pending
-                                            @break
-                                        @default
-                                            {{ $status }}
-                                    @endswitch
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    </div>
-
-                    <div class="flex justify-end gap-3 pt-3">
-                        <button wire:click="closeModal"
-                            class="bg-gray-200 text-gray-700 px-4 py-2 rounded-3xl
-                                hover:bg-gray-300 hover:scale-105 transition text-xs">
-                            Cancel
-                        </button>
+                    {{-- Tombol --}}
+                    <div class="flex justify-end gap-2 mt-4">
                         <button wire:click="save"
-                            class="bg-[#5ca9ff] text-white px-4 py-2 shadow rounded-3xl
-                                hover:scale-105 hover:bg-[#449bffff] transition text-xs">
-                            {{ $fiturId ? 'Update' : 'Save' }}
+                            class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-1.5
+                                rounded-full shadow hover:shadow-md hover:scale-105
+                                transition text-xs font-medium">
+                            <i class="fa-solid fa-check mr-1 text-[10px]"></i>
+                            {{ $fiturId ? 'Perbarui' : 'Simpan' }}
+                        </button>
+
+                        <button wire:click="closeModal"
+                            class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full
+                                hover:bg-gray-300 hover:scale-105
+                                transition text-xs font-medium">
+                            <i class="fa-solid fa-times mr-1 text-[10px]"></i>
+                            Batal
                         </button>
                     </div>
+
                 </div>
             </div>
         @endif
+
 
 
     {{-- MODAL TAMBAH FITUR WITH AI--}}
     @if($aiModalOpen)
         <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-4">
-            <div class="bg-white shadow-2xl w-[36rem] max-w-full border border-gray-200 p-5 relative">
-                <div class="flex justify-center items-center mb-4">
-                    <h3 class="text-md font-medium text-[#9c62ff] flex items-center gap-2">
-                        <i class="fa-solid fa-robot text-indigo-600"></i>
-                        Create Features with AI
-                    </h3>
-                </div>
+            <div class="bg-white rounded-2xl shadow-2xl p-5 w-[28rem] max-w-[90%] border border-gray-100">
 
+                {{-- Header --}}
+                <h3 class="text-sm font-semibold text-transparent bg-clip-text
+                        bg-gradient-to-r from-blue-600 to-purple-600
+                        mb-4 text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-robot"></i>
+                    Buat Fitur dengan AI
+                </h3>
+
+                {{-- Form --}}
                 <div class="space-y-3">
+
+                    {{-- Jumlah Fitur --}}
                     <div>
-                        <div class="flex justify-between items-center">
-                            <label class="text-xs font-semibold text-gray-600 py-2">Set your desired feature count</label>
-                            <span class="text-[11px] text-gray-500 italic">Max. 10</span>
-                        </div>
-                        <input type="number" min="1" max="10" wire:model.defer="jumlah_fitur_ai"
-                               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                               class="border border-gray-300 rounded-3xl px-3 py-2 w-full
-                                        focus:ring-2 focus:ring-blue-400 text-xs">
-                    </div>
-
-                    <div>
-                    <label class="block text-xs font-semibold text-gray-600 py-2">Prompt for AI</label>
-                        <textarea wire:model.defer="deskripsi_ai" rows="6"
-                                  placeholder="Examples: focus on authentication, admin reports, and payment integration"
-                                  class="border border-gray-300 rounded-xl p-2 w-full
-                                        focus:ring-2 focus:ring-blue-400 text-xs">></textarea>
-                    </div>
-
-                    <div wire:loading wire:target="generateFiturAI" class="text-xs text-[#9c62ff] italic">
-                        AI's thinking, please wait...
-                    </div>
-
-                    <div class="flex justify-end gap-3">
-                       <div class="flex justify-end gap-3">
-                            <button wire:click="closeAiModal"
-                                    type="button"
-                                    wire:loading.attr="disabled"
-                                    wire:target="generateFiturAI"
-                                    class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-3xl text-xs transition hover:scale-105
-                                        disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                                Cancel
-                            </button>
-                            <button wire:click="generateFiturAI"
-                                    wire:loading.attr="disabled"
-                                    wire:target="generateFiturAI"
-                                    class="px-4 py-1.5 rounded-3xl text-xs transition text-white bg-[#5ca9ff] hover:bg-[#449bffff] hover:scale-105
-                                        disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-gray-300">
-                                Generate
-                            </button>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-medium text-gray-700">
+                                Jumlah Fitur yang Diinginkan
+                            </label>
+                            <span class="text-[11px] text-gray-500 italic">Maksimal 10</span>
                         </div>
 
+                        <input type="number"
+                            min="1"
+                            max="10"
+                            wire:model.defer="jumlah_fitur_ai"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                            class="text-xs border border-gray-300 rounded-lg p-2 w-full
+                                    bg-white text-gray-800
+                                    focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+                                    outline-none">
                     </div>
+
+                    {{-- Prompt AI --}}
+                    <div>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">
+                            Deskripsi / Prompt untuk AI
+                        </label>
+
+                        <textarea wire:model.defer="deskripsi_ai"
+                                rows="5"
+                                placeholder="Contoh: fitur autentikasi, laporan admin, dan integrasi pembayaran"
+                                class="text-xs border border-gray-300 rounded-lg p-2.5 w-full
+                                        bg-white text-gray-800 placeholder-gray-400
+                                        focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+                                        outline-none resize-y"></textarea>
+                    </div>
+
+                    {{-- Loading --}}
+                    <div wire:loading wire:target="generateFiturAI"
+                        class="text-xs text-purple-600 italic">
+                        AI sedang memproses, mohon tunggu...
+                    </div>
+
                 </div>
+
+                {{-- Action Button --}}
+                <div class="flex justify-end gap-2 mt-4">
+                    <button wire:click="generateFiturAI"
+                            wire:loading.attr="disabled"
+                            wire:target="generateFiturAI"
+                            class="bg-gradient-to-r from-blue-500 to-purple-600 text-white
+                                px-4 py-1.5 rounded-full shadow
+                                hover:shadow-md hover:scale-110 transition
+                                text-xs font-medium
+                                disabled:bg-gray-300 disabled:text-gray-500
+                                disabled:opacity-50 disabled:cursor-not-allowed
+                                disabled:hover:scale-100">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1 text-[10px]"></i>
+                        Buat Fitur dengan AI
+                    </button>
+
+                    <button wire:click="closeAiModal"
+                            wire:loading.attr="disabled"
+                            wire:target="generateFiturAI"
+                            class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full
+                                hover:bg-gray-300 hover:scale-105 transition
+                                text-xs font-medium
+                                disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-times mr-1 text-[10px]"></i>
+                        Batal
+                    </button>
+                </div>
+
             </div>
         </div>
     @endif
 
+
     {{-- MODAL REVIEW AI --}}
     @if($showAiReview)
         <div class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-4">
-            <div class="bg-white shadow-2xl w-[36rem] max-w-full rounded-lg border border-gray-200 p-5">
-                <div class="flex justify-center items-center mb-4">
-                    <h3 class="text-md font-medium text-[#9c62ff] flex items-center gap-2">
-                        <i class="fa-solid fa-robot text-indigo-600"></i>
-                        AI Features Overview
-                    </h3>
-                </div>
+            <div class="bg-white rounded-2xl shadow-2xl p-5 w-[28rem] max-w-[90%] border border-gray-100">
 
+                {{-- Header --}}
+                <h3 class="text-sm font-semibold text-transparent bg-clip-text
+                        bg-gradient-to-r from-blue-600 to-purple-600
+                        mb-4 text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-robot"></i>
+                    Pratinjau Fitur dari AI
+                </h3>
 
                 {{-- Daftar fitur hasil AI --}}
-                <ul class="space-y-2 mb-4 max-h-60 overflow-y-auto border border-gray-200 p-2 rounded">
-                    @foreach($aiFiturList as $fitur)
-                        <li class="p-1 text-xs border border-gray-200 rounded text-gray-700 bg-gray-50">{{ $fitur }}</li>
-                    @endforeach
-                </ul>
+                <div class="mb-4">
+                    <label class="text-xs font-medium text-gray-700 mb-1 block">
+                        Daftar Fitur yang Dihasilkan
+                    </label>
 
-                {{-- Kolom revisi prompt --}}
-                <div class="mb-3 space-y-3">
+                    <ul class="space-y-2 max-h-56 overflow-y-auto
+                            border border-gray-200 rounded-lg p-2 bg-gray-50">
+                        @foreach($aiFiturList as $fitur)
+                            <li class="p-2 text-xs text-gray-700
+                                    bg-white border border-gray-200 rounded-md">
+                                {{ $fitur }}
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                {{-- Revisi Prompt --}}
+                <div class="space-y-3 mb-3">
+
                     <div>
-                        <label class="text-xs font-semibold text-gray-600 pb-2 block">Improve AI Prompt</label>
-                        <textarea 
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">
+                            Revisi / Tambahan Prompt AI
+                        </label>
+
+                        <textarea
                             wire:model="revisi_deskripsi_ai"
                             x-data
                             x-ref="rev"
                             @clear-revisi.window="$refs.rev.value = ''"
                             rows="3"
-                            placeholder="Example: add a search feature..."
-                            class="text-xs border border-gray-300 rounded-lg p-2 w-full text-sm"
-                        ></textarea>
+                            placeholder="Contoh: tambahkan fitur pencarian dan filter data"
+                            class="text-xs border border-gray-300 rounded-lg p-2.5 w-full
+                                bg-white text-gray-800 placeholder-gray-400
+                                focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+                                outline-none resize-y"></textarea>
                     </div>
 
                     <div>
-                        <div class="flex justify-between items-center">
-                            <label class="text-xs font-semibold text-gray-600 pb-2">Regeneration Feature Count</label>
-                            <span class="text-[11px] text-gray-500 italic">May differ from the initial request</span>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-medium text-gray-700">
+                                Jumlah Fitur (Revisi)
+                            </label>
+                            <span class="text-[11px] text-gray-500 italic">
+                                Bisa berbeda dari permintaan awal
+                            </span>
                         </div>
-                        <input type="number" min="1" max="10" wire:model="jumlah_fitur_revisi"
-                            placeholder="{{ $jumlah_fitur_ai }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                            class="text-xs border border-gray-300 rounded-3xl py-2 px-3 w-full text-sm focus:ring-2 focus:ring-indigo-400">
+
+                        <input type="number"
+                            min="1"
+                            max="10"
+                            wire:model="jumlah_fitur_revisi"
+                            placeholder="{{ $jumlah_fitur_ai }}"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                            class="text-xs border border-gray-300 rounded-lg p-2 w-full
+                                    bg-white text-gray-800
+                                    focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+                                    outline-none">
                     </div>
+
                 </div>
 
-                {{-- Loading indikator --}}
-                <div wire:loading wire:target="regenerateAiFitur" class="mt-3 text-xs text-[#9c62ff] italic">
-                    Requesting AI to create new features…
+                {{-- Loading --}}
+                <div wire:loading wire:target="regenerateAiFitur"
+                    class="text-xs text-purple-600 italic mb-2">
+                    AI sedang membuat ulang fitur, mohon tunggu...
                 </div>
 
-                {{-- Tombol aksi --}}
-                <div class="flex justify-end gap-3">
-                    <button wire:click="$set('showAiReview', false)"
-                            type="button"
-                            wire:loading.attr="disabled"
-                            wire:target="regenerateAiFitur"
-                            class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-3xl text-xs transition
-                                disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Cancel
-                    </button>
+                {{-- Tombol Aksi --}}
+                <div class="flex justify-end gap-2 mt-4">
 
                     <button wire:click="regenerateAiFitur"
                             wire:loading.attr="disabled"
                             wire:target="regenerateAiFitur"
-                            class="bg-[#9c62ff] text-white px-4 py-1.5 rounded-3xl hover:bg-purple-700 hover:scale-105 hover:bg-[#8a48fa] transition text-xs
-                                disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fa-solid fa-arrows-rotate"></i> Regenerate
+                            class="bg-gradient-to-r from-cyan-400 to-purple-600 text-white
+                                px-4 py-1.5 rounded-full shadow
+                                hover:shadow-md hover:scale-110 transition
+                                text-xs font-medium
+                                disabled:bg-gray-300 disabled:text-gray-500
+                                disabled:opacity-50 disabled:cursor-not-allowed
+                                disabled:hover:scale-100">
+                        <i class="fa-solid fa-arrows-rotate mr-1 text-[10px]"></i>
+                        Buat Ulang
                     </button>
 
                     <button wire:click="approveAiFitur"
                             wire:loading.attr="disabled"
                             wire:target="regenerateAiFitur"
-                            class="bg-[#5ca9ff] text-white px-4 py-1.5 rounded-3xl hover:bg-indigo-700 hover:scale-105 hover:bg-[#449bffff] transition text-xs
-                                disabled:bg-gray-300 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Agree then Add
+                            class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white
+                                px-4 py-1.5 rounded-full shadow
+                                hover:shadow-md hover:scale-110 transition
+                                text-xs font-medium
+                                disabled:bg-gray-300 disabled:text-gray-500
+                                disabled:opacity-50 disabled:cursor-not-allowed
+                                disabled:hover:scale-100">
+                        <i class="fa-solid fa-check mr-1 text-[10px]"></i>
+                        Setujui & Tambahkan
                     </button>
+
+                    <button wire:click="$set('showAiReview', false)"
+                            wire:loading.attr="disabled"
+                            wire:target="regenerateAiFitur"
+                            class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full
+                                hover:bg-gray-300 hover:scale-105 transition
+                                text-xs font-medium
+                                disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-times mr-1 text-[10px]"></i>
+                        Batal
+                    </button>
+
                 </div>
 
             </div>
         </div>
-        
     @endif
+
 
 
 @livewire('catatan-pekerjaan', ['proyekId' => $proyekId])

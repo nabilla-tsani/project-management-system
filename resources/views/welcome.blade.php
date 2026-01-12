@@ -110,9 +110,8 @@
   }
 
   .btn-start:hover {
-      background: transparent;
-      box-shadow: 0 8px 33px rgba(108, 104, 255, 1);
-      color: white; 
+    transform: scale(1.035);
+    box-shadow: 0 6px 18px rgba(108, 104, 255, 0.35);
   }
 
   .gradient-text {
@@ -275,31 +274,52 @@
     gap: 14px;
     box-shadow: 0 4px 20px rgba(92, 169, 255, 0.3);
   }
+  /* Item checked */
   .todo-list li.checked {
-    text-decoration: line-through;
-    opacity: 0.5;
+    opacity: 0.6;
   }
+
+  /* Checkbox dasar */
   .todo-checkbox {
     cursor: pointer;
     width: 18px;
     height: 18px;
-    border-radius: 4px;
-    border: 2px solid #8aa7ff;
-    display: inline-block;
+    border-radius: 6px; /* lebih rounded */
+    border: 2px solid rgba(138, 167, 255, 0.9);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
+    transition: all 0.25s ease;
+    background: rgba(255, 255, 255, 0.1);
   }
+
+  /* Hover effect */
+  .todo-checkbox:hover {
+    border-color: #5ca9ff;
+    box-shadow: 0 0 8px rgba(92, 169, 255, 0.6);
+  }
+
+  /* Checked state */
   .todo-checkbox.checked {
-    background: #6274f9;
-    border-color: #6274f9;
+    background: linear-gradient(135deg, #5ca9ff, #9c62ff);
+    border-color: transparent;
+    box-shadow: 0 0 10px rgba(156, 98, 255, 0.8);
+    transform: scale(1.05);
   }
+
+  /* Check icon */
   .todo-checkbox.checked::after {
-    content: "✔";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -55%);
+    content: "✓";
     color: white;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* Animasi klik */
+  .todo-checkbox:active {
+    transform: scale(0.9);
   }
 
 
@@ -383,7 +403,7 @@
     font-size: 20px;
     margin-bottom: 6px;
     font-weight: 700;
-    color: #dcdcff;
+    color: #ffffffff;
   }
   .dashboard-info-card span {
     font-size: 13px;
@@ -507,8 +527,8 @@
 <body>
 <div class="container">
   <header>
-    <a href="#" class="logo" aria-label="Onesoft logo">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
+    <a href="#" class="logo" aria-label="Logo Onesoft">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="5"></circle>
         <line x1="12" y1="1" x2="12" y2="3"></line>
         <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -519,146 +539,158 @@
         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
       </svg>
-      Project Management
+      Manajemen Proyek
     </a>
-    <a href="{{ route('register') }}" class="btn-register">Register</a>
+    <a href="{{ route('register') }}" class="btn-register">Daftar</a>
   </header>
 
   <main>
     <h1>
-      Project<br/>
-      Management
+      Manajemen<br/>
+      Proyek
     </h1>
     <br>
     <p>
-      An all-in-one solution for planning, controlling, and evaluating your projects. Simple to use, yet powerful for professional needs    </p>
+      Solusi lengkap untuk merencanakan, mengontrol, dan mengevaluasi proyek Anda.
+      Mudah digunakan namun tetap andal untuk kebutuhan profesional.
+    </p>
 
     <div class="button-container">
         @auth
         <a href="{{ url('/dashboard') }}" class="btn-start">
-            <span class="gradient-text">Start Now!</span>
+            <span class="gradient-text">Mulai Sekarang!</span>
         </a>
         @else
         <a href="{{ url('/login') }}" class="btn-start">
-            <span class="gradient-text">Start Now!</span>
+            <span class="gradient-text">Mulai Sekarang!</span>
         </a>
         @endauth
     </div>
 
-
-    
-
-    <section class="features" aria-label="Product Features">
+    <section class="features" aria-label="Fitur Produk">
 
       <!-- Card 1: Manajemen Proyek -->
       <article class="card" aria-labelledby="card1-title">
-        <ul class="project-tasks" aria-label="Project tasks list">
-          <li>Organize Every Detail with Ease</li>
-          <li>Assign Team Members</li>
-          <li>Attach the Required Documents</li>
+        <ul class="project-tasks" aria-label="Daftar tugas proyek">
+          <li>Mengelola setiap detail dengan mudah</li>
+          <li>Menetapkan anggota tim</li>
+          <li>Melampirkan dokumen yang dibutuhkan</li>
         </ul>
-        <h3 id="card1-title" class="card-title">Project Management</h3>
-        <p class="card-desc">Handle every project with ease through our smart, integrated tools and automation.</p>
+        <h3 id="card1-title" class="card-title">Manajemen Proyek</h3>
+        <p class="card-desc">
+          Kelola setiap proyek dengan mudah melalui alat pintar dan otomatisasi terintegrasi.
+        </p>
       </article>
 
       <!-- Card 2: Manajemen Customer -->
       <article class="card" aria-labelledby="card2-title">
-        <div class="customer-list" aria-label="List of customers">
+        <div class="customer-list" aria-label="Daftar pelanggan">
           <div class="customer-item">
-            <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Customer Maya" />
+            <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Pelanggan Maya" />
             <div class="info">Maya Putri</div>
           </div>
           <div class="customer-item">
-            <img src="https://randomuser.me/api/portraits/men/28.jpg" alt="Customer Tono" />
+            <img src="https://randomuser.me/api/portraits/men/28.jpg" alt="Pelanggan Dito" />
             <div class="info">Dito Wijaya</div>
           </div>
           <div class="customer-item">
-            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Customer Sari" />
+            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Pelanggan Sari" />
             <div class="info">Sari Dewi</div>
           </div>
           <div class="customer-item">
-            <img src="https://randomuser.me/api/portraits/men/68.jpg" alt="Customer Tono" />
+            <img src="https://randomuser.me/api/portraits/men/68.jpg" alt="Pelanggan Ali" />
             <div class="info">Ali Putra</div>
           </div>
           <div class="customer-item">
-            <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Customer Sari" />
+            <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Pelanggan Siska" />
             <div class="info">Siska Ana</div>
           </div>
         </div>
-        <h3 id="card2-title" class="card-title">Customer Management</h3>
-        <p class="card-desc">Enhance efficiency by keeping customer information structured and easy to manage.</p>
+        <h3 id="card2-title" class="card-title">Manajemen Klien</h3>
+        <p class="card-desc">
+          Tingkatkan efisiensi dengan mengelola data klien secara rapi dan terstruktur.
+        </p>
       </article>
 
-      <!-- Card 3: AI Assitant -->
+      <!-- Card 3: AI Assistant -->
       <article class="card" aria-labelledby="card4-title" style="position: relative;">
         <div class="chatbot-mini">
           <div class="chatbot-header">
-            AI Assistant
+            Asisten AI
           </div>
           <div class="chatbot-messages">
-            <div class="message user-message">Hello AI</div>
-            <div class="message bot-message">Hello! How can I help you today?</div>
-            <div class="message user-message">I want to ask some things</div>
-            <div class="message bot-message">Okay, I'm ready. Ask away! I'll do my best to answer.</div>
+            <div class="message user-message">Halo AI</div>
+            <div class="message bot-message">Halo! Ada yang bisa saya bantu?</div>
+            <div class="message user-message">Ada berapa proyek yang masih berjalan?</div>
+            <div class="message bot-message">Saat ini kamu memiliki 8 proyek dengan status masih berjalan</div>
           </div>
           <form class="chatbot-input" onsubmit="return false;">
-            <input type="text" placeholder="Ask something..." aria-label="Chat input" />
-            <button type="submit" aria-label="Send message">&#x27A4;</button>
+            <input type="text" placeholder="Tanyakan sesuatu..." aria-label="Input chat" />
+            <button type="submit" aria-label="Kirim pesan">&#x27A4;</button>
           </form>
         </div>
-        <h3 id="card-title" class="card3-title">AI Assistant</h3>
-        <p class="card-desc">AI Assistant for smart chats, instant proposals, and automated feature creation.</p>
+        <h3 class="card3-title">Asisten AI</h3>
+        <p class="card-desc">
+          Asisten AI untuk percakapan cerdas, pembuatan proposal, dan otomatisasi fitur.
+        </p>
       </article>
 
-      <!-- Card 4: To Do List -->
+      <!-- Card 4: Catatan Pekerjaan -->
       <article class="card" aria-labelledby="card4-title">
-        <ul class="todo-list" aria-label="To do list">
-          <li><span class="todo-checkbox checked"></span> Review Project Proposal</li>
-          <li><span class="todo-checkbox"></span> Update Customer Database</li>
-          <li><span class="todo-checkbox"></span> Follow up with Clients</li>
+        <ul class="todo-list" aria-label="Daftar catatan pekerjaan">
+          <li><span class="todo-checkbox checked"></span>Progres modul login – Dito Wijaya</li>
+          <li><span class="todo-checkbox checked"></span>Hasil Pengujian register – Sari Dewi</li>
+          <li><span class="todo-checkbox"></span>Kendala integrasi API – Ali Putra</li>
         </ul>
-        <h3 id="card4-title" class="card-title">To Do List</h3>
-        <p class="card-desc">Plan and manage tasks smoothly so your work stays monitored and delivered on time.</p>
+
+        <h3 class="card-title">Catatan Pekerjaan</h3>
+        <p class="card-desc">
+          Catatan singkat dari anggota tim untuk manajer proyek.
+        </p>
       </article>
+
 
       <!-- Card 5: Role -->
       <article class="card" aria-labelledby="card5-title">
-        <div class="role-badge" aria-label="User main role">Manager</div>
-        <div class="role-list" aria-label="Additional user roles">
+        <div class="role-badge">Manajer</div>
+        <div class="role-list">
           <span>Programmer</span>
-          <span>Tester</span>
+          <span>Penguji</span>
         </div>
-        <h3 id="card5-title" class="card-title">Role</h3>
-        <p class="card-desc">Flexible and secure role-based configurations for managing user access more effectively.</p>
+        <h3 class="card-title">Peran</h3>
+        <p class="card-desc">
+          Pengaturan peran yang fleksibel dan aman untuk mengelola akses pengguna.
+        </p>
       </article>
 
       <!-- Card 6: Dashboard -->
       <article class="card" aria-labelledby="card6-title">
         <div class="dashboard-summary">
           <div class="dashboard-section">
-            <h4>Quick Information</h4>
+            <h4>Informasi Cepat</h4>
             <div class="dashboard-info-summary">
-              <div class="dashboard-info-card" aria-label="Total Projects">
+              <div class="dashboard-info-card">
                 <strong>12</strong>
-                <span>Project</span>
+                <span>Proyek</span>
               </div>
-              <div class="dashboard-info-card" aria-label="Pending Tasks">
+              <div class="dashboard-info-card">
                 <strong>28</strong>
-                <span>Tasks</span>
+                <span>Catatan</span>
               </div>
-              <div class="dashboard-info-card" aria-label="Team Members">
+              <div class="dashboard-info-card">
                 <strong>15</strong>
-                <span>Customer</span>
+                <span>Klien</span>
               </div>
             </div>
           </div>
         </div>
-        <h3 id="card6-title" class="card-title">Dashboard</h3>
-        <p class="card-desc">A unified dashboard for monitoring tasks and capturing essential user insights.</p>
+        <h3 class="card-title">Dasbor</h3>
+        <p class="card-desc">
+          Dasbor terpadu untuk memantau proyek dan mendapatkan ringkasan informasi penting.
+        </p>
       </article>
 
     </section>
-
   </main>
 </div>
 </body>

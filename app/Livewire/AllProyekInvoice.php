@@ -114,7 +114,7 @@ class AllProyekInvoice extends Component
             'user_id' => auth()->id(),
         ]);
 
-        session()->flash('success', 'Invoice created successfully');
+        session()->flash('success', 'Tagihan berhasil dibuat.');
         $this->resetForm();
         $this->loadInvoices();
         $this->openModal = false;
@@ -136,7 +136,7 @@ class AllProyekInvoice extends Component
             'keterangan' => $this->keterangan,
         ]);
 
-        session()->flash('success', 'Invoice successfully updated.');
+        session()->flash('success', 'Tagihan berhasil diperbarui.');
         $this->resetForm();
         $this->loadInvoices();
         $this->isEdit = false;
@@ -160,7 +160,7 @@ class AllProyekInvoice extends Component
         $invoice = ProyekInvoice::findOrFail($id);
         $invoice->delete();
             
-        session()->flash('success', 'Invoice successfully Deleted.');
+        session()->flash('success', 'Tagihan berhasil dihapus.');
         $this->loadInvoices();
 
         $this->confirmDelete = false;
@@ -246,7 +246,7 @@ class AllProyekInvoice extends Component
             'user_id' => auth()->id(),
         ]);
 
-        session()->flash('success', 'Receipt successfully updated.');
+        session()->flash('success', 'Kwitansi berhasil diperbarui.');
     } 
     else {
         // CREATE
@@ -263,7 +263,7 @@ class AllProyekInvoice extends Component
             'user_id' => auth()->id(),
         ]);
 
-        session()->flash('success', 'Receipt created successfully.');
+        session()->flash('success', 'Kwitansi berhasil dibuat.');
     }
         $this->closeKwitansiModal();
         $this->loadInvoices();

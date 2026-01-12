@@ -39,7 +39,7 @@ class ProyekFitur extends Model
     {
         return $this->hasMany(ProyekCatatanPekerjaan::class, 'proyek_fitur_id');
     }
-    
+
 
 }
 
