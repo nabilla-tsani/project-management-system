@@ -112,14 +112,23 @@ class GeminiService
         12. Jangan tampilkan ID kecuali diminta.
         13. Jika data proyek kosong pada pertanyaan spesifik proyek: 'Anda tidak terdaftar di proyek tersebut.'
         14. Jika perhitungan menghasilkan 0 dan memang tidak ada data: 'Belum ada data untuk perhitungan ini.'
-        
+        15. 🔥 Jika user meminta DAFTAR/SEBUTKAN data, tampilkan SEMUA item yang ada di array data.
+        16. 🔥 Untuk daftar proyek, tampilkan: nama proyek, status, dan tanggal (jika ada).
+        17. 🔥 Gunakan format natural seperti: Proyek A (sedang berjalan), Proyek B (selesai)
+        18. JANGAN LAKUKAN PERHITUNGAN APAPUN
+
         CONTOH JAWABAN YANG BENAR:
-        - User: 'berapa anggaran yang belum dibayar?'
-        - AI: 'Total anggaran yang belum dibayar adalah Rp 50.000.000'
-        
-        CONTOH JAWABAN YANG SALAH:
-        - 'Berdasarkan data yang saya hitung...' ❌
-        - Menampilkan hasil perhitungan sendiri ❌
+        - User: 'sebutkan semua proyek yang sedang aku kerjakan'
+        - AI: 'Anda sedang mengerjakan 6 proyek:
+        Web Ecommerce PT. Pelita (sedang berjalan)
+        Mobile App Inventory (belum dimulai)
+        Sistem Keuangan XYZ (selesai)
+        Dashboard Analytics (sedang berjalan)
+        API Integration (ditunda)
+        Website Company Profile (sedang berjalan)'
+
+        - User: 'berapa jumlah proyek?'
+        - AI: 'Anda memiliki 6 proyek.'
         ";
 
         $response = Http::withHeaders([
@@ -243,6 +252,11 @@ class GeminiService
         $json = $this->sanitizeJson($raw);
         $intent = json_decode($json, true);
 
+        // --- TAMBAHKAN LOG DI SINI ---
+    \Log::info('Manpro AI Debug - Raw Intent:', ['raw' => $raw]);
+    \Log::info('Manpro AI Debug - Parsed Intent:', ['intent' => $intent]);
+    // -----------------------------
+
         // FAILSAFE
         if (!$intent || !isset($intent['type'])) {
             return "Maaf, saya tidak dapat memahami pertanyaan Anda.";
@@ -278,7 +292,7 @@ class GeminiService
     private function checkProjectAccess(array $intent, array $dbResults)
     {
         // Jika ada filter proyek yang spesifik
-        if (!empty($intent['filters']['proyek'])) {
+        if (!empty($intent['filters']['proyek']['nama_proyek'])) {
             // Cek apakah ada data proyek yang ditemukan
             if (empty($dbResults['proyek']) || count($dbResults['proyek']) === 0) {
                 return "Anda tidak terdaftar di proyek tersebut.";
@@ -335,6 +349,14 @@ class GeminiService
             "calculation_type": "count_proyek|count_anggota|sum_anggaran|sum_dibayar|sum_belum_dibayar|count_fitur|count_anggota_fitur|count_file|count_invoice|count_kwitansi|none",
             "calculation_scope": "specific|all"
             }
+            4. Contoh pertanyaan UMUM (filters.proyek harus KOSONG atau tidak ada nama_proyek):
+                - "sebutkan semua proyek yang sedang aku kerjakan"
+                - "tampilkan daftar proyekku"
+                - "proyek apa saja yang aku ikuti"
+
+                Contoh pertanyaan SPESIFIK (filters.proyek.nama_proyek harus ADA):
+                - "berapa anggaran proyek web ecommerce"
+                - "siapa anggota proyek mobile app"
 
             SCHEMA DATABASE:
             $schema
@@ -356,7 +378,8 @@ class GeminiService
             - pending, hold, paused, delay, ditunda, tertunda → ditunda
 
             Mapping calculation_type:
-            - "berapa jumlah proyek" → count_proyek
+            - "berapa jumlah proyek" / "ada berapa proyek" → count_proyek
+            - "sebutkan proyek" / "tampilkan proyek" / "daftar proyek" / "proyek apa saja" → none
             - "berapa anggota proyek [nama]" → count_anggota
             - "berapa total anggaran [proyek]" → sum_anggaran
             - "berapa yang sudah dibayar [proyek]" → sum_dibayar
@@ -370,6 +393,12 @@ class GeminiService
             Mapping calculation_scope:
             - specific: jika pertanyaan menyebut nama proyek/fitur spesifik
             - all: jika pertanyaan umum untuk semua proyek user
+
+            ATURAN PENTING CALCULATION:
+            - Jika user meminta DAFTAR/SEBUTKAN/TAMPILKAN → calculation_type = "none"
+            - Jika user meminta BERAPA/JUMLAH/HITUNG → gunakan calculation_type yang sesuai
+            - "sebutkan", "tampilkan", "daftar", "apa saja" = DATA LISTING (none)
+            - "berapa", "jumlah", "total", "hitung" = CALCULATION (count/sum)
 
             Aturan penting:
             - WAJIB ekstrak nama proyek/fitur dari pertanyaan dan masukkan ke filters
@@ -412,6 +441,7 @@ class GeminiService
         }
 
         return $response->json('choices.0.message.content') ?? '{}';
+        $responseContent = $response->json('choices.0.message.content') ?? '{}';
     }
 
     /**
@@ -760,7 +790,21 @@ class GeminiService
      */
     private function applyProjectFilter($query, array $filters)
     {
-        $query->whereIn('id', ProyekUser::where('user_id', Auth::id())->pluck('proyek_id'));
+        // Gunakan select + get daripada pluck untuk memastikan semua data terambil
+        $projectIds = ProyekUser::where('user_id', Auth::id())
+            ->select('proyek_id')
+            ->get()
+            ->pluck('proyek_id')
+            ->unique()
+            ->values();
+        
+        $query->whereIn('id', $projectIds);
+        
+        // Jika tidak ada filter tambahan, langsung get semua
+        if (empty($filters) || !array_filter($filters)) {
+            return $query->get();
+        }
+        
         return $this->applyFilters($query, $filters);
     }
 

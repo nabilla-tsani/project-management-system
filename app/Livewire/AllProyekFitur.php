@@ -163,8 +163,11 @@ class AllProyekFitur extends Component
     {
         $this->validate([
             'jumlah_fitur_ai' => 'required|integer|min:1|max:10',
-            'deskripsi_ai' => 'required|string|min:10',
         ]);
+
+        if (empty(trim($this->deskripsi_ai))) {
+        $this->deskripsi_ai = "buatkan fitur sesuai dengan spesifikasi proyek";
+        }
 
         $this->loadingAi = true;
 

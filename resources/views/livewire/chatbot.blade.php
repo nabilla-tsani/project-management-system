@@ -27,7 +27,7 @@
 
     {{-- Chat Window --}}
     @if($isOpen)
-        <div class="w-96 h-[550px] bg-white shadow-xl rounded-xl border border-gray-300 flex flex-col">
+        <div wire:click.outside="toggleChat" class="w-96 h-[550px] bg-white shadow-xl rounded-xl border border-gray-300 flex flex-col">
 
             {{-- Header --}}
            <div class="relative p-2 bg-white rounded-t-xl flex items-center">

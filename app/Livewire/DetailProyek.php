@@ -171,7 +171,7 @@ class DetailProyek extends Component
         $this->loadData();
 
         $this->closeModal();
-        session()->flash('success', 'Project updated successfully!');
+        session()->flash('success', 'Informasi Proyek berhasil diperbarui.');
         $this->dispatch('$refresh');
     }
 

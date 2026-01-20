@@ -260,9 +260,11 @@
     </div>
 
     {{-- Chatbot --}}
+    @if(isset($proyek))
     <div class="font-sans" wire:ignore>
         @livewire('chatbot', [], key('chatbot-'.$proyek->id))
     </div>
+    @endif
 </div>
 
 {{-- ===================== CHART.JS ===================== --}}
