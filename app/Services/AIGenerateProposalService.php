@@ -21,8 +21,8 @@ PROMPT;
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('services.openrouter.key'),
             'Content-Type'  => 'application/json',
-            'HTTP-Referer'  => config('app.url'), // wajib OpenRouter
-            'X-Title'       => config('app.name'), // opsional tapi disarankan
+            'HTTP-Referer'  => config('app.url'), 
+            'X-Title'       => config('app.name'), // opsional 
         ])->post('https://openrouter.ai/api/v1/chat/completions', [
             'model' => 'google/gemini-2.0-flash-001',
             'messages' => [

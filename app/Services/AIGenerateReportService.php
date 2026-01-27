@@ -77,7 +77,7 @@ Daftar Fitur:
 
 Penugasan Fitur:
 {$fiturUser}
-
+ 
 Dokumen Proyek:
 {$file}
 
@@ -110,7 +110,7 @@ PROMPT;
                 ['role' => 'system', 'content' => 'Kamu adalah analis proyek profesional.'],
                 ['role' => 'user', 'content' => $prompt],
             ],
-            'temperature' => 0.4,
+            'temperature' => 0.9,
         ]);
 
         return $response['choices'][0]['message']['content'] ?? 'Analisis tidak tersedia.';

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class LaporanAIService
@@ -19,7 +18,8 @@ class LaporanAIService
 
         $pdf = Pdf::loadHTML($html)->setPaper('A4', 'portrait');
 
-        $fileName = 'Laporan-Proyek-' . Str::slug($proyek->nama_proyek) . '.pdf';
+        $fileName = 'Laporan Proyek - ' . preg_replace('/[^A-Za-z0-9 ]/', '', $proyek->nama_proyek) . '.pdf';
+
         $filePath = storage_path('app/public/' . $fileName);
 
         $pdf->save($filePath);

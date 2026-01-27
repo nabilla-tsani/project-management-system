@@ -2,15 +2,17 @@
 
 namespace App\Livewire;
 
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use App\Models\Proyek;
 use App\Models\Customer;
+
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\ProposalAIService; //Tampilan Word Proposal
 use App\Services\AIGenerateProposalService;
-use Illuminate\Support\Facades\Auth;
 use App\Services\AIGenerateReportService;
 use App\Services\LaporanAIService;
+
 
 class DetailProyek extends Component
 {
@@ -68,7 +70,7 @@ class DetailProyek extends Component
 
     public function generateReportWithAI($proyekId)
     {
-        // 1️⃣ Ambil SEMUA data proyek
+        // Ambil SEMUA data proyek
         $proyek = Proyek::with([
             'customer',
             'proyekUsers.user',
@@ -77,15 +79,15 @@ class DetailProyek extends Component
             'kwitansi'
         ])->findOrFail($proyekId);
 
-        // 2️⃣ Kirim data ke AI
+        // Kirim data ke AI
         $aiService = app(AIGenerateReportService::class);
         $analisisAI = $aiService->generateAnalisis($proyek);
 
-        // 3️⃣ Generate PDF
+        // Generate PDF
         $laporanService = app(LaporanAIService::class);
         $filePath = $laporanService->generate($proyek, $analisisAI);
 
-        // 4️⃣ Download
+        // Download
         return response()->download($filePath);
     }
 

@@ -5,7 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\DB;
 
 // Import semua model
 use App\Models\Customer;
@@ -78,7 +78,7 @@ class GeminiService
         $lastUserMessage = end($messages)['message'];
         $user = Auth::user();
 
-        // 🔥 Format hasil perhitungan dengan lebih jelas
+        //  Format hasil perhitungan dengan lebih jelas
         $calculationText = '';
         if (!empty($calculations)) {
             $calculationText = "\n\n=== HASIL PERHITUNGAN BACKEND (GUNAKAN INI, JANGAN HITUNG ULANG) ===\n" 
@@ -99,7 +99,7 @@ class GeminiService
 
         ATURAN WAJIB:
         1. Jawab HANYA dari data yang diberikan.
-        2. 🔥 PRIORITAS UTAMA: Jika ada HASIL PERHITUNGAN, WAJIB gunakan angka dari sana.
+        2. PRIORITAS UTAMA: Jika ada HASIL PERHITUNGAN, WAJIB gunakan angka dari sana.
         3. JANGAN PERNAH menghitung manual dari array data.
         4. Gunakan format yang sudah tersedia (xxx_formatted) untuk angka uang.
         5. Jika pertanyaan menyebut 'saya', maksudnya user dengan user_id {$user->id}.
@@ -112,9 +112,9 @@ class GeminiService
         12. Jangan tampilkan ID kecuali diminta.
         13. Jika data proyek kosong pada pertanyaan spesifik proyek: 'Anda tidak terdaftar di proyek tersebut.'
         14. Jika perhitungan menghasilkan 0 dan memang tidak ada data: 'Belum ada data untuk perhitungan ini.'
-        15. 🔥 Jika user meminta DAFTAR/SEBUTKAN data, tampilkan SEMUA item yang ada di array data.
-        16. 🔥 Untuk daftar proyek, tampilkan: nama proyek, status, dan tanggal (jika ada).
-        17. 🔥 Gunakan format natural seperti: Proyek A (sedang berjalan), Proyek B (selesai)
+        15. Jika user meminta DAFTAR/SEBUTKAN data, tampilkan SEMUA item yang ada di array data.
+        16. Untuk daftar proyek, tampilkan: nama proyek, status, dan tanggal (jika ada).
+        17. Gunakan format natural seperti: Proyek A (sedang berjalan), Proyek B (selesai)
         18. JANGAN LAKUKAN PERHITUNGAN APAPUN
 
         CONTOH JAWABAN YANG BENAR:
@@ -237,10 +237,10 @@ class GeminiService
      */
     public function chatWithHistory(array $messages, string $model = 'google/gemini-2.0-flash-001')
     {
-        // 🔥 AMBIL PESAN TERAKHIR USER SAJA (Fresh Start)
+        // AMBIL PESAN TERAKHIR USER SAJA (Fresh Start)
         $lastUserMessage = end($messages);
         
-        // 🔥 Buat array pesan baru dengan hanya pesan terakhir
+        // Buat array pesan baru dengan hanya pesan terakhir
         $freshMessages = [$lastUserMessage];
         
         $raw = $this->classifyAndAskIntent($freshMessages, $model);
@@ -252,10 +252,8 @@ class GeminiService
         $json = $this->sanitizeJson($raw);
         $intent = json_decode($json, true);
 
-        // --- TAMBAHKAN LOG DI SINI ---
-    \Log::info('Manpro AI Debug - Raw Intent:', ['raw' => $raw]);
-    \Log::info('Manpro AI Debug - Parsed Intent:', ['intent' => $intent]);
-    // -----------------------------
+        \Log::info('Manpro AI Debug - Raw Intent:', ['raw' => $raw]);
+        \Log::info('Manpro AI Debug - Parsed Intent:', ['intent' => $intent]);
 
         // FAILSAFE
         if (!$intent || !isset($intent['type'])) {
@@ -271,13 +269,13 @@ class GeminiService
         if ($intent['type'] === 'rag') {
             $dbResults = $this->runAiSearch(json_encode($intent));
             
-            // 🔥 CEK APAKAH USER TERDAFTAR DI PROYEK YANG DITANYAKAN
+            // CEK APAKAH USER TERDAFTAR DI PROYEK YANG DITANYAKAN
             $accessCheck = $this->checkProjectAccess($intent, $dbResults);
             if ($accessCheck !== true) {
                 return $accessCheck;
             }
             
-            // 🔥 HITUNG STATISTIK
+            // HITUNG STATISTIK
             $calculations = $this->calculateStatistics($intent, $dbResults);
             
             return $this->askFinalAnswer($freshMessages, $dbResults, $calculations, $model);
@@ -287,7 +285,7 @@ class GeminiService
     }
 
     /**
-     * 🔥 FUNGSI CEK AKSES PROYEK
+     *  FUNGSI CEK AKSES PROYEK
      */
     private function checkProjectAccess(array $intent, array $dbResults)
     {
@@ -307,7 +305,7 @@ class GeminiService
      */
     private function classifyAndAskIntent(array $messages, string $model)
     {
-        // 🔥 AMBIL DAFTAR NAMA PROYEK USER untuk fuzzy matching
+        //  AMBIL DAFTAR NAMA PROYEK USER untuk fuzzy matching
         $userProjects = Proyek::whereIn('id', ProyekUser::where('user_id', Auth::id())->pluck('proyek_id'))
             ->pluck('nama_proyek')
             ->toArray();
@@ -361,10 +359,10 @@ class GeminiService
             SCHEMA DATABASE:
             $schema
 
-            🔥 DAFTAR PROYEK USER (untuk fuzzy matching):
+            DAFTAR PROYEK USER (untuk fuzzy matching):
             $projectList
 
-            🔥 ATURAN FUZZY MATCHING NAMA PROYEK:
+             ATURAN FUZZY MATCHING NAMA PROYEK:
             - Jika user menyebut nama proyek, cocokkan dengan daftar di atas
             - Abaikan perbedaan huruf besar/kecil
             - Toleransi typo (misal: "web ecomerce" → "Web Ecommerce PT. Pelita")
@@ -444,9 +442,6 @@ class GeminiService
         $responseContent = $response->json('choices.0.message.content') ?? '{}';
     }
 
-    /**
-     * SANITIZE JSON
-     */
     private function sanitizeJson(string $raw)
     {
         $clean = preg_replace('/```json|```/i', '', $raw);
@@ -458,7 +453,7 @@ class GeminiService
     }
 
     /**
-     * 🔥 FUNGSI CALCULATE STATISTICS (DIPERBAIKI & DIANALISIS)
+     *  FUNGSI CALCULATE STATISTICS 
      */
     private function calculateStatistics(array $intent, array $dbResults)
     {
@@ -472,7 +467,7 @@ class GeminiService
 
         $userId = Auth::id();
         
-        // 🔥 TENTUKAN PROJECT IDS BERDASARKAN SCOPE
+        //  TENTUKAN PROJECT IDS BERDASARKAN SCOPE
         if ($calcScope === 'specific' && !empty($dbResults['proyek'])) {
             // Gunakan proyek yang sudah difilter
             $filteredProjectIds = collect($dbResults['proyek'])->pluck('id')->toArray();
@@ -483,7 +478,7 @@ class GeminiService
             $calculations['proyek_yang_dihitung'] = 'Semua proyek Anda';
         }
 
-        // 🔥 Jika tidak ada proyek yang valid, return kosong
+        //  Jika tidak ada proyek yang valid, return kosong
         if (empty($filteredProjectIds)) {
             $calculations['error'] = 'Tidak ada proyek ditemukan';
             return $calculations;
@@ -496,7 +491,7 @@ class GeminiService
                 break;
 
             case 'count_anggota':
-                // 🔥 Hitung anggota UNIK di proyek
+                //  Hitung anggota UNIK di proyek
                 $anggotaData = ProyekUser::with('user:id,name')
                     ->whereIn('proyek_id', $filteredProjectIds)
                     ->get();
@@ -509,7 +504,7 @@ class GeminiService
                 break;
 
             case 'sum_anggaran':
-                // 🔥 Total anggaran semua proyek yang difilter
+                //  Total anggaran semua proyek yang difilter
                 $proyekData = Proyek::whereIn('id', $filteredProjectIds)
                     ->select('id', 'nama_proyek', 'anggaran')
                     ->get();
@@ -529,7 +524,7 @@ class GeminiService
                 break;
 
             case 'sum_dibayar':
-                // 🔥 Total yang SUDAH DIBAYAR (dari kwitansi)
+                //  Total yang SUDAH DIBAYAR (dari kwitansi)
                 $kwitansiData = ProyekKwitansi::whereIn('proyek_id', $filteredProjectIds)
                     ->select('proyek_id', 'jumlah', 'judul_kwitansi')
                     ->get();
@@ -550,7 +545,7 @@ class GeminiService
                 break;
 
             case 'sum_belum_dibayar':
-                // 🔥 ANALISIS: Anggaran - Kwitansi = Belum Dibayar
+                //  ANALISIS: Anggaran - Kwitansi = Belum Dibayar
                 $proyekData = Proyek::whereIn('id', $filteredProjectIds)
                     ->select('id', 'nama_proyek', 'anggaran')
                     ->get();
@@ -572,7 +567,7 @@ class GeminiService
                 $calculations['total_belum_dibayar_formatted'] = 'Rp ' . number_format($totalBelumDibayar, 0, ',', '.');
                 $calculations['jumlah_kwitansi'] = $kwitansiData->count();
                 
-                // 🔥 Detail per proyek
+                //  Detail per proyek
                 $calculations['detail_per_proyek'] = $proyekData->map(function($p) use ($kwitansiData) {
                     $dibayarProyek = $kwitansiData->where('proyek_id', $p->id)->sum('jumlah');
                     $belumDibayar = $p->anggaran - $dibayarProyek;
@@ -592,7 +587,7 @@ class GeminiService
                 break;
 
             case 'count_fitur':
-                // 🔥 Hitung fitur berdasarkan proyek yang sudah difilter
+                //  Hitung fitur berdasarkan proyek yang sudah difilter
                 $fiturData = ProyekFitur::whereIn('proyek_id', $filteredProjectIds)
                     ->select('id', 'proyek_id', 'nama_fitur', 'status_fitur')
                     ->get();
@@ -608,7 +603,7 @@ class GeminiService
                 break;
 
             case 'count_anggota_fitur':
-                // 🔥 Jika ada filter fitur spesifik dari dbResults
+                //  Jika ada filter fitur spesifik dari dbResults
                 if (!empty($dbResults['proyek_fitur'])) {
                     $fiturIds = collect($dbResults['proyek_fitur'])->pluck('id')->toArray();
                     $namaFitur = collect($dbResults['proyek_fitur'])->pluck('nama_fitur')->toArray();
@@ -702,7 +697,7 @@ class GeminiService
                     $query = ProyekUser::with(['user:id,name', 'proyek:id,nama_proyek'])
                         ->whereIn('proyek_id', $this->myProjectIds());
                     
-                    // 🔥 Jika ada filter proyek spesifik, terapkan
+                    //  Jika ada filter proyek spesifik, terapkan
                     if (!empty($ai['filters']['proyek'])) {
                         $proyekFiltered = $this->applyProjectFilter(Proyek::query(), $ai['filters']['proyek']);
                         $proyekIds = $proyekFiltered->pluck('id')->toArray();
@@ -809,13 +804,13 @@ class GeminiService
     }
 
     /**
-     * 🔥 FILTER CHILD TABLE (DIPERBAIKI)
+     *  FILTER CHILD TABLE (DIPERBAIKI)
      */
     private function applyProjectChildFilter($query, array $filters, string $field = 'proyek_id', array $proyekFilter = [])
     {
         $myProjectIds = $this->myProjectIds();
         
-        // 🔥 Jika ada filter proyek spesifik, filter dulu proyeknya
+        //  Jika ada filter proyek spesifik, filter dulu proyeknya
         if (!empty($proyekFilter)) {
             $filteredProyek = $this->applyProjectFilter(Proyek::query(), $proyekFilter);
             $proyekIds = $filteredProyek->pluck('id');
@@ -839,9 +834,6 @@ class GeminiService
         return $this->applyFilters($query, $filters);
     }
 
-    /**
-     * FILTER CUSTOMER
-     */
     private function customerForUser(array $filters)
     {
         $query = Customer::query();

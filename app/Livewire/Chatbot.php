@@ -17,8 +17,6 @@ class Chatbot extends Component
     {
         $this->messages = session()->get('chatbot_messages', []);
     }
-    
-
 
     public function toggleChat()
     {
@@ -45,7 +43,6 @@ class Chatbot extends Component
         $this->dispatch('fetch-ai-response');
     }
 
-
    #[On('fetch-ai-response')]
     public function fetchAiResponse()
     {
@@ -69,8 +66,6 @@ class Chatbot extends Component
         session()->put('chatbot_messages', $this->messages);
         $this->dispatch('scroll-to-bottom');
     }
-
-
 
     public function resetChat()
     {

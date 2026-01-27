@@ -5,7 +5,6 @@ namespace App\Services;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\SimpleType\Jc;
-use Illuminate\Support\Str;
 
 class ProposalAIService
 {
@@ -74,7 +73,7 @@ class ProposalAIService
 
 
         // =======================================================
-        // 📄 SECTION 2 - DAFTAR ISI
+        // SECTION 2 - DAFTAR ISI
         // =======================================================
         $section2 = $phpWord->addSection();
         $this->addHeader($section2);
@@ -87,7 +86,7 @@ class ProposalAIService
         }
 
         // =======================================================
-        // 📄 SECTION 3 - SURAT PENAWARAN
+        // SECTION 3 - SURAT PENAWARAN
         // =======================================================
         $section3 = $phpWord->addSection();
         $header = $section3->addHeader();
@@ -162,7 +161,7 @@ class ProposalAIService
         $cell->addText("Direktur", [], ['alignment' => Jc::CENTER]);
 
         // =======================================================
-        // 📄 SECTION 4 - LATAR BELAKANG (AI)
+        // SECTION 4 - LATAR BELAKANG (AI)
         // =======================================================
         $section4 = $phpWord->addSection();
         $this->addHeader($section4);
@@ -392,7 +391,7 @@ class ProposalAIService
         $section4->addText("    https://jenderalcorp.com/");
 
         // =======================================================
-        // 📄 SECTION 5 - CLOSING
+        // SECTION 5 - CLOSING
         // =======================================================
         $section5 = $phpWord->addSection();
         $this->addHeader($section5);
@@ -407,9 +406,9 @@ class ProposalAIService
         );
 
         // =======================================================
-        // 💾 SIMPAN FILE
+        // SIMPAN FILE
         // =======================================================
-        $fileName = 'Proposal-Proyek-' . Str::slug($proyek->nama_proyek) . '.docx';
+        $fileName = 'Proposal Proyek - ' . preg_replace('/[^A-Za-z0-9 ]/', '', $proyek->nama_proyek) . '.docx';
         $filePath = storage_path('app/public/' . $fileName);
         $writer = IOFactory::createWriter($phpWord, 'Word2007');
         $writer->save($filePath);
